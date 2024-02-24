@@ -1,0 +1,191 @@
+
+export { multerConfig } from "./configs/aws-bucket";
+
+export { BadRequestException } from "./exceptions/bad-request.exception";
+export { InternalErrorException } from "./exceptions/internal.exception";
+export { NoContentException } from "./exceptions/no-content.exception";
+export { NotFoundException } from "./exceptions/not-found.exception";
+
+export { AgentBankAccount } from "./entites/agents/entites/bank-account.entity";
+export { Agent } from "./entites/agents/entites/agent.entity";
+export { AgentDto } from "./entites/agents/agent.dto";
+export { Account } from "./entites/accounts/account.entity";
+export { AccountDto } from "./entites/accounts/account.dto";
+export { UserFileDto } from "./entites/files/file.dto";
+export { UserFile } from "./entites/files/file.entity";
+export { TransportType } from "./entites/references/entities/transport-type.entity";
+export { CargoType } from "./entites/references/entities/cargo-type.entity";
+export { CargoTypeGroup } from "./entites/references/entities/cargo-type-group.entity";
+export { CargoStatus } from "./entites/references/entities/cargo-status.entity";
+export { Currency } from "./entites/references/entities/currency.entity";
+export { Subscription } from "./entites/references/entities/subscription.entity";
+export { Role } from "./entites/role/entities/role.entity";
+export { Permission } from "./entites/role/entities/permission.entity";
+export { Staff } from "./entites/staffs/staff.entity";
+export { CreateStaffDto } from "./entites/staffs/staff.dto";
+export { Transaction } from "./entites/transactions/transaction.entity";
+export { User } from "./entites/users/user.entity";
+export { Client } from "./entites/clients/client.entity";
+export { ClientPhoneNumber } from "./entites/clients/client-phonenumber.entity";
+export { ClientDto } from "./entites/clients/client.dto";
+export { Driver } from "./entites/driver/entities/driver.entity";
+export { DriverPhoneNumber } from "./entites/driver/entities/driver-phonenumber.entity";
+export { DriverDto } from "./entites/driver/dtos/driver.dto";
+export { DriverTransport } from "./entites/driver/entities/driver-transport.entity";
+export { DriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
+export { TransportVerification } from "./entites/driver/entities/transport-verification.entity";
+export { Config } from "./entites/config/config.entity";
+export { Order } from "./entites/orders/entities/order.entity";
+export { OrderOffer } from "./entites/orders/entities/offer.entity";
+export { OrderOfferReply } from "./entites/orders/entities/offer-reply.entity";
+export { OrderDto } from "./entites/orders/dtos/order.dto";
+export { OrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
+export { ReplyOfferDto } from './entites/orders/dtos/reply-offer.dto'
+export { CargoLoadMethod } from "./entites/references/entities/cargo-load-method.entity";
+export { CargoPackage } from "./entites/references/entities/cargo-package.entity";
+export { TransportKind } from "./entites/references/entities/transport-kind.entity";
+export { SubscriptionPayment } from "./entites/references/entities/subscription-payment.entity";
+export { ClientMerchant } from './entites/client-merchant/entites/client-merchant.entity';
+export { ClientMerchantDto, CreateClientMerchantDto, CreateInStepClientMerchantDto, CompleteClientMerchantDto } from './entites/client-merchant/dtos/client-merchant.dto';
+export { CreateClientMerchantUserDto, UpdateClientMerchantUserDto } from './entites/client-merchant/dtos/client-merchant-user.dto';
+export { ClientMerchantUser } from './entites/client-merchant/entites/client-merchant-user.entity';
+export { ClientBankAccount } from './entites/client-merchant/entites/bank-account.entity';
+export { DriverMerchant } from './entites/driver-merchant/entites/driver-merchant.entity';
+export { DriverMerchantDto, CreateDriverMerchantDto, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto } from './entites/driver-merchant/dtos/driver-merchant.dto';
+export { CreateDriverMerchantUserDto, UpdateDriverMerchantUserDto } from './entites/driver-merchant/dtos/driver-merchant-user.dto';
+export { DriverMerchantUser } from './entites/driver-merchant/entites/driver-merchant-user.entity';
+export { DriverBankAccount } from './entites/driver-merchant/entites/bank-account.entity';
+export { AwsService } from './services/aws.service';
+export { SundryService } from './services/sundry.service';
+export { CustomJwtService } from './services/jwt.service';
+export { SmsService } from './services/sms.service';
+export { MailService } from './services/mail.service';
+
+export { CargoStatusDto } from './entites/references/dtos/cargo-status.dto';  
+export { CargoTypeGroupDto } from './entites/references/dtos/cargo-type-group.dto'
+export { CargoTypeDto } from './entites/references/dtos/cargo-type.dto'
+export { CurrencyDto } from './entites/references/dtos/currency.dto'
+export { SubscriptionDto } from './entites/references/dtos/subscription.dto'
+export { TransportKindDto } from './entites/references/dtos/transport-kind.dto'
+export { CargoPackageDto } from './entites/references/dtos/cargo-package.dto'
+export { CargoLoadingMethodDto } from './entites/references/dtos/cargo-loading-method.dto'
+export { TransportTypeDto } from './entites/references/dtos/transport-type.dto'
+
+export enum ResponseStauses {
+    NotFound = 'dataNotFound',
+    UserNotFound = 'userNotFound',
+    OrderNotFound = 'orderNotFound',
+    MerchantNotFound = 'ClientMerchantNotFound',
+    AgentNotFound = 'agentNotFound',
+    StaffNotFound = 'staffNotFound',
+    RoleNotFound = 'roleNotFound',
+    IdIsRequired = 'idIsRequired',
+    DriverIdIsRequired = 'driverIdIsRequired',
+    SubscriptionIsRequired = 'subscriptionIsRequired',
+    AgentIdIsRequired = 'agentIdIsRequired',
+    ClientIdIsRequired = 'clientIdIsRequired',
+    ClientIdOrMerchantIdIsRequired = 'clientIdOrMerchantIdIsRequired',
+    MerchantIdIsRequired = 'MerchantIdIsRequired',
+    AllFieldsRequired = 'allFieldsAreRequired',
+    SubscriptionNotFound = 'subscriptionNotFound',  
+    CurrencyNotFound = 'currencyNotfound',
+    CargoTypeNotFound = 'cargoTypeNotfound',
+    TransportTypeNotfound = 'transportTypeNotFound',
+    TransportKindNotfound = 'transportKindNotFound',
+    CargoLoadingMethodNotFound = 'cargoLoadingMethodNotFound',
+    CargoPackageNotFound = 'cargoPackageNotFound',
+    DriverNotFound = 'driverNotFound',
+    UserTypeRequired = 'userTypeRequired',
+    InvalidUserType = 'invalidUserType  ',
+    SuccessfullyCreated = 'successfullyCreated',
+    SuccessfullyUpdated = 'successfullyUpdated',
+    SuccessfullyDeleted = 'successfullyDeleted',
+    SuccessfullyCanceled = 'successfullyCanceled',
+    SuccessfullyRejected = 'successfullyRejected',
+    SuccessfullyVerified = 'successfullyVerified',
+    CreateDataFailed = 'createFailed',
+    SendCodeFailed = 'sendCodeFailed',
+    UpdateDataFailed = 'updateFalied',
+    DeleteDataFailed = 'deleteFalied',
+    CancelDataFailed = 'cancelFalied',
+    RejectDataFailed = 'rejectFalied',
+    VerifyDataFailed = 'verifyFalied',
+    BlockDataFailed = 'blockFalied',
+    AwsStoreFileFailed = 'fileStoreFailed',
+    DuplicateError = 'duplicateError',
+    PhoneNumberDuplicateError = 'phoneNumberDuplicateError',
+    AlreadyDeleted = 'alreadyDeleted',
+    AlreadyBlocked = 'alreadyBlocked',
+    AlreadyActive = 'alreadyActive',
+    AlreadyVerified = 'alreadyVerified',
+    AlreadyRejecteed = 'alreadyRejecteed',
+    AlreadyAccepted = 'alreadyAccepted',
+    DriverHasOrder = 'driverHasOrder',
+    AlreadyOffered = 'alreadyOfferedToThisOrder',
+    AlreadyReplied = 'alreadyRepliedToThisOffer',
+    OfferLimit = 'offerLimitExceeded',
+    MerchantAlreadyVerified = 'merchantAlreadyVerified',
+    InternalServerError = 'internalError',
+    NotModified = 'notModified',
+    InvalidPassword = 'invalidPassword',
+    PasswordShouldCointainNumStr = 'passwordShouldContainerNumStr',
+    InvalidBankAccount = 'invalidBankAccount',
+    BankAccountIsRequired = 'bankAccountIsRequired',
+    FileIsRequired = 'fileIsRequired',
+    DriverAlreadyAppended = 'driverAlreadyAppended',
+    OfferWasRejected = 'offerWasRejected',
+    OfferWasCanceled = 'offerWasCanceled',
+    NotEnoughBalance = 'notEnoughBalance'
+  } 
+  
+  export enum CargoStatusCodes {
+    Waiting = 0, //Ожидающий
+    Accepted = 1,  //Принято
+    Active = 2, //Выполняется
+    Completed = 3, //Выполнен
+    Closed = 4,  //Завершенный
+    Canceled = 5, //Отменено
+    Archive = 6
+  }
+
+  export enum UserTypes {
+    Client = 'client',
+    Driver = 'driver',
+    ClientMerchant = 'client_merchant',
+    ClientMerchantUser = 'client_merchant_user',
+    DriverMerchant = 'driver_merchant',
+    DriverMerchantUser = 'driver_merchant_user',
+    Staff = 'staff',
+    Agent = 'agent'
+  }
+
+  export enum UsersRoleNames {
+    SuperAdmin = 'Super admin'
+  }
+
+  export class BpmResponse {
+    success: boolean;
+    data: any;
+    messages: string[] | undefined;
+    constructor(success: boolean, data: any, messages?: string[]) {
+      this.success = success;
+      this.data = data;
+      this.messages = messages;
+    }
+  }
+
+  export enum TransactionTypes {
+    TopUp = 'topupAccount',
+    Withdraw = 'withdrawAccount',
+    SecureTransaction = 'secureTransaction',
+    TopUpAgentAccount = 'topUpAgentAccount',
+    DriverSubscriptionPayment = 'driverSubscriptionPayment'
+  }
+
+  export enum AccountTypes {
+    BankAccount = 'BankAccount',
+    CustomAccount = 'CustomAccount'
+  }
+export * from './shared-modules.module';
+export * from './auth.module';
+export * from './shared-modules.service';
