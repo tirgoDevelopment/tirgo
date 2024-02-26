@@ -3,45 +3,7 @@ import { OrderOffer, Agent, AgentBankAccount, OrderOfferReply, User, UserFile, P
 export { OrderDto, ClientDto} from "@app/shared-modules";
 
 export { BpmResponse, UserTypes, UsersRoleNames ,ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException } from "@app/shared-modules";
-export { AwsService, SundryService, CustomJwtService } from '@app/shared-modules';  
-
-const entities = [
-    TransportType,
-    CargoType,
-    CargoTypeGroup,
-    CargoStatus,
-    Currency,
-    Subscription,
-    Role,
-    Permission,
-    Staff,
-    Transaction,
-    User,
-    Client,
-    Driver,
-    DriverTransport,
-    TransportVerification,
-    Config,
-    Order,
-    CargoLoadMethod,
-    CargoPackage,
-    TransportKind,
-    SubscriptionPayment,
-    ClientMerchant,
-    ClientBankAccount,
-    ClientMerchantUser,
-    DriverPhoneNumber,
-    ClientPhoneNumber,
-    DriverMerchant,
-    DriverBankAccount,
-    DriverMerchantUser,
-    SubscriptionPayment,
-    UserFile,
-    OrderOffer,
-    OrderOfferReply,
-    Account,
-    Agent, AgentBankAccount,
-  ];
+export { AwsService, SundryService, CustomJwtService , DatabaseModule} from '@app/shared-modules';  
 
   export {
     TransportType,
@@ -80,4 +42,3 @@ const entities = [
     Account,
     Agent, AgentBankAccount,
   };
-  export default entities;

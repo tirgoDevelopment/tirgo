@@ -19,50 +19,11 @@ import { Client,
     Agent, AgentBankAccount, } from "@app/shared-modules";
     
 export { BpmResponse, UserTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException } from "@app/shared-modules";
-export { AwsService, SundryService, CustomJwtService } from '@app/shared-modules';  
+export { AwsService, SundryService, CustomJwtService, DatabaseModule } from '@app/shared-modules';  
 export { CargoStatusDto, CargoPackageDto, CargoTypeGroupDto, CargoTypeDto, CurrencyDto, SubscriptionDto, TransportKindDto, TransportTypeDto, AccountDto } from '@app/shared-modules';  
 
-const entities = [
-    TransportType,
-    CargoType,
-    CargoTypeGroup,
-    CargoStatus,
-    Currency,
-    Subscription,
-    Role,
-    Permission,
-    Staff,
-    Transaction,
-    User,
-    Client,
-    Driver,
-    DriverTransport,
-    TransportVerification,
-    Config,
-    Order,
-    CargoLoadMethod,
-    CargoPackage,
-    TransportKind,
-    SubscriptionPayment,
-    ClientMerchant,
-    ClientBankAccount,
-    ClientMerchantUser,
-    DriverPhoneNumber,
-    ClientPhoneNumber,
-    DriverMerchant,
-    DriverBankAccount,
-    DriverMerchantUser,
-    UserFile,
-    OrderOffer,
-    OrderOfferReply,
-    Account,
-    Agent, 
-    AgentBankAccount,
-  ];
-
-  export {
+ export {
     CargoType, CargoTypeGroup, OrderOffer,
     OrderOfferReply, Currency, Subscription, 
     Agent, AgentBankAccount, TransportType, TransportKind, CargoStatus, User, SubscriptionPayment, CargoPackage, CargoLoadMethod, UserFile, AuthModule,
 };
-  export default entities;

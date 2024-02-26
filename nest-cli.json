@@ -1,24 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/tirgo/src",
+  "sourceRoot": "apps/users/src",
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/tirgo/tsconfig.app.json"
+    "tsConfigPath": "apps/users/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/tirgo",
+  "root": "apps/users",
   "projects": {
-    "tirgo": {
-      "type": "application",
-      "root": "apps/tirgo",
-      "entryFile": "main",
-      "sourceRoot": "apps/tirgo/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/tirgo/tsconfig.app.json"
-      }
-    },
     "users": {
       "type": "application",
       "root": "apps/users",

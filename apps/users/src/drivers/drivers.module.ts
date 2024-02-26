@@ -22,9 +22,6 @@ import { DriverTransportsController } from "./contollers/transport.controller";
         TransportsService
       ],
       exports: [
-        DriversService,
-        TransportsService,
-        TypeOrmModule.forFeature([ Driver, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction ]),
       ]
 })
 export class DriversModule {
