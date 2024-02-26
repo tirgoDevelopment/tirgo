@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import entities, { CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService } from '.';
+import { CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService, DatabaseModule } from '.';
 import { TransportTypesController } from './references/controllers/transport-types.controller';
 import { CargoTypesController } from './references/controllers/cargo-type.controller';
 import { CargoTypeGroupsController } from './references/controllers/cargo-type-groups.controller';
@@ -23,18 +23,9 @@ import { FilesController } from './references/controllers/files.controller';
 
 @Module({
     imports: [
+      DatabaseModule,
       AuthModule,
       TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
-      TypeOrmModule.forRoot({
-        type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        password: 'postgres',
-        username: 'postgres',
-        entities: entities,
-        database: 'tirgo', 
-        synchronize: true,
-      }),
     ],
     controllers: [
       TransportTypesController,

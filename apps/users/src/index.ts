@@ -21,44 +21,7 @@ export {
   AgentDto
 } from "@app/shared-modules";
 export { BpmResponse, UserTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
-export { AwsService, SundryService, CustomJwtService, SmsService, MailService, AuthModule } from '@app/shared-modules';
-const entities = [
-  TransportType,
-  CargoType,
-  CargoTypeGroup,
-  CargoStatus,
-  Currency,
-  Subscription,
-  Role,
-  Permission,
-  Staff,
-  Transaction,
-  User,
-  Client,
-  Driver,
-  DriverTransport,
-  TransportVerification,
-  Config,
-  Order,
-  CargoLoadMethod,
-  CargoPackage,
-  TransportKind,
-  SubscriptionPayment,
-  ClientMerchant,
-  ClientBankAccount,
-  ClientMerchantUser,
-  DriverPhoneNumber,
-  ClientPhoneNumber,
-  DriverMerchant,
-  DriverBankAccount,
-  UserFile,
-  DriverMerchantUser,
-  OrderOffer,
-  OrderOfferReply,
-  Account,
-  Agent, 
-  AgentBankAccount,
-];
+export { AwsService, SundryService, CustomJwtService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';
 
 export {
   TransportType,
@@ -98,4 +61,3 @@ export {
   AgentBankAccount,
   
 };
-export default entities;

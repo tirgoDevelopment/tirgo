@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import entities, {  AuthModule, AwsService, CustomJwtService, Role, SmsService, Staff, SundryService } from '.';
+import {  AuthModule, AwsService, CustomJwtService, DatabaseModule, Role, SmsService, Staff, SundryService } from '.';
 import { ClientsService } from './clients/client.service';
 import { DriversService } from './drivers/services/driver.service';
 import { StaffsService } from './staffs/staffs.service';
@@ -21,16 +20,7 @@ import { SseModule } from './sse/sse.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      password: 'postgres',
-      username: 'postgres',
-      entities: entities,
-      database: 'tirgo', 
-      synchronize: true,  
-    }),
+    DatabaseModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET_KEY, // Replace with your actual secret key
       signOptions: { expiresIn: '1h' }, // Optional: Set expiration time
