@@ -12,6 +12,6 @@ async function bootstrap() {
   };
   app.enableCors(corsOptions);
   app.setGlobalPrefix('api/v2/users')
-  await app.listen(3000, '192.168.1.218');
+  await app.listen(3000);
 }
 bootstrap();
