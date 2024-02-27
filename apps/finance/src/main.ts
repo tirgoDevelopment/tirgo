@@ -12,6 +12,6 @@ async function bootstrap() {
   };
   app.enableCors(corsOptions);
   app.setGlobalPrefix('api/v2/finance')
-  await app.listen(3003, '192.168.1.218');
+  await app.listen(3003);
 }
 bootstrap();

@@ -281,9 +281,12 @@ export class ClientsService {
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 
         relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
-      
+        
+        const ordersCount = await this.ordersRepository.count({ where : filter });
+  
+
         if(orders.length) {
-        return new BpmResponse(true, orders, null);
+        return new BpmResponse(true, orders, null, Math.ceil(ordersCount / size));
       } else {
         throw new NoContentException();
       }

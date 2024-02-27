@@ -167,10 +167,13 @@ export enum ResponseStauses {
     success: boolean;
     data: any;
     messages: string[] | undefined;
-    constructor(success: boolean, data: any, messages?: string[]) {
+    totalPagesCount: number;
+
+    constructor(success: boolean, data: any, messages?: string[], totalPages?: number) {
       this.success = success;
       this.data = data;
       this.messages = messages;
+      this.totalPagesCount = totalPages
     }
   }
 
