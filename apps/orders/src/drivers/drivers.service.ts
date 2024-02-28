@@ -65,7 +65,7 @@ export class DriversService {
         filter.transportKind = { id: transportKindId }
       }
       if(statusId) {
-        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId }, order: sort });
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {
@@ -86,7 +86,7 @@ export class DriversService {
       }
 
       const orders = await this.ordersRepository.find({ 
-        order: { id: 'DESC' }, 
+        order: sort, 
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,  
