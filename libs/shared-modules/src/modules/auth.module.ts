@@ -10,7 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET_KEY, // Replace with your actual secret key
+      secret: 'tirgO_jWt_secre1_k3y', // Replace with your actual secret key
       signOptions: { expiresIn: '24h' }, // Optional: Set expiration time
     }),
   ],

@@ -14,13 +14,13 @@ export class CustomJwtService {
 
   async generateToken(payload: any): Promise<string> {
     // Generate a new JWT token with the provided payload
-    return await this.jwtService.signAsync(payload, { expiresIn: '24h', secret: process.env.JWT_SECRET_KEY });
+    return await this.jwtService.signAsync(payload, { expiresIn: '24h', secret: 'tirgO_jWt_secre1_k3y' });
   }
 
   async verifyTokenAndGetPayload(token: string): Promise<any> {
     try {
       const decoded = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET_KEY,
+        secret: 'tirgO_jWt_secre1_k3y',
       });
       return decoded; // This will be the parsed payload
     } catch (error) {
