@@ -83,7 +83,10 @@ export class ClientMerchantsService {
           fileUploads.push(files.logoFilePath[0])
         }
         // Upload files to AWS
-        await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
+       const res = await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
+       if(!res) {
+        throw new Error('Create file failed')
+       }
       }
 
       const newMerchant = await queryRunner.manager.save(ClientMerchant, merchant);

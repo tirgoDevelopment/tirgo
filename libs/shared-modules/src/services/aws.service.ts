@@ -1,7 +1,6 @@
 // mail.service.ts
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
-import { Readable } from 'stream';
 
 @Injectable()
 export class AwsService {
@@ -9,13 +8,14 @@ export class AwsService {
   private s3Client: S3Client;
 
   constructor() {
-    this.s3Client = new S3Client({
-        region: 'ap-south-1', // Use the correct region code
-        credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.SECRET_ACCESS_KEY,
-        },
-    });
+    // this.s3Client = new S3Client({
+    //     region: 'ap-south-1', // Use the correct region code
+    //     credentials: {
+    //         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    //         secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    //     },
+    // });
+    this.s3Client = new S3Client({ region: 'ap-south-1' }); 
   }
 
   async uploadFile(keyName: string, file: any): Promise<boolean>{
