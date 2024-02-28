@@ -50,7 +50,10 @@ export class ClientMerchantsService {
   }
 
   async createInStepMerchant(files: any, createMerchantDto: CreateInStepClientMerchantDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
     try {
+      await queryRunner.startTransaction();
       const merchant: ClientMerchant = await this.clientMerchantsRepository.findOneOrFail({ where: { id: +createMerchantDto.merchantId } });
 
       merchant.supervisorFirstName = createMerchantDto.supervisorFirstName;
@@ -83,12 +86,13 @@ export class ClientMerchantsService {
         await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
       }
 
-
-      const newMerchant = await this.clientMerchantsRepository.save(merchant);
+      const newMerchant = await queryRunner.manager.save(ClientMerchant, merchant);
+      await queryRunner.commitTransaction();
       if (newMerchant) {
         return new BpmResponse(true, newMerchant, null)
       }
     } catch (err: any) {
+      await queryRunner.rollbackTransaction();
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
         throw new NotFoundException(ResponseStauses.UserNotFound);
