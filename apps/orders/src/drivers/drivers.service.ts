@@ -41,15 +41,20 @@ export class DriversService {
     }
   }
 
-  async getOrders(pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
+  async getOrders(sortBy: string, sortType: string, pageIndex: string, pageSize: string, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
     try {
      
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
-      const filter: any = { deleted: false };
-      if(userId) {
-        filter.createdBy = { id: userId }
+
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
       }
+
+      const filter: any = { deleted: false };
       if(transportTypeId) {
         filter.transportType = { id: transportTypeId }
       }
@@ -60,7 +65,7 @@ export class DriversService {
         filter.transportKind = { id: transportKindId }
       }
       if(statusId) {
-        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId }, order: sort });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {

@@ -244,7 +244,7 @@ export class ClientsService {
     }
   }
 
-  async getClientOrderByUserId(pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
+  async getClientOrderByUserId(sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
@@ -252,6 +252,12 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const filter: any = { deleted: false };
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
       const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId }, relations: ['role', 'clientMerchantUser', 'clientMerchantUser.clientMerchant', 'driverMerchant'] })
       if (user.userType == UserTypes.ClientMerchantUser && user.role.name == UsersRoleNames.SuperAdmin) {
         filter.clientMerchant = { id: user.clientMerchantUser.clientMerchant?.id };
@@ -268,7 +274,7 @@ export class ClientsService {
         filter.transportKind = { id: transportKindId }
       }
       if(statusId) {
-        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId }, order: sort });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {
