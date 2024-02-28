@@ -67,12 +67,13 @@ export class TransactionService {
     }
   }
 
-  async getMerchantTransactionById(pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
+  async getMerchantTransactionById(sortBy: string, sortType: string, pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
     const size = +pageSize || 10; // Number of items per page
     const index = +pageIndex || 1
     if (!userId && isNaN(userId)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
+
     try {
       const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
       .select([
@@ -95,8 +96,13 @@ export class TransactionService {
       .where(`t.is_merchant = true AND cmu.user_id = ${userId}`)
       .andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
       .offset((index - 1) * size) // Skip the number of items based on the page number
-      .limit(size) // Limit the number of items per page
-      .orderBy('t.id', 'DESC');
+      .limit(size); // Limit the number of items per page
+     
+      if (sortBy && sortType) { // Replace orderByCondition with your condition
+        queryBuilder.orderBy(`'${sortBy}'`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+      } else {
+        queryBuilder.orderBy(`id`, 'DESC');
+      }
       const transactions = await queryBuilder.getRawMany();
 
       const totalRecordsQuery = this.transactionsRepository.createQueryBuilder('t')
@@ -125,10 +131,11 @@ export class TransactionService {
     }
   }
 
-  async getAdminMerchantTransactionById(pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
+  async getAdminMerchantTransactionById(sortBy: string, sortType: string, pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
     if (!userId && isNaN(userId)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
+
     const size = +pageSize || 10; // Number of items per page
     const index = +pageIndex || 1
     try {
@@ -152,11 +159,16 @@ export class TransactionService {
       .leftJoin(ClientMerchant, 'cm', 'cm.id = cmu.merchant_id')
       .where(`t.is_merchant = true AND t.merchant_id = ${userId}`)
       .andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
-      .orderBy('t.id', 'DESC')
       .skip((index - 1) * size) // Skip the number of items based on the page number
       .take(size); // 
   
-  const transactions = await queryBuilder.getRawMany();
+      if (sortBy && sortType) { // Replace orderByCondition with your condition
+        queryBuilder.orderBy(`'${sortBy}'`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+      } else {
+        queryBuilder.orderBy(`id`, 'DESC');
+      }
+
+      const transactions = await queryBuilder.getRawMany();
   
       if (transactions) {
         return new BpmResponse(true, transactions, []);
@@ -173,7 +185,7 @@ export class TransactionService {
     }
   }
 
-  async getAgentTransactionsById(pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
+  async getAgentTransactionsById(sortBy: string, sortType: string, pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
     if (!userId && isNaN(userId)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
@@ -198,11 +210,17 @@ export class TransactionService {
       .leftJoin(Role, 'r', 'r.id = u.role_id')
       .leftJoin(Agent, 'a', 'a.id = t.agent_id')
       .where(`t.agent_id = ${userId}`)
-      .orderBy('t.id', 'DESC')
       .skip((index - 1) * size) // Skip the number of items based on the page number
-      .take(size); // 
+      .take(size); //
+      
+        
+      if (sortBy && sortType) { // Replace orderByCondition with your condition
+        queryBuilder.orderBy(`'${sortBy}'`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+      } else {
+        queryBuilder.orderBy(`id`, 'DESC');
+      }
   
-  const transactions = await queryBuilder.getRawMany();
+      const transactions = await queryBuilder.getRawMany();
   
       if (transactions.length) {
         return new BpmResponse(true, transactions, []);

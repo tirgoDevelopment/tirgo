@@ -31,36 +31,42 @@ async createTransaction(@Body() transactionDto: TransactionDto, @Req() req: Requ
 async getTransactions(
   @Query('pageSize') pageSize: string,
   @Query('pageIndex') pageIndex: string,
+  @Query('sortBy') sortBy: string,
+  @Query('sortType') sortType: string,
   @Query('userId') id: number,
   @Query('transactionType') transactionType: string,
   @Query('fromDate') fromDate: string,
   @Query('toDate') toDate: string
 ) {
-    return this.transactionsService.getMerchantTransactionById(pageSize, pageIndex, id, transactionType, fromDate, toDate);
+    return this.transactionsService.getMerchantTransactionById(sortBy, sortType, pageSize, pageIndex, id, transactionType, fromDate, toDate);
 }
 
 @Get('admin-merchant-transactions')
 async getAdminTransactions(
   @Query('pageSize') pageSize: string,
   @Query('pageIndex') pageIndex: string,
+  @Query('sortBy') sortBy: string,
+  @Query('sortType') sortType: string,
   @Query('userId') id: number,
   @Query('transactionType') transactionType: string,
   @Query('fromDate') fromDate: string,
   @Query('toDate') toDate: string
 ) {
-    return this.transactionsService.getAdminMerchantTransactionById(pageSize, pageIndex, id, transactionType, fromDate, toDate);
+    return this.transactionsService.getAdminMerchantTransactionById(sortBy, sortType, pageSize, pageIndex, id, transactionType, fromDate, toDate);
 }
 
 @Get('agent-transactions')
 async getAgentTransactions(
   @Query('pageSize') pageSize: string,
   @Query('pageIndex') pageIndex: string,
+  @Query('sortBy') sortBy: string,
+  @Query('sortType') sortType: string,
   @Query('agentId') id: number,
   @Query('transactionType') transactionType: string,
   @Query('fromDate') fromDate: string,
   @Query('toDate') toDate: string
 ) {
-    return this.transactionsService.getAgentTransactionsById(pageSize, pageIndex, id, transactionType, fromDate, toDate);
+    return this.transactionsService.getAgentTransactionsById(sortBy, sortType, pageSize, pageIndex, id, transactionType, fromDate, toDate);
 }
 
 @Get('merchant-balance')
