@@ -90,6 +90,7 @@ export enum ResponseStauses {
     SubscriptionNotFound = 'subscriptionNotFound',  
     CurrencyNotFound = 'currencyNotfound',
     CargoTypeNotFound = 'cargoTypeNotfound',
+    CargoStatusNotFound = 'cargoStatusNotFound',
     TransportTypeNotfound = 'transportTypeNotFound',
     TransportKindNotfound = 'transportKindNotFound',
     CargoLoadingMethodNotFound = 'cargoLoadingMethodNotFound',

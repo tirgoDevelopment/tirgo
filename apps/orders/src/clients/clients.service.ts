@@ -43,21 +43,31 @@ export class ClientsService {
 
       }
   
-      const offeredCurrency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: createOrderDto.offeredPriceCurrencyId } });
-      const inAdvanceCurrency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: createOrderDto.inAdvancePriceCurrencyId } });
       const cargoType: CargoType = await this.cargoTyepesRepository.findOneOrFail({ where: { id: createOrderDto.cargoTypeId } });
-      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
-
-      const loadingMethod: CargoLoadMethod = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: createOrderDto.loadingMethodId } });
-      const cargoPackage: CargoPackage = await this.cargoPackagesRepository.findOneOrFail({ where: { id: createOrderDto.cargoPackageId } });
-      
       const transportTypes: TransportType[] = await this.transportTypesRepository.find({ where: { id: In(createOrderDto.transportTypeIds) } });
       const transportKinds: TransportKind[] = await this.transportKindsRepository.find({ where: { id: In(createOrderDto.transportKindIds) } });
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
 
-      order.loadingMethod = loadingMethod;
-      order.cargoPackage = cargoPackage;
-      order.inAdvancePriceCurrency = inAdvanceCurrency;
-      order.offeredPriceCurrency = offeredCurrency;
+      
+      if(createOrderDto.offeredPriceCurrencyId) {
+        const offeredCurrency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: createOrderDto.offeredPriceCurrencyId } });
+        order.offeredPriceCurrency = offeredCurrency;
+      }
+      if(createOrderDto.inAdvancePriceCurrencyId) {
+        const inAdvanceCurrency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: createOrderDto.inAdvancePriceCurrencyId } });
+        order.inAdvancePriceCurrency = inAdvanceCurrency;
+      }
+      if(createOrderDto.loadingMethodId) {
+        const loadingMethod: CargoLoadMethod = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: createOrderDto.loadingMethodId } });
+        order.loadingMethod = loadingMethod;
+      }
+      if(createOrderDto.cargoPackageId) {
+        const cargoPackage: CargoPackage = await this.cargoPackagesRepository.findOneOrFail({ where: { id: createOrderDto.cargoPackageId } });
+        order.cargoPackage = cargoPackage;
+      }
+
+      
+
       order.transportKinds = transportKinds;
       order.transportTypes = transportTypes;
       order.cargoType = cargoType;
@@ -111,6 +121,8 @@ export class ClientsService {
           throw new BadRequestException(ResponseStauses.CargoLoadingMethodNotFound);
         } else if (err.message.includes('CargoPackage')) {
           throw new BadRequestException(ResponseStauses.CargoPackageNotFound);
+        } else if (err.message.includes('CargoStatus')) {
+          throw new BadRequestException(ResponseStauses.CargoStatusNotFound);
         }
       } else {
         throw new InternalErrorException(ResponseStauses.CreateDataFailed);
