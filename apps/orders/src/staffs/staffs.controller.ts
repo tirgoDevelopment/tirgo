@@ -8,6 +8,8 @@ export class StaffsController {
   
   @Get('all-orders')
   async getAllMerchantOrders(
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
     @Query('orderId') orderId: number,
@@ -21,7 +23,7 @@ export class StaffsController {
     @Query('sendDate') sendDate: string,
     @Query('merchantOrder') merchantOrder: boolean
   ) {
-    return this.staffsService.getOrders(pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate, merchantOrder);
+    return this.staffsService.getOrders(sortBy, sortType, pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate, merchantOrder);
   }
 
   @Get('order-by-id')

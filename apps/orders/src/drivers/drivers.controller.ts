@@ -10,8 +10,9 @@ export class DriversController {
   async getAllMerchantOrders(
     @Query('pageIndex') pageIndex: string,
     @Query('pageSize') pageSize: string,
-    @Query('userId') userId: number,
     @Query('orderId') orderId: number,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('statusId') statusId: string,
     @Query('loadingLocation') loadingLocation: string,
     @Query('deliveryLocation') deliveryLocation: string,
@@ -20,7 +21,7 @@ export class DriversController {
     @Query('createdAt') createdAt: string,
     @Query('sendDate') sendDate: string
   ) {
-    return this.driversService.getOrders(pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
+    return this.driversService.getOrders(sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
   }
 
   @Get('order-by-id')
