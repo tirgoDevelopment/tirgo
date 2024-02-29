@@ -168,11 +168,18 @@ export class DriversService {
     }
   }
 
-  async getAllDrivers(driverId: number, firstName: string, phoneNumber: string, transportKindId: number,
+  async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: number,
      isSubscribed: boolean, status: string, isVerified: boolean,
      createdFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
-
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
     const filter: any = { deleted: false };
 
     if(driverId) {
@@ -211,8 +218,13 @@ export class DriversService {
     } else if (lastLoginTo) {
       filter.user = { lastLogin: LessThanOrEqual(dateFns.parseISO(lastLoginTo)) };
     }
-console.log(filter)
-      const drivers = await this.driversRepository.find({ where: filter, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription', 'driverTransports.transportTypes'] });
+      const drivers = await this.driversRepository.find({ 
+        where: filter, 
+        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription', 'driverTransports.transportTypes'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+      });
       if (!drivers.length) {
         throw new NoContentException();
       }
@@ -230,9 +242,23 @@ console.log(filter)
     }
   }
 
-  async getAllActiveDrivers(): Promise<BpmResponse> {
+  async getAllActiveDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
-      const drivers = await this.driversRepository.find({ where: { active: true, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const drivers = await this.driversRepository.find({ 
+        where: { active: true, deleted: false }, 
+        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
       if (!drivers.length) {
         throw new NoContentException();
       }
@@ -249,9 +275,23 @@ console.log(filter)
     }
   }
 
-  async getAllNonActiveDrivers(): Promise<BpmResponse> {
+  async getAllNonActiveDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
-      const drivers = await this.driversRepository.find({ where: { active: false, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const drivers = await this.driversRepository.find({ 
+        where: { active: false, deleted: false }, 
+        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
       if (!drivers.length) {
         throw new NoContentException();
       }
@@ -268,9 +308,23 @@ console.log(filter)
     }
   }
 
-  async getAllDeletedDrivers(): Promise<BpmResponse> {
+  async getAllDeletedDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
-      const drivers = await this.driversRepository.find({ where: { deleted: true }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const drivers = await this.driversRepository.find({ 
+        where: { deleted: true }, 
+        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
       if (!drivers.length) {
         throw new NoContentException();
       }

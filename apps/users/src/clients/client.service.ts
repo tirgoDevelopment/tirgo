@@ -121,9 +121,16 @@ export class ClientsService {
     }
   }
   
-  async getAllClients(clientId: number, firstName: string, phoneNumber: string, createdFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
+  async getAllClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string, clientId: number, firstName: string, phoneNumber: string, createdFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
-
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
       
     const filter: any = { deleted: false };
 
@@ -157,8 +164,13 @@ export class ClientsService {
     } else if (lastLoginTo) {
       filter.user = { lastLogin: LessThanOrEqual(dateFns.parseISO(lastLoginTo)) };
     }
-    console.log(filter)
-      const clients = await this.clientsRepository.find({ where: filter, relations: ['phoneNumbers', 'user'] });
+      const clients = await this.clientsRepository.find({ 
+        where: filter, 
+        relations: ['phoneNumbers', 'user'], 
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+      });
       if (!clients.length) {
         throw new NoContentException();
       }
@@ -173,9 +185,24 @@ export class ClientsService {
     }
   }
 
-  async getAllActiveClients(): Promise<BpmResponse> {
+  async getAllActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
     try {
-      const clients = await this.clientsRepository.find({ where: { active: true, deleted: false }, relations: ['phoneNumbers', 'user'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+
+      const clients = await this.clientsRepository.find({ 
+        where: { active: true, deleted: false }, 
+        relations: ['phoneNumbers', 'user'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+      });
       if (!clients.length) {
         throw new NoContentException();
       }
@@ -189,9 +216,24 @@ export class ClientsService {
     }
   }
 
-  async getAllNonActiveClients(): Promise<BpmResponse> {
+  async getAllNonActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
     try {
-      const clients = await this.clientsRepository.find({ where: { active: false, deleted: false }, relations: ['phoneNumbers', 'user'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+
+      const clients = await this.clientsRepository.find({ 
+        where: { active: false, deleted: false }, 
+        relations: ['phoneNumbers', 'user'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+      });
       if (!clients.length) {
         throw new NoContentException();
       }
@@ -205,9 +247,24 @@ export class ClientsService {
     }
   }
 
-  async getAllDeletedClients(): Promise<BpmResponse> {
+  async getAllDeletedClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
     try {
-      const clients = await this.clientsRepository.find({ where: { deleted: true }, relations: ['phoneNumbers', 'user'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
+
+      const clients = await this.clientsRepository.find({ 
+        where: { deleted: true }, 
+        relations: ['phoneNumbers', 'user'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+      });
       if (!clients.length) {
         throw new NoContentException();
       }

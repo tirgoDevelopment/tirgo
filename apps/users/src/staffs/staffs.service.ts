@@ -63,9 +63,22 @@ export class StaffsService {
         }
     }
 
-    async getAllStaffs(): Promise<BpmResponse> {
+    async getAllStaffs(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
         try {   
-            const staffs: Staff[] = await this.staffsRepository.find({ where: { deleted: false } });
+            const size = +pageSize || 10; // Number of items per page
+            const index = +pageIndex || 1
+            const sort: any = {};
+            if(sortBy && sortType) {
+              sort[sortBy] = sortType; 
+            } else {
+              sort['id'] = 'DESC'
+            }
+            const staffs: Staff[] = await this.staffsRepository.find({ 
+                where: { deleted: false },
+                order: sort,
+                skip: (index - 1) * size, // Skip the number of items based on the page number
+                take: size,
+            });
             if(staffs.length) {
                 return new BpmResponse(true, staffs);
             } else {
