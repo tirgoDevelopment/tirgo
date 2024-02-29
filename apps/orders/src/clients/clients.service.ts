@@ -244,11 +244,11 @@ export class ClientsService {
     }
   }
 
-  async getClientOrderByUserId(sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
+  async getClientOrderByUserId(user: User, sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
-      if (!userId) {
+      if (!user) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const filter: any = { deleted: false };
@@ -258,12 +258,24 @@ export class ClientsService {
       } else {
         sort['id'] = 'DESC'
       }
-      const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId }, relations: ['role', 'clientMerchantUser', 'clientMerchantUser.clientMerchant', 'driverMerchant'] })
-      if (user.userType == UserTypes.ClientMerchantUser && user.role.name == UsersRoleNames.SuperAdmin) {
-        filter.clientMerchant = { id: user.clientMerchantUser.clientMerchant?.id };
-      } else {
+
+      // managing access to orders according to userType
+      if (user.userType == UserTypes.ClientMerchantUser) {
+      
+        // check if requesting user is Super admin then give merchant's all orders
+        // if it is not give orders only ones created by him
+
+        if( user.role.name == UsersRoleNames.SuperAdmin) {
+          filter.clientMerchant = { id: user.clientMerchantUser.clientMerchant?.id }; 
+        } else {
+          filter.createdBy = user.id;
+        }
+      } else if(user.userType == UserTypes.Staff || user.userType == UserTypes.Client) {
         filter.createdBy = { id: userId }
+      } else {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
       }
+
       if(transportTypeId) {
         filter.transportType = { id: transportTypeId }
       }
