@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe, Patch } from '@nestjs/common';
 import { LoginService } from './services/login.service';
 import { AuthService } from './auth.service';
-import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { UserTypes } from '.';
+import { LoginDto } from './auth.dto';
 
 class RestoreUser {
   @IsNotEmpty()
@@ -23,7 +24,7 @@ export class AuthController {
 
   @Post('login')
   @UsePipes(ValidationPipe)
-  login(@Body() loginDto: { username: string, password: string, userType: string }) {
+  login(@Body() loginDto: LoginDto) {
     return this.loginService.login(loginDto);
   }
 

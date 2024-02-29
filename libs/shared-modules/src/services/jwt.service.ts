@@ -30,9 +30,13 @@ export class CustomJwtService {
     }
   }
 
-async findUserById(id: number): Promise<User> {
+async findUserById(id: number, userType: string): Promise<User> {
     try {
-       return await this.usersRepository.findOneOrFail({ where: { id } });
+       return await this.usersRepository.findOneOrFail({ 
+        select: ['id', 'userType', 'lastLogin'],
+        where: { id, userType }, 
+        relations: [userType, 'role']
+       });
     } catch (err: any) {
         console.log(err)
     }
