@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
             if (payload && !isNaN(payload.userId)) {
 
-                const user = await this.customJwtService.findUserById(payload.userId);
+                const user = await this.customJwtService.findUserById(payload.userId, payload.userType);
                 if (user) {
                     request['user'] = user;
                     await this.customJwtService.updateUserLastLogin(user.id);
