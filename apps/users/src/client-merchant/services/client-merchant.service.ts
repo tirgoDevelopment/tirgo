@@ -63,7 +63,7 @@ export class ClientMerchantsService {
       merchant.responsbilePersonPhoneNumber = createMerchantDto.responsbilePersonPhoneNumber;
       merchant.factAddress = createMerchantDto.factAddress;
       merchant.legalAddress = createMerchantDto.legalAddress;
-      
+
       if (files) {
         const fileUploads = []
         if (files.registrationCertificateFilePath && files.registrationCertificateFilePath[0]) {
@@ -83,10 +83,10 @@ export class ClientMerchantsService {
           fileUploads.push(files.logoFilePath[0])
         }
         // Upload files to AWS
-       const res = await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
-       if(!res) {
-        throw new Error('Create file failed')
-       }
+        const res = await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
+        if (!res) {
+          throw new Error('Create file failed')
+        }
       }
 
       const newMerchant = await queryRunner.manager.save(ClientMerchant, merchant);
@@ -262,7 +262,7 @@ export class ClientMerchantsService {
         throw new NotFoundException(ResponseStauses.UserNotFound);
       } else if (err.code === '23505') {
         throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
-      }  else if (err instanceof HttpException) {
+      } else if (err instanceof HttpException) {
         throw err
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
@@ -320,7 +320,7 @@ export class ClientMerchantsService {
     }
   }
 
-  
+
   async activateMerchant(id: number): Promise<BpmResponse> {
     const isActivate = await this.clientMerchantsRepository.createQueryBuilder()
       .update(ClientMerchant)
@@ -370,9 +370,23 @@ export class ClientMerchantsService {
     return await this.clientMerchantsRepository.find()
   }
 
-  async getUnverifiedMerchants(): Promise<BpmResponse> {
+  async getUnverifiedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
-      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ where: { completed: true, verified: false, rejected: false }, relations: ['bankAccounts', 'bankAccounts.currency'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({
+        where: { completed: true, verified: false, rejected: false },
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
       if (merchants.length) {
         return new BpmResponse(true, merchants, null);
       } else {
@@ -391,15 +405,22 @@ export class ClientMerchantsService {
     }
   }
 
-  async getVerifiedMerchants(id: number, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getVerifiedMerchants(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
 
       const filter: any = { completed: true, verified: true, rejected: false, deleted: false };
-
-      if(id) {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      if (id) {
         filter.id = +id;
-      } 
-      if(companyName) {
+      }
+      if (companyName) {
         filter.companyName = companyName;
       }
       if (createdFrom && createdAtTo) {
@@ -414,7 +435,11 @@ export class ClientMerchantsService {
       }
 
 
-      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ where: filter, relations: ['bankAccounts', 'bankAccounts.currency'] });
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({
+        where: filter, relations: ['bankAccounts', 'bankAccounts.currency'], order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
 
       for (let merchant of merchants) {
         const topupTransactions: Transaction[] = await this.transactionsRepository.query(`
@@ -479,9 +504,23 @@ export class ClientMerchantsService {
     }
   }
 
-  async getRejectedMerchants(): Promise<BpmResponse> {
+  async getRejectedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
     try {
-      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ where: { completed: true, verified: false, rejected: true }, relations: ['bankAccounts', 'bankAccounts.currency'] });
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ 
+        where: { completed: true, verified: false, rejected: true }, 
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
       if (merchants.length) {
         return new BpmResponse(true, merchants, null);
       } else {

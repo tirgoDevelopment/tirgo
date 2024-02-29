@@ -155,10 +155,17 @@ export class AgentsService {
     }
   }
 
-  async getAgents(id: number, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getAgents(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
       const filter: any = { deleted: false };
-
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if(sortBy && sortType) {
+        sort[sortBy] = sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
       if(id) {
         filter.id = +id;
       } 
@@ -177,8 +184,13 @@ export class AgentsService {
       }
 
 
-      const agents: Agent[] = await this.agentsRepository.find({ where: filter, 
-        relations: ['bankAccounts', 'drivers', 'drivers.phoneNumbers', 'drivers.subscription', 'drivers.subscription.currency'] })
+      const agents: Agent[] = await this.agentsRepository.find({ 
+        where: filter, 
+        relations: ['bankAccounts', 'drivers', 'drivers.phoneNumbers', 'drivers.subscription', 'drivers.subscription.currency'], 
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+        order: sort
+        })
       if(!agents.length) {
         throw new NoContentException();
       }

@@ -46,6 +46,10 @@ export class ClientsController {
 
   @Get('all')
   async getAllClient(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('clientId') clientId: number, 
     @Query('firstName') firstName: string, 
     @Query('phoneNumber') phoneNumber: string, 
@@ -54,22 +58,37 @@ export class ClientsController {
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.clientsService.getAllClients(clientId, firstName, phoneNumber, createdFrom, createdAtTo, lastLoginFrom, lastLoginTo);
+    return this.clientsService.getAllClients(pageSize, pageIndex, sortBy, sortType, clientId, firstName, phoneNumber, createdFrom, createdAtTo, lastLoginFrom, lastLoginTo);
   }
 
   @Get('active')
-  async getAllActiveClient() {
-    return this.clientsService.getAllActiveClients();
+  async getAllActiveClient(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientsService.getAllActiveClients(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Get('non-active')
-  async getAllNonActiveClient() {
-    return this.clientsService.getAllNonActiveClients();
+  async getAllNonActiveClient(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientsService.getAllNonActiveClients(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Get('deleted')
-  async getAllDeletedClient() {
-    return this.clientsService.getAllDeletedClients();
+  async getAllDeletedClient(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientsService.getAllDeletedClients(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Delete()

@@ -41,6 +41,10 @@ export class DriversController {
 
   @Get('all') 
   async getDrivers(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('driverId') driverId: number,
     @Query('firstName') firstName: string,
     @Query('phoneNumber') phoneNumber: string,
@@ -53,22 +57,37 @@ export class DriversController {
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.driversService.getAllDrivers(driverId, firstName, phoneNumber, transportKindId, isSubscribed, status, isVerified,  createdFrom, createdAtTo, lastLoginFrom, lastLoginTo)
+    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, isSubscribed, status, isVerified,  createdFrom, createdAtTo, lastLoginFrom, lastLoginTo)
   }
 
   @Get('active')
-  async getAllActiveDriver() {
-    return this.driversService.getAllActiveDrivers();
+  async getAllActiveDriver(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driversService.getAllActiveDrivers(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Get('non-active')
-  async getAllNonActiveDriver() {
-    return this.driversService.getAllNonActiveDrivers();
+  async getAllNonActiveDriver(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driversService.getAllNonActiveDrivers(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Get('deleted')
-  async getAllDeletedDriver() {
-    return this.driversService.getAllDeletedDrivers();
+  async getAllDeletedDriver(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driversService.getAllDeletedDrivers(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Delete()

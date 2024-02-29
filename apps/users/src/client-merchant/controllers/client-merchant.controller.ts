@@ -91,23 +91,37 @@ export class ClientMerchantController {
   }
 
   @Get('client-merchant/unverified-merchants')
-  async getUnverifiedMerchants() {
-    return this.clientMerchantsService.getUnverifiedMerchants()
+  async getUnverifiedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientMerchantsService.getUnverifiedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
   @Get('client-merchant/verified-merchants')
   async getVerifiedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('merchantId') id: number,
     @Query('companyName') companyName: string,
     @Query('createdFrom') createdFrom: string,
     @Query('createdAtTo') createdAtTo: string,
   ) {
-    return this.clientMerchantsService.getVerifiedMerchants(id, companyName, createdFrom, createdAtTo)
+    return this.clientMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
   }
 
   @Get('client-merchant/rejected-merchants')
-  async getRejectedMerchants() {
-    return this.clientMerchantsService.getRejectedMerchants()
+  async getRejectedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
   @Get('client-merchant/id')

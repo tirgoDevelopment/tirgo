@@ -16,6 +16,7 @@ export class AgentsController {
     { name: 'managerPassportFilePath', maxCount: 1 },
   ]),
   )
+
   createAgent(
     @UploadedFiles() files: { registrationCertificateFilePath?: any[], managerPassportFilePath?: any[] }, @Body() createAgentDto: AgentDto) {
     return this.staffsService.createAgent(files, createAgentDto);
@@ -55,12 +56,16 @@ export class AgentsController {
 
   @Get()
   async getAgents(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
     @Query('merchantId') id: number,
     @Query('companyName') companyName: string,
     @Query('createdFrom') createdFrom: string,
     @Query('createdAtTo') createdAtTo: string,
   ) {
-    return this.staffsService.getAgents(id, companyName, createdFrom, createdAtTo)
+    return this.staffsService.getAgents(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
   }
   
   @Get('agent-by')

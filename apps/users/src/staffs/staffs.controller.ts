@@ -20,8 +20,13 @@ export class StaffsController {
   }
 
   @Get('all-staffs')
-  getStaffs() {
-    return this.staffsService.getAllStaffs();
+  getStaffs(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string
+    ) {
+    return this.staffsService.getAllStaffs(pageSize, pageIndex, sortBy, sortType);
   }
 
   @Get('staff-by')
