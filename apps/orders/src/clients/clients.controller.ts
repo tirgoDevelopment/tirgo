@@ -13,12 +13,12 @@ export class ClientsController {
   
   @Get('all-orders')
   async getAllMerchantOrders(
+    @Req() req: Request,
     @Query('pageIndex') pageIndex: string,
     @Query('pageSize') pageSize: string,
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
     @Query('userId') userId: number,
-    @Query('clientId') clientId: number,
     @Query('orderId') orderId: number,
     @Query('statusId') statusId: string,
     @Query('loadingLocation') loadingLocation: string,
@@ -28,7 +28,7 @@ export class ClientsController {
     @Query('createdAt') createdAt: string,
     @Query('sendDate') sendDate: string
   ) {
-    return this.clientsService.getClientOrderByUserId(sortBy, sortType, pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
+    return this.clientsService.getClientOrderByUserId(req['user'], sortBy, sortType, pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
   }
 
   @Get('order-by-id')

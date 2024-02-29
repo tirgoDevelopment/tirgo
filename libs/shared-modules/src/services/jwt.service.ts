@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../entites/users/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserTypes } from '..';
 
 
 @Injectable()
@@ -32,10 +33,23 @@ export class CustomJwtService {
 
 async findUserById(id: number, userType: string): Promise<User> {
     try {
-       return await this.usersRepository.findOneOrFail({ 
+      const relations: string[] = ['role'];
+      if(userType == 'staff') {
+        relations.push('staff')
+      } else if(userType == 'client') {
+        relations.push('client')
+      } else if(userType == 'driver') {
+        relations.push('driver', 'driver.driverMerchant')
+      } else if(userType == 'client_merchant_user') {
+        relations.push('clientMerchantUser', 'clientMerchantUser.clientMerchant')
+      } else if(userType == 'driver_merchant_user') {
+        relations.push('driverMerchantUser', 'driverMerchantUser.driverMerchant')
+      }
+
+      return await this.usersRepository.findOneOrFail({ 
         select: ['id', 'userType', 'lastLogin'],
         where: { id, userType }, 
-        relations: [userType, 'role']
+        relations
        });
     } catch (err: any) {
         console.log(err)

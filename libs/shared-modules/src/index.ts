@@ -136,7 +136,8 @@ export enum ResponseStauses {
     DriverAlreadyAppended = 'driverAlreadyAppended',
     OfferWasRejected = 'offerWasRejected',
     OfferWasCanceled = 'offerWasCanceled',
-    NotEnoughBalance = 'notEnoughBalance'
+    NotEnoughBalance = 'notEnoughBalance',
+    AccessDenied = 'accessDenied'
   } 
   
   export enum CargoStatusCodes {
