@@ -280,7 +280,7 @@ export class ClientsService {
         filter.transportType = { id: transportTypeId }
       }
       if(orderId) {
-        filter.id = { id: orderId }
+        filter.id = orderId;
       }
       if(transportKindId) {
         filter.transportKind = { id: transportKindId }
