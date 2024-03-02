@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { FinanceModule } from './finance.module';
 import { config } from 'dotenv';
+import { CustomSwaggerModule } from '@app/shared-modules';
 config();
 
 async function bootstrap() {
@@ -10,6 +11,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   };
+  await CustomSwaggerModule.setup(app, 'finance', 'Finance'); 
   app.enableCors(corsOptions);
   app.setGlobalPrefix('api/v2/finance')
   await app.listen(3003);

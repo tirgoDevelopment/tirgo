@@ -5,8 +5,5 @@ import { FinanceService } from './finance.service';
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
 
-  @Get()
-  getHello(): string {
-    return this.financeService.getHello();
-  }
+
 }
