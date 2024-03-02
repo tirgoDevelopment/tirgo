@@ -5,7 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 export class CustomSwaggerModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {}
 
-  static async setup(app: INestApplication, title: string) { // Accept app instance as a parameter
+  static async setup(app: INestApplication, api: string, title: string) { // Accept app instance as a parameter
     const options = new DocumentBuilder()
       .setTitle(title)
       .setDescription('API description')
@@ -15,7 +15,7 @@ export class CustomSwaggerModule implements NestModule {
     const document = SwaggerModule.createDocument(app, options);
 
     const swaggerCDN = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.7.2'
-    SwaggerModule.setup('api/docs', app, document, {
+    SwaggerModule.setup(`api/${api}/docs`, app, document, {
         customCssUrl: [`${swaggerCDN}/swagger-ui.css`],
         customJs: [
           `${swaggerCDN}/swagger-ui-bundle.js`,
