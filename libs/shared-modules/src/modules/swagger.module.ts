@@ -15,7 +15,7 @@ export class CustomSwaggerModule implements NestModule {
     const document = SwaggerModule.createDocument(app, options);
 
     const swaggerCDN = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.7.2'
-    SwaggerModule.setup(`api/${api}/docs`, app, document, {
+    SwaggerModule.setup(`api/v2/${api}/docs`, app, document, {
         customCssUrl: [`${swaggerCDN}/swagger-ui.css`],
         customJs: [
           `${swaggerCDN}/swagger-ui-bundle.js`,
