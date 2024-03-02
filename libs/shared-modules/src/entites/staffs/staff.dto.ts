@@ -25,9 +25,6 @@ export class CreateStaffDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
-  @MaxLength(10)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {message: 'password too weak'})
   password: string;
 }
 
