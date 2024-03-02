@@ -2,20 +2,24 @@ import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, 
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { DriverMerchantsService } from './driver-merchant.service';
 import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '..';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('Driver merchant')
+@Controller('driver-merchants')
 export class DriverMerchantController {
   constructor(
     private driverDriverMerchantsService: DriverMerchantsService,
   ) { }
 
-  @Post('register/driver-merchant')
+  @ApiOperation({ summary: 'Create driver merchant' })
+  @Post('register')
   @UsePipes(ValidationPipe)
   async create(@Body() createDriverMerchantDto: CreateDriverMerchantDto) {
     return this.driverDriverMerchantsService.createDriverMerchant(createDriverMerchantDto);
   }
  
-  @Post('register/driver-merchant/step')
+  @ApiOperation({ summary: 'Create driver merchant step2' })
+  @Post('register/step')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'registrationCertificate', maxCount: 1 },
@@ -31,19 +35,22 @@ export class DriverMerchantController {
     return this.driverDriverMerchantsService.createInStepMerchant(files, merchantData)
   }
 
-  @Post('register/driver-merchant/complete')
+  @ApiOperation({ summary: 'Create driver merchant step3' })
+  @Post('register/complete')
   @UsePipes(ValidationPipe)
   async complete(@Body() createDriverMerchantDto: CompleteDriverMerchantDto) {
     return this.driverDriverMerchantsService.completeMerchant(createDriverMerchantDto);
   }
 
-  @Post('register/driver-merchant/user')
+  @ApiOperation({ summary: 'Create driver merchant user' })
+  @Post('register/user')
   @UsePipes(ValidationPipe)
   async createUser(@Body() createDriverMerchantUserDto: CreateDriverMerchantUserDto) {
     return this.driverDriverMerchantsService.createUser(createDriverMerchantUserDto);
   }
 
-  @Get('register/merchant')
+  @ApiOperation({ summary: 'Get all merchants' })
+  @Get('all-merchant')
   async getmerchants() {
     return this.driverDriverMerchantsService.getMerchants()
   }

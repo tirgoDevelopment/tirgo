@@ -17,6 +17,7 @@ import { AgentsModule } from './agents/agents.module';
 import { RabbitMQSenderService } from './services/rabbitmq-sender.service';
 import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
 import { SseModule } from './sse/sse.module';
+import { CustomSwaggerModule } from '@app/shared-modules';
 
 @Module({
   imports: [
@@ -52,4 +53,5 @@ import { SseModule } from './sse/sse.module';
     RabbitMQConsumerService
   ],
 })
-export class UsersModule {}
+export class UsersModule {
+}

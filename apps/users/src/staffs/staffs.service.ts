@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BadRequestException, BpmResponse, CreateStaffDto, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, Role, Staff, SundryService, User, UserTypes } from '..';
+import { UpdateStaffDto } from '@app/shared-modules/entites/staffs/staff.dto';
 
 @Injectable()
 export class StaffsService {
@@ -40,9 +41,12 @@ export class StaffsService {
         }
     }
 
-    async updateStaff(updateStaffDto: CreateStaffDto): Promise<BpmResponse> {
+    async updateStaff(updateStaffDto: UpdateStaffDto): Promise<BpmResponse> {
         try {   
-            const staff: Staff = new Staff();
+            if(!updateStaffDto.id || isNaN(updateStaffDto.id)) {
+                throw  new BadRequestException(ResponseStauses.IdIsRequired);
+            }
+            const staff: Staff = await this.staffsRepository.findOneOrFail({ where: { id: updateStaffDto.id } })
             staff.fullName = updateStaffDto.fullName;
             staff.phone = updateStaffDto.phone;
             staff.username = updateStaffDto.username;
