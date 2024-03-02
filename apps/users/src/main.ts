@@ -12,7 +12,7 @@ async function bootstrap() {
     credentials: true,
   };
   app.enableCors(corsOptions);
-  await CustomSwaggerModule.setup(app, 'Users'); 
+  await CustomSwaggerModule.setup(app, 'users', 'Users'); 
   app.setGlobalPrefix('api/v2/users')
   await app.listen(3000);
 }
