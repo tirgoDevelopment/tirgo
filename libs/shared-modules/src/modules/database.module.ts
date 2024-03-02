@@ -80,7 +80,7 @@ const entities = [
             type: 'postgres',
             host: 'localhost',
             port: 5432,
-            password: '',
+            password: 'postgres',
             username: 'postgres',
             entities: entities,
             database: 'postgres',
