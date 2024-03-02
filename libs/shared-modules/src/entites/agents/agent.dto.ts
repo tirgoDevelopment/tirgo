@@ -1,57 +1,76 @@
-import { IsNotEmpty, IsString } from "class-validator";
+  import { IsNotEmpty, IsString } from "class-validator";
+  import { ApiProperty } from '@nestjs/swagger';
 
-export class AgentDto {
-  id: number;
+  export class AgentDto {
 
-  @IsString()
-  @IsNotEmpty()
-  username: string;
+    @ApiProperty({ required: false })
+    id: number;
 
-  @IsNotEmpty()
-  @IsString()
-  password: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    username: string;
 
-  @IsString()
-  @IsNotEmpty()
-  companyName: string;
+    @ApiProperty({ required: true })
+    @IsNotEmpty()
+    @IsString()
+    password: string;
 
-  @IsString()
-  @IsNotEmpty()
-  managerLastName: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    companyName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  managerFirstName: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    managerLastName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  legalAddress: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    managerFirstName: string;
 
-  physicalAddress: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    legalAddress: string;
 
-  @IsString()
-  @IsNotEmpty()
-  bankBranchName: string;
-  
-  registrationCertificateFilePath: string;
-  managerPassportFilePath: string;
-  
-  @IsString()
-  @IsNotEmpty()
-  mfo: string;
+    @ApiProperty({ required: false })
+    physicalAddress: string;
 
-  @IsString()
-  @IsNotEmpty()
-  oked: string;
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    bankBranchName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  inn: string;
+    @ApiProperty({ required: false })
+    registrationCertificateFilePath: string;
 
-  @IsString()
-  @IsNotEmpty()
-  phoneNumber: string;
+    @ApiProperty({ required: false })
+    managerPassportFilePath: string;
+    
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    mfo: string;
 
-  @IsNotEmpty()
-  bankAccounts?: any[];
-}
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    oked: string;
+
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    inn: string;
+
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    phoneNumber: string;
+
+    @ApiProperty({ required: true })
+    @IsNotEmpty()
+    bankAccounts?: any[];
+  }

@@ -195,3 +195,4 @@ export * from './modules/shared-modules.module';
 export * from './modules/auth.module';
 export * from './modules/database.module';
 export * from './shared-modules.service';
+export * from './modules/swagger.module';

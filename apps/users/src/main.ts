@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { UsersModule } from './auth.module';
 import { config } from 'dotenv';
+import { CustomSwaggerModule } from '@app/shared-modules';
 config();
 async function bootstrap() {
   const app = await NestFactory.create(UsersModule);
@@ -11,6 +12,7 @@ async function bootstrap() {
     credentials: true,
   };
   app.enableCors(corsOptions);
+  await CustomSwaggerModule.setup(app, 'Users'); 
   app.setGlobalPrefix('api/v2/users')
   await app.listen(3000);
 }

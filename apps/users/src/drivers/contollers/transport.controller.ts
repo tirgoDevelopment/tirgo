@@ -3,13 +3,16 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { TransportsService } from '../services/transport.service';
 import { DriverTransportDto } from '../..';
 import { DriverTransportVerificationDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Drivers transport')
 @Controller('driver')
 export class DriverTransportsController {
     constructor(
         private driverTransportsService: TransportsService
     ) { }
 
+    @ApiOperation({ summary: 'Create driver transport' })
     @Post('transport')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
@@ -30,6 +33,7 @@ export class DriverTransportsController {
         return this.driverTransportsService.addDriverTransport(files, data)
     }
 
+    @ApiOperation({ summary: 'Verify driver transport' })
     @Post('transport/to-verification')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
@@ -50,6 +54,7 @@ export class DriverTransportsController {
         return this.driverTransportsService.addDriverTransportToVerification(files, data)
     }
 
+    @ApiOperation({ summary: 'Update driver transport' })
     @Put('transport')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
@@ -70,6 +75,7 @@ export class DriverTransportsController {
         return this.driverTransportsService.updateDriverTransport(files, data)
     }
 
+    @ApiOperation({ summary: 'Get driver transport by driver id' })
     @Get('transport')
     async getDriverTransprots(@Query('driverId') driverId: number, @Query('transportId') transportId: number) {
         return this.driverTransportsService.getTransportByDriverId(driverId, transportId);

@@ -3,21 +3,25 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ClientMerchantsService } from '../services/client-merchant.service';
 import { ClientMerchantDto, CompleteClientMerchantDto, CreateClientMerchantDto, CreateClientMerchantUserDto, CreateInStepClientMerchantDto, UpdateClientMerchantUserDto } from '../..';
 import { ClientMerchantUsersService } from '../services/client-merchant-user.service';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
-@Controller()
+@ApiTags('Client merchant')
+@Controller('client-merchants')
 export class ClientMerchantController {
   constructor(
     private clientMerchantsService: ClientMerchantsService,
     private clientClientMerchantUsersService: ClientMerchantUsersService,
   ) { }
 
-  @Post('register/client-merchant')
+  @ApiOperation({ summary: 'Create client merchant' })
+  @Post('register')
   @UsePipes(ValidationPipe)
   async create(@Body() createClientMerchantDto: CreateClientMerchantDto) {
     return this.clientMerchantsService.createClientMerchant(createClientMerchantDto);
   }
  
-  @Post('register/client-merchant/step')
+  @ApiOperation({ summary: 'Create client merchant step2' })
+  @Post('register/step')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([ 
     { name: 'registrationCertificateFilePath', maxCount: 1 },
@@ -33,13 +37,15 @@ export class ClientMerchantController {
     return this.clientMerchantsService.createInStepMerchant(files, merchantData)
   }
 
-  @Post('register/client-merchant/complete')
+  @ApiOperation({ summary: 'Create client merchant complete' })
+  @Post('register/complete')
   @UsePipes(ValidationPipe)
   async complete(@Body() createClientMerchantDto: CompleteClientMerchantDto) {
     return this.clientMerchantsService.completeMerchant(createClientMerchantDto);
   }
 
-  @Put('register/client-merchant')
+  @ApiOperation({ summary: 'Update client merchant' })
+  @Put('update-client-merchant')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'registrationCertificate', maxCount: 1 },
@@ -54,43 +60,44 @@ export class ClientMerchantController {
     return this.clientMerchantsService.updateClientMerchant(files, merchantData)
   }
 
-  @Post('register/client-merchant/user')
-  @UsePipes(ValidationPipe)
-  async createUser(@Body() createClientMerchantUserDto: CreateClientMerchantUserDto) {
-    return this.clientClientMerchantUsersService.createUser(createClientMerchantUserDto);
-  }
-
-  @Patch('client-merchant/verify')
+  @ApiOperation({ summary: 'Verify client merchant' })
+  @Patch('verify-client-merchant')
   async verifyMerchant(@Query('id') id: number) {
    return this.clientMerchantsService.verifyMerchant(id)
   }
 
-  @Patch('client-merchant/reject')
+  @ApiOperation({ summary: 'Reject client merchant' })
+  @Patch('reject-client-merchant')
   async rejectMerchant(@Query('id') id: number) {
    return this.clientMerchantsService.rejectMerchant(id)
   }
 
-  @Delete('client-merchant')
+  @ApiOperation({ summary: 'Delete client merchant' })
+  @Delete()
   async deleteMerchant(@Query('id') id: number) {
    return this.clientMerchantsService.deleteMerchant(id)
   }
 
-  @Patch('client-merchant/block-merchant')
+  @ApiOperation({ summary: 'Block client merchant' })
+  @Patch('block-merchant')
   async blockMerchant(@Query('id') id: number) {
    return this.clientMerchantsService.blockMerchant(id)
   }
 
-  @Patch('client-merchant/activate-merchant')
+  @ApiOperation({ summary: 'Activate client merchant' })
+  @Patch('activate-merchant')
   async activateMerchant(@Query('id') id: number) {
    return this.clientMerchantsService.activateMerchant(id)
   }
 
-  @Get('merchant')
+  @ApiOperation({ summary: 'Get all merchant' })
+  @Get()
   async getmerchants() {
     return this.clientMerchantsService.getMerchants()
   }
 
-  @Get('client-merchant/unverified-merchants')
+  @ApiOperation({ summary: 'Get all unverified client merchants' })
+  @Get('unverified-merchants')
   async getUnverifiedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -100,7 +107,8 @@ export class ClientMerchantController {
     return this.clientMerchantsService.getUnverifiedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
-  @Get('client-merchant/verified-merchants')
+  @ApiOperation({ summary: 'Get all verified client merchants' })
+  @Get('verified-merchants')
   async getVerifiedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -114,7 +122,8 @@ export class ClientMerchantController {
     return this.clientMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
   }
 
-  @Get('client-merchant/rejected-merchants')
+  @ApiOperation({ summary: 'Get all rejected client merchants' })
+  @Get('rejected-merchants')
   async getRejectedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -124,7 +133,8 @@ export class ClientMerchantController {
     return this.clientMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
-  @Get('client-merchant/id')
+  @ApiOperation({ summary: 'Get client merchant by id' })
+  @Get('client-merchant-by')
   async getById(@Query('id') id: number) {
     return this.clientMerchantsService.findMerchantById(id);
   }
