@@ -1,11 +1,14 @@
 import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { DriversService } from './drivers.service';
 import { OrderOfferDto } from '..';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Drivers orders')
 @Controller('drivers')
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
   
+  @ApiOperation({ summary: 'Get all orders' })
   @Get('all-orders')
   async getAllMerchantOrders(
     @Query('pageIndex') pageIndex: string,
@@ -24,22 +27,25 @@ export class DriversController {
     return this.driversService.getOrders(sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
   }
 
+  @ApiOperation({ summary: 'Get order by order id' })
   @Get('order-by-id')
   async getOrderById(@Query('orderId') id: number) {
     return this.driversService.getOrderById(id)
   }
 
+  @ApiOperation({ summary: 'Driver offer price for order' })
   @Post('offer-price')
   async offerPrice(@Body() offerPriceDto: OrderOfferDto, @Req() req: Request) {
     return this.driversService.offerPriceToOrder(offerPriceDto, req['user']?.id)
   }
 
-  
+  @ApiOperation({ summary: 'Driver accept client\'s offer' })
   @Post('accept-offer')
   async acceptOffer(@Query('id') id: number, @Req() req: Request) {
     return this.driversService.acceptClientOffer(id);
   }
 
+  @ApiOperation({ summary: 'Driver get offers by order id' })
   @Get('offers')
   async getOffers(@Query('orderId') id: number) {
     return this.driversService.getDriverOffers()
