@@ -1,8 +1,9 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver } from '..';
+import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual,  } from 'typeorm';
+import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, Transaction, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver, NoContentException, TransactionTypes } from '../..';
 import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
+import * as dateFns from 'date-fns'
 
 @Injectable()
 export class DriverMerchantsService {
@@ -14,6 +15,7 @@ export class DriverMerchantsService {
     @InjectRepository(Role) private readonly rolesRepository: Repository<Role>,
     @InjectRepository(DriverBankAccount) private readonly bankAccountRepository: Repository<DriverBankAccount>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+    @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
     private sundriesService: SundryService,
     private awsService: AwsService,
     private dataSource: DataSource
@@ -393,4 +395,181 @@ export class DriverMerchantsService {
     }
   }
 
+  async getUnverifiedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: DriverMerchant[] = await this.driverMerchantsRepository.find({
+        where: { completed: true, verified: false, rejected: false },
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
+      if (merchants.length) {
+        return new BpmResponse(true, merchants, null);
+      } else {
+        throw new NoContentException();
+      }
+    }
+    catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async getVerifiedMerchants(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
+    try {
+
+      const filter: any = { completed: true, verified: true, rejected: false, deleted: false };
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      if (id) {
+        filter.id = +id;
+      }
+      if (companyName) {
+        filter.companyName = companyName;
+      }
+      if (createdFrom && createdAtTo) {
+        filter.createdAt = Between(
+          dateFns.parseISO(createdFrom),
+          dateFns.parseISO(createdAtTo)
+        );
+      } else if (createdFrom) {
+        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdFrom));
+      } else if (createdAtTo) {
+        filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
+      }
+
+
+      const merchants: DriverMerchant[] = await this.driverMerchantsRepository.find({
+        where: filter, relations: ['bankAccounts', 'bankAccounts.currency'], order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
+
+      for (let merchant of merchants) {
+        const transactions: Transaction[] = await this.transactionsRepository.query(`
+        SELECT
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.TopUp}' THEN t.amount ELSE 0 END) -
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' THEN t.amount ELSE 0 END) -
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS activeBalance,
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS frozenBalance,
+        c.name as currencyName
+        FROM
+            transaction t
+        LEFT JOIN currency c on c.id = t.currency_id 
+        WHERE
+            t.merchant_id = ${merchant.id}
+        GROUP BY
+            c.name;
+      `);
+        merchant['balances'] = transactions;
+      }
+
+      if (merchants.length) {
+        return new BpmResponse(true, merchants, null);
+      } else {
+        throw new NoContentException();
+      }
+    }
+    catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async getRejectedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: DriverMerchant[] = await this.driverMerchantsRepository.find({ 
+        where: { completed: true, verified: false, rejected: true }, 
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
+      if (merchants.length) {
+        return new BpmResponse(true, merchants, null);
+      } else {
+        throw new NoContentException();
+      }
+    }
+    catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async getBlockedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: DriverMerchant[] = await this.driverMerchantsRepository.find({ 
+        where: { completed: true, verified: false, blocked: true }, 
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
+      if (merchants.length) {
+        return new BpmResponse(true, merchants, null);
+      } else {
+        throw new NoContentException();
+      }
+    }
+    catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
 }
