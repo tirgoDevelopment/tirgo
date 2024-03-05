@@ -57,11 +57,16 @@ export class DriversService {
       await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
 
       }
-
+      if(typeof createDriverDto.phoneNumbers == 'string') {
+        createDriverDto.phoneNumbers = JSON.parse(createDriverDto.phoneNumbers)
+      }
+      if(!(createDriverDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.phoneNumber = phoneNumber;
-        driverPhoneNumber.driver = driver;
+        driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
       driver.phoneNumbers = driverPhoneNumbers;
@@ -507,6 +512,27 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const drivers: Driver[] = await this.driversRepository.find({ where: { agent: { id }, active: true, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      if (!drivers.length) {
+        throw new NoContentException();
+      } else {
+        return new BpmResponse(true, drivers, null)
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async getDriverByMerchantId(id: number): Promise<BpmResponse> {
+    try {
+      if (!id || isNaN(id)) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      const drivers: Driver[] = await this.driversRepository.find({ where: { driverMerchant: { id }, active: true, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
       if (!drivers.length) {
         throw new NoContentException();
       } else {

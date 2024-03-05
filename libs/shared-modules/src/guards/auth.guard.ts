@@ -46,7 +46,6 @@ export class AuthGuard implements CanActivate {
                 throw new BadRequestException(ResponseStauses.AccessDenied);
             }
             if (payload && !isNaN(payload.userId)) {
-console.log(payload)
                 const user = await this.customJwtService.findUserById(payload.userId, payload.userType);
                 if (user) {
                     request['user'] = user;

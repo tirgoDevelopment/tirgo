@@ -89,6 +89,7 @@ export class Driver {
   user: User;
 
   @ManyToOne(() => DriverMerchant, (driverMerchant) => driverMerchant.drivers)
+  @JoinColumn({ name: 'driver_merchant_id' })
   driverMerchant: DriverMerchant;
 
   @OneToMany(() => Transaction, (transaction) => transaction.driver)

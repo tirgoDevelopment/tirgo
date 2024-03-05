@@ -20,7 +20,7 @@ export class DriverDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  phoneNumbers: string[];
+  phoneNumbers: any;
 
   @ApiProperty({ required: false })
   additionalPhoneNumber?: string;

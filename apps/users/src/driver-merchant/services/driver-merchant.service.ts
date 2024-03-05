@@ -343,11 +343,12 @@ export class DriverMerchantsService {
       if (driver.driverMerchant) {
         throw new BadRequestException(ResponseStauses.AlreadyAppended);
       }
-      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: user.driverMerchant.id } });
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: user.driverMerchantUser?.driverMerchant?.id } });
       driver.driverMerchant = merchant;
       await this.driversRepository.save(driver);
       return new BpmResponse(true, null, null);
     } catch (err: any) {
+      console.log(err)
       if (err.name == 'EntityNotFoundError') {
         throw new NotFoundException(ResponseStauses.UserNotFound);
       } else if (err instanceof HttpException) {
