@@ -117,6 +117,7 @@ export enum ResponseStauses {
     AwsStoreFileFailed = 'fileStoreFailed',
     DuplicateError = 'duplicateError',
     PhoneNumberDuplicateError = 'phoneNumberDuplicateError',
+    PhoneNumbeersMustBeArray = 'phoneNumbeersMustBeArray',
     AlreadyDeleted = 'alreadyDeleted',
     AlreadyBlocked = 'alreadyBlocked',
     AlreadyActive = 'alreadyActive',

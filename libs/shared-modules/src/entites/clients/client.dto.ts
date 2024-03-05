@@ -15,6 +15,10 @@ export class ClientDto {
   @ApiProperty({ required: false })
   phoneNumbers: string[];
   
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  phoneNumber: string;
+
   @ApiProperty({ required: false })
   additionalPhoneNumber?: string;
 
