@@ -1,7 +1,8 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException } from '..';
+import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver } from '..';
+import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
 
 @Injectable()
 export class DriverMerchantsService {
@@ -12,26 +13,35 @@ export class DriverMerchantsService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Role) private readonly rolesRepository: Repository<Role>,
     @InjectRepository(DriverBankAccount) private readonly bankAccountRepository: Repository<DriverBankAccount>,
+    @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     private sundriesService: SundryService,
     private awsService: AwsService,
     private dataSource: DataSource
   ) { }
 
   async createDriverMerchant(createDriverMerchantDto: CreateDriverMerchantDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
     try {
+      await queryRunner.startTransaction();
+
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverMerchantDto.password);
-      const driverMerchant: DriverMerchant = await this.driverMerchantsRepository.create();
-      driverMerchant.user = await this.usersRepository.save({ userType: UserTypes.DriverMerchant, password: passwordHash });
+      const driverMerchant: DriverMerchant = new DriverMerchant();
+      driverMerchant.user = await queryRunner.manager.save(User, { userType: UserTypes.DriverMerchant, password: passwordHash });
       driverMerchant.email = createDriverMerchantDto.email;
       driverMerchant.phoneNumber = createDriverMerchantDto.phoneNumber;
       driverMerchant.companyName = createDriverMerchantDto.companyName;
       driverMerchant.companyType = createDriverMerchantDto.companyType;
 
-      const newDriverMerchant = await this.driverMerchantsRepository.save(driverMerchant);
-      if (newDriverMerchant) {
+      const newDriverMerchant = await queryRunner.manager.save(DriverMerchant, driverMerchant);
+      newDriverMerchant.user = {
+       id: newDriverMerchant.user?.id,
+       userType: newDriverMerchant.user?.userType  
+      } as any;
+      await queryRunner.commitTransaction();
         return new BpmResponse(true, newDriverMerchant, null)
-      }
     } catch (err: any) {
+      await queryRunner.rollbackTransaction()
       console.log(err)
       if (err.code == '23505') {
         throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
@@ -56,8 +66,8 @@ export class DriverMerchantsService {
       merchant.responsbilePersonPhoneNumber = createMerchantDto.responsbilePersonPhoneNumber;
       merchant.factAddress = createMerchantDto.factAddress;
       merchant.legalAddress = createMerchantDto.legalAddress;
-      merchant.postalCode = createMerchantDto.postalCode; 
-      merchant.garageAddress = createMerchantDto.garageAddress; 
+      merchant.postalCode = createMerchantDto.postalCode;
+      merchant.garageAddress = createMerchantDto.garageAddress;
       merchant.registrationCertificateFilePath = files.registrationCertificate[0].originalname.split(' ').join('').trim();
       merchant.transportationCertificateFilePath = files.transportationCertificate[0].originalname.split(' ').join('').trim();
       merchant.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
@@ -100,9 +110,9 @@ export class DriverMerchantsService {
       if (completeMerchantDto.bankAccounts) {
         await this.bankAccountRepository.delete({ driverMerchant: { id: merchant.id } });
         const query = `
-        INSERT INTO bank_account (account, currency) 
+        INSERT INTO driver_bank_account (account, currency_id) 
         VALUES
-          ${completeMerchantDto.bankAccounts.map((account: any) => `('${account.account}', '${account.currency}')`).join(', ')}
+          ${completeMerchantDto.bankAccounts.map((account: any) => `('${account.account}', '${account.currencyId}')`).join(', ')}
         RETURNING *;`;
         merchant.bankAccounts = await this.bankAccountRepository.query(query);
       }
@@ -127,96 +137,260 @@ export class DriverMerchantsService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     try {
-        await queryRunner.startTransaction();
-        const passwordHash = await this.sundriesService.generateHashPassword(createUserDto.password);
-        const role: Role = await this.rolesRepository.findOneOrFail({ where: { id: createUserDto.roleId } });
-        const user: User = await this.usersRepository.save({ userType: UserTypes.DriverMerchantUser, password: passwordHash, role: role });
-        const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: createUserDto.merchantId } });
-        const driverMerchantUser: DriverMerchantUser = new DriverMerchantUser();
-        driverMerchantUser.user = user;
-        driverMerchantUser.driverMerchant = merchant;
-        driverMerchantUser.fullName = createUserDto.fullName;
-        driverMerchantUser.username = createUserDto.username;
-        driverMerchantUser.phoneNumber = createUserDto.phoneNumber;
-  
-        const newMerchantUser = await this.driverMerchantUsersRepository.save(driverMerchantUser);
-        await queryRunner.commitTransaction();
-        return new BpmResponse(true, newMerchantUser, [ResponseStauses.SuccessfullyCreated]);
-      } catch (err: any) {
-        console.log(err)
-        await queryRunner.rollbackTransaction();
-        if (err.code == '23505') {
-          throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
-        } else if (err.name == 'EntityNotFoundError') {
-          if (err.message.includes('rolesRepository')) {
-            throw new NotFoundException(ResponseStauses.RoleNotFound)
-          } else if (err.message.includes('driverMerchantsRepository')) {
-            throw new NotFoundException(ResponseStauses.MerchantNotFound)
-          }
-        } else if (err instanceof HttpException) {
-          throw err
-        } else {
-          throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
-        }
-      } finally {
-        await queryRunner.release();
-      }
-    } 
+      await queryRunner.startTransaction();
+      const passwordHash = await this.sundriesService.generateHashPassword(createUserDto.password);
+      const role: Role = await this.rolesRepository.findOneOrFail({ where: { id: createUserDto.roleId } });
+      const user: User = await this.usersRepository.save({ userType: UserTypes.DriverMerchantUser, password: passwordHash, role: role });
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: createUserDto.merchantId } });
+      const driverMerchantUser: DriverMerchantUser = new DriverMerchantUser();
+      driverMerchantUser.user = user;
+      driverMerchantUser.driverMerchant = merchant;
+      driverMerchantUser.fullName = createUserDto.fullName;
+      driverMerchantUser.username = createUserDto.username;
+      driverMerchantUser.phoneNumber = createUserDto.phoneNumber;
 
-    async verifyMerchant(id: number): Promise<BpmResponse> {
-      if(!id || isNaN(id)) {
-        throw new BadRequestException(ResponseStauses.IdIsRequired);
-      }
-      const queryRunner = this.dataSource.createQueryRunner();
-      await queryRunner.connect();
-      try {
-        await queryRunner.startTransaction();
-        const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneByOrFail({ id });
-        if (merchant) {
-  
-          if(merchant.verified) {
-            throw new BadRequestException(ResponseStauses.MerchantAlreadyVerified)
-          }
-  
-          merchant.verified = true;
-          merchant.verifiedAt = new Date()
-          const verified = await this.driverMerchantsRepository.save(merchant);
-          if (verified) {
-            const role = (await this.rolesRepository.findOne({ where: { name: 'Super admin' } }));
-            const merchantBaseUser: User = await this.usersRepository.findOneOrFail({ where: { id: merchant.user?.id } });
-            const user: User = await this.usersRepository.save({ userType: UserTypes.ClientMerchantUser, password: merchantBaseUser.password, role: role });
-  
-            const clientMerchantUser: DriverMerchantUser = new DriverMerchantUser();
-            clientMerchantUser.user = user;
-            clientMerchantUser.driverMerchant = merchant;
-            clientMerchantUser.fullName = merchant.supervisorFirstName + ' ' + merchant.supervisorLastName;
-            clientMerchantUser.username = merchant.email;
-            clientMerchantUser.phoneNumber = merchant.phoneNumber;
-  
-            const newMerchantUser = await this.driverMerchantUsersRepository.save(clientMerchantUser);
-            await queryRunner.commitTransaction();
-            return new BpmResponse(true, newMerchantUser, [ResponseStauses.SuccessfullyVerified]);
-          }
-        } else {
-          throw new NotFoundException(ResponseStauses.MerchantNotFound);
+      const newMerchantUser = await this.driverMerchantUsersRepository.save(driverMerchantUser);
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, newMerchantUser, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      await queryRunner.rollbackTransaction();
+      if (err.code == '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else if (err.name == 'EntityNotFoundError') {
+        if (err.message.includes('rolesRepository')) {
+          throw new NotFoundException(ResponseStauses.RoleNotFound)
+        } else if (err.message.includes('driverMerchantsRepository')) {
+          throw new NotFoundException(ResponseStauses.MerchantNotFound)
         }
-      } catch (err: any) {
-        await queryRunner.rollbackTransaction();
-        if (err.name == 'EntityNotFoundError') {
-          throw new NotFoundException(ResponseStauses.UserNotFound);
       } else if (err instanceof HttpException) {
-          throw err
+        throw err
       } else {
-          throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
       }
-      } finally {
-        await queryRunner.release();
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async verifyMerchant(id: number, user: User): Promise<BpmResponse> {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException(ResponseStauses.IdIsRequired);
+    }
+    if(user.userType !== UserTypes.Staff) {
+      throw new BadRequestException(ResponseStauses.AccessDenied);
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id }, relations: ['user'] });
+      if (merchant) {
+
+        if (merchant.verified) {
+          throw new BadRequestException(ResponseStauses.MerchantAlreadyVerified);
+        }
+        else if(merchant.rejected) {
+          throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
+        }
+
+        merchant.verified = true;
+        merchant.verifiedAt = new Date();
+        merchant.verifiedBy = user;
+        const verified = await queryRunner.manager.save(DriverMerchant, merchant);
+        if (verified) {
+          const role = (await this.rolesRepository.findOneOrFail({ where: { name: 'Super admin' } }));
+          const merchantBaseUser: User = await this.usersRepository.findOneOrFail({ where: { id: merchant.user?.id } });
+          const user: User = await queryRunner.manager.save(User, { userType: UserTypes.DriverMerchantUser, password: merchantBaseUser.password, role: role });
+
+          const driverMerchantUser: DriverMerchantUser = new DriverMerchantUser();
+          driverMerchantUser.user = user;
+          driverMerchantUser.driverMerchant = merchant;
+          driverMerchantUser.fullName = merchant.supervisorFirstName + ' ' + merchant.supervisorLastName;
+          driverMerchantUser.username = merchant.email;
+          driverMerchantUser.phoneNumber = merchant.phoneNumber;
+
+          await queryRunner.manager.save(DriverMerchantUser, driverMerchantUser);
+          await queryRunner.commitTransaction();
+          return new BpmResponse(true, null, [ResponseStauses.SuccessfullyVerified]);
+        }
+      } else {
+        throw new NotFoundException(ResponseStauses.MerchantNotFound);
+      }
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async rejectMerchant(id: number, user: User): Promise<BpmResponse> {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException(ResponseStauses.IdIsRequired);
+    }
+    if(user.userType !== UserTypes.Staff) {
+      throw new BadRequestException(ResponseStauses.AccessDenied);
+    }
+    try {
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id }, relations: ['user'] });
+      if (merchant) {
+
+        if (merchant.verified) {
+          throw new BadRequestException(ResponseStauses.MerchantAlreadyVerified);
+        }
+        else if(merchant.rejected) {
+          throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
+        }
+
+        merchant.rejected = true;
+        merchant.rejectedAt = new Date();
+        merchant.rejectedBy = user;
+        await this.driverMerchantsRepository.save(merchant);
+          return new BpmResponse(true, null, [ResponseStauses.SuccessfullyVerified]);
+      } else {
+        throw new NotFoundException(ResponseStauses.MerchantNotFound);
+      }
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
       }
     }
-  
+  }
+
+  async blockMerchant(id: number, user: User): Promise<BpmResponse> {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException(ResponseStauses.IdIsRequired);
+    }
+    if(user.userType !== UserTypes.Staff) {
+      throw new BadRequestException(ResponseStauses.AccessDenied);
+    }
+    try {
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id }, relations: ['user'] });
+      if (merchant) {
+        if (merchant.blocked) {
+          throw new BadRequestException(ResponseStauses.AlreadyBlocked);
+        }
+
+        merchant.blocked = true;
+        merchant.blockedAt = new Date();
+        merchant.blockedBy = user;
+        await this.driverMerchantsRepository.save(merchant);
+          return new BpmResponse(true, null, [ResponseStauses.SuccessfullyBlocked]);
+      } else {
+        throw new NotFoundException(ResponseStauses.MerchantNotFound);
+      }
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async unblockMerchant(id: number, user: User): Promise<BpmResponse> {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException(ResponseStauses.IdIsRequired);
+    }
+    if(user.userType !== UserTypes.Staff) {
+      throw new BadRequestException(ResponseStauses.AccessDenied);
+    }
+    try {
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id }, relations: ['user'] });
+      if (merchant) {
+
+        if (!merchant.blocked) {
+          throw new BadRequestException(ResponseStauses.AlreadyActive);
+        }
+
+        merchant.blocked = false;
+        merchant.blockedAt = null;
+        merchant.blockedBy = null;
+        await this.driverMerchantsRepository.save(merchant);
+          return new BpmResponse(true, null, [ResponseStauses.SuccessfullyActivated]);
+      } else {
+        throw new NotFoundException(ResponseStauses.MerchantNotFound);
+      }
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async appendDriverToMerchant(dto: AppendDriverMerchantDto, user: User): Promise<BpmResponse> {
+    try {
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: dto.driverId } });
+      if (driver.driverMerchant) {
+        throw new BadRequestException(ResponseStauses.AlreadyAppended);
+      }
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: user.driverMerchant.id } });
+      driver.driverMerchant = merchant;
+      await this.driversRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
 
   async getMerchants() {
     return await this.driverMerchantsRepository.find()
+  }
+
+  async findMerchantById(id: number) {
+    try {
+      const data = await this.driverMerchantsRepository.findOneOrFail({ where: { id, blocked: false }, relations: ['bankAccounts', 'bankAccounts.currency', 'user'] });
+
+      // const balances: Transaction[] = await this.transactionsRepository.query(`
+      //   SELECT
+      //   SUM(CASE WHEN t.transaction_type = '${TransactionTypes.TopUp}' THEN t.amount ELSE 0 END) -
+      //   SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' THEN t.amount ELSE 0 END) -
+      //   SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS activeBalance,
+      //   SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS frozenBalance,
+      //   c.name as currencyName
+      //   FROM
+      //       transaction t
+      //   LEFT JOIN currency c on c.id = t.currency_id 
+      //   WHERE
+      //       t.merchant_id = ${id}
+      //   GROUP BY
+      //       c.name;
+      // `);
+      return new BpmResponse(true, data, null);
+    }
+    catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
   }
 
 }

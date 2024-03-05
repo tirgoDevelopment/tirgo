@@ -8,6 +8,7 @@ import { OrderOfferReply } from '../../orders/entities/offer-reply.entity';
 import { Agent } from '../../agents/entites/agent.entity';
 import { Subscription } from '../../references/entities/subscription.entity';
 import { Transaction } from '../../transactions/transaction.entity';
+import { DriverMerchant } from '../../driver-merchant/entites/driver-merchant.entity';
 
 @Entity()
 export class Driver {
@@ -40,6 +41,10 @@ export class Driver {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
+
+  @ManyToOne(() => User, (user) => user.orders, { nullable: false }) 
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
 
   @Column({ default: true })
   active: boolean;
@@ -82,6 +87,9 @@ export class Driver {
   @OneToOne(() => User, (user) => user.driver, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => DriverMerchant, (driverMerchant) => driverMerchant.drivers)
+  driverMerchant: DriverMerchant;
 
   @OneToMany(() => Transaction, (transaction) => transaction.driver)
   transactions: Transaction[];

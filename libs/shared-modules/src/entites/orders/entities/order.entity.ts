@@ -102,7 +102,7 @@ export class Order {
   isAdr?: boolean;
 
   @Column({ nullable: true, name: 'is_carnet_tir' })
-  isCarnetTir?: string;
+  isCarnetTir?: boolean;
 
   @Column({ nullable: true, name: 'is_glonas' })
   isGlonas?: boolean;

@@ -8,7 +8,7 @@ import {
 import { Request } from 'express';
 import { CustomJwtService } from '../services/jwt.service';
 import { InternalErrorException } from '../exceptions/internal.exception';
-import { ResponseStauses } from '..';
+import { BadRequestException, ResponseStauses } from '..';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,6 +30,7 @@ export class AuthGuard implements CanActivate {
             request.url.startsWith('/api/v2/users/login') ||
             request.url.startsWith('/api/v2/users/staffs/register') ||
             request.url.startsWith('/api/v2/users/client-merchant') ||
+            request.url.startsWith('/api/v2/users/driver-merchants/register') ||
             request.url.startsWith('/api/v2/users/register/client-merchant') ||
             request.url.startsWith('/api/v2/users/client-merchant-user/send-code') ||
             request.url.startsWith('/api/v2/references/currencies/all')) {
@@ -41,6 +42,9 @@ export class AuthGuard implements CanActivate {
         }
         try {
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
+            if (payload.merchantId && !payload.verified && request.url !== '/api/v2/users/driver-merchants/driver-merchant-by') {
+                throw new BadRequestException(ResponseStauses.AccessDenied);
+            }
             if (payload && !isNaN(payload.userId)) {
 
                 const user = await this.customJwtService.findUserById(payload.userId, payload.userType);

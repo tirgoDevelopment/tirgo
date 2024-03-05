@@ -73,7 +73,6 @@ export class TransactionService {
     if (!userId && isNaN(userId)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
-
     try {
       const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
       .select([
@@ -94,15 +93,32 @@ export class TransactionService {
       .leftJoin(ClientMerchantUser, 'cmu', 'cmu.user_id = u.id')
       .leftJoin(ClientMerchant, 'cm', 'cm.id = cmu.merchant_id')
       .where(`t.is_merchant = true AND cmu.user_id = ${userId}`)
-      .andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
-      .offset((index - 1) * size) // Skip the number of items based on the page number
-      .limit(size); // Limit the number of items per page
-     
+      // Add condition for transactionType if provided
+      if (transactionType) {
+        queryBuilder.andWhere('t.transaction_type = :transactionType', { transactionType });
+        console.log(transactionType)
+      }
+        if (fromDate && toDate) {
+          queryBuilder.andWhere('t.created_at BETWEEN :fromDate AND :toDate', {
+            fromDate: fromDate,
+            toDate: toDate
+          });
+        } else if (fromDate) {
+          queryBuilder.andWhere('t.created_at >= :fromDate', { fromDate: fromDate });
+        } else if (toDate) {
+          queryBuilder.andWhere('t.created_at <= :toDate', { toDate: toDate });
+        }
+
       if (sortBy && sortType) { // Replace orderByCondition with your condition
-        queryBuilder.orderBy(`'${sortBy}'`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+
+        queryBuilder.orderBy(`${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
       } else {
         queryBuilder.orderBy(`id`, 'DESC');
       }
+      queryBuilder.andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
+      queryBuilder.offset((index - 1) * size) // Skip the number of items based on the page number
+      queryBuilder.limit(size); // Limit the number of items per page
+     
       const transactions = await queryBuilder.getRawMany();
 
       const totalRecordsQuery = this.transactionsRepository.createQueryBuilder('t')
@@ -163,7 +179,7 @@ export class TransactionService {
       .take(size); // 
   
       if (sortBy && sortType) { // Replace orderByCondition with your condition
-        queryBuilder.orderBy(`'${sortBy}'`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+        queryBuilder.orderBy(`${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
       } else {
         queryBuilder.orderBy(`id`, 'DESC');
       }

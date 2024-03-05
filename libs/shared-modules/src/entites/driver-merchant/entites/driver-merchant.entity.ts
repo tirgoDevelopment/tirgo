@@ -3,6 +3,7 @@ import { DriverBankAccount } from './bank-account.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { DriverMerchantUser } from './driver-merchant-user.entity';
 import { User } from '../../users/user.entity';
+import { Driver } from '../../driver/entities/driver.entity';
 
 @Entity()
 export class DriverMerchant {
@@ -96,14 +97,32 @@ export class DriverMerchant {
   @Column({ default: false })
   verified?: boolean;
 
-  @Column({ name: "verified_at" })
+  @Column({ name: "verified_at", nullable: true })
   verifiedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.verifiedDriverMerchants)
+  @JoinColumn({ name: 'verified_by' })
+  verifiedBy: User;
 
   @Column({ default: false })
   rejected?: boolean;
 
-  @Column({ nullable: true, name: 'verified_by' })
-  verifiedBy?: string;
+  @Column({ name: "rejected_at", nullable: true })
+  rejectedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.rejectedDriverMerchants)
+  @JoinColumn({ name: 'rejected_by' })
+  rejectedBy: User;
+
+  @Column({ default: false })
+  blocked?: boolean;
+
+  @Column({ name: "block_at", nullable: true })
+  blockedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.blockedDriverMerchants)
+  @JoinColumn({ name: 'blocked_by' })
+  blockedBy: User;
 
   @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt?: Date;
@@ -111,11 +130,11 @@ export class DriverMerchant {
   @Column({ default: false })
   completed?: boolean;
 
-  @Column({ default: true })
-  active?: boolean;
-
   @OneToMany(() => DriverMerchantUser, driverMerchantUser => driverMerchantUser.driverMerchant)
   users: DriverMerchantUser[];
+
+  @OneToMany(() => Driver, driverMerchantUser => driverMerchantUser.driverMerchant)
+  drivers: Driver[];
 
   @OneToOne(() => User, (user) => user.driverMerchant, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

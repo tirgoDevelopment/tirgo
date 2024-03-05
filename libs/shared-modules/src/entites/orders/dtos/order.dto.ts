@@ -41,7 +41,7 @@ export class OrderDto {
   isAdr?: boolean;
 
   @ApiProperty({ required: false })
-  isCarnetTir?: string;
+  isCarnetTir?: boolean;
 
   @ApiProperty({ required: false })
   isGlonas?: boolean;
