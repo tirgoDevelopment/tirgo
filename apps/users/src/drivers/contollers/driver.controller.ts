@@ -14,17 +14,16 @@ export class DriversController {
   @ApiOperation({ summary: 'Create driver' })
   @Post('register')
   @UsePipes(ValidationPipe)
-  // @UseInterceptors(FileFieldsInterceptor([
-  //   { name: 'passport', maxCount: 1 },
-  //   { name: 'techPassport', maxCount: 1 },
-  //   { name: 'driverLicense', maxCount: 1 },
-  // ]))
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'passport', maxCount: 1 },
+    { name: 'driverLicense', maxCount: 1 },
+  ]))
   async createDriver(
-    // @UploadedFiles() files: { passport?: any[], driverLicense?: any[] },
+    @UploadedFiles() files: { passport?: any[], driverLicense?: any[] },
     @Body() driverData: DriverDto,
+    @Req() req: Request
   ) {
-    // files.passport[0], files.driverLicense[0],
-    return this.driversService.createDriver(driverData)
+    return this.driversService.createDriver(driverData, req['user'], files)
   }
 
   @ApiOperation({ summary: 'Update driver' })

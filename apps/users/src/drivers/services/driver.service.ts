@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverPhoneNumber, InternalErrorException, NoContentException, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
+import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverMerchant, DriverPhoneNumber, InternalErrorException, NoContentException, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
 import * as dateFns from 'date-fns'
 
 @Injectable()
@@ -12,11 +12,12 @@ export class DriversService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
-    private sundriesService: SundryService
+    private sundriesService: SundryService,
+    private awsService: AwsService
   ) { }
 
-  async createDriver(createDriverDto: DriverDto): Promise<BpmResponse> {
-    // passportFile: any, driverLicenseFile: any, 
+  async createDriver(createDriverDto: DriverDto, user: User, files: { passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
+    
     const queryRunner = this.driversRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
 
@@ -28,13 +29,34 @@ export class DriversService {
 
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
-      driver.user = await this.usersRepository.save({ userType: 'driver', password: passwordHash });
+
+      if(user.userType == UserTypes.DriverMerchantUser) {
+        const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchant?.id } }) 
+        driver.driverMerchant = driverMerchant;
+      }
+
+      driver.user = await queryRunner.manager.save(User, { userType: 'driver', password: passwordHash });
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
       driver.email = createDriverDto.email;
       driver.citizenship = createDriverDto.citizenship;
-      // driver.passportFilePath = passportFile.originalname.split(' ').join('').trim();
-      // driver.driverLicenseFilePath = driverLicenseFile.originalname.split(' ').join('').trim();
+      driver.createdBy = user;
+      
+      if(files) {
+        const uploads: any = [];
+        if(files.passport) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          uploads.push(files.passport[0]);
+        } 
+        if(files.driverLicense) {
+          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
+          uploads.push(files.driverLicense[0])
+        }
+
+        // Upload files to AWS
+      await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+
+      }
 
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
@@ -45,11 +67,9 @@ export class DriversService {
       driver.phoneNumbers = driverPhoneNumbers;
 
       // Save driver and associated entities
-      await this.driversRepository.save(driver);
+      await queryRunner.manager.save(Driver, driver);
 
-      // Upload files to AWS
-      // await Promise.all([passportFile, driverLicenseFile].map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
-
+      
       // Commit the transaction
       await queryRunner.commitTransaction();
 

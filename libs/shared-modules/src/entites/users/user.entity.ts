@@ -28,6 +28,7 @@ export class User {
     @Column({ nullable: true,  type: 'timestamp', name: 'last_login' })
     lastLogin: Date;
 
+    // related users
     @OneToOne(() => Staff, (staff) => staff.user)
     staff: Staff;
 
@@ -54,7 +55,9 @@ export class User {
 
     @OneToOne(() => SubscriptionPayment, (subscriptionPayment) => subscriptionPayment.user)
     subscriptionPayment: SubscriptionPayment;
+    
 
+    // relations belongs to created by user
     @OneToMany(() => Transaction, (transaction) => transaction.createdBy)
     transactions: Transaction[];
 
@@ -67,7 +70,23 @@ export class User {
     @OneToMany(() => Order, (order) => order.createdBy)
     orders: Order[];
 
+    @OneToMany(() => Driver, (driver) => driver.createdBy)
+    drivers: Driver[];
+
     @ManyToOne(() => Role, role => role.users)
     @JoinColumn({ name: 'role_id' })
     role: Role;
+
+
+    // relations belongs to rejected by user
+    @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)
+    rejectedDriverMerchants: DriverMerchant[];
+
+    // relations belongs to verified by user
+    @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.verifiedBy)
+    verifiedDriverMerchants: DriverMerchant[];
+
+    // relations belongs to blocked by user
+    @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.blockedBy)
+    blockedDriverMerchants: DriverMerchant[];
 }

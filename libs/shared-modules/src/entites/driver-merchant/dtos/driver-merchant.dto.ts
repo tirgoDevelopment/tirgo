@@ -215,3 +215,8 @@ export interface iBankAccount {
   account: string;
   currency: number;
 }
+
+export class AppendDriverMerchantDto {
+  @ApiProperty({ required: true })
+  driverId: number;
+}
