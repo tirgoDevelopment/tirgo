@@ -35,7 +35,7 @@ export class ClientsService {
       client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
 
         const clientPhoneNumber = new ClientPhoneNumber();
-        // clientPhoneNumber.phoneNumber = createClientDto.phoneNumber;
+        clientPhoneNumber.phoneNumber = createClientDto.phoneNumber;
         clientPhoneNumber.client = client;
         client.phoneNumbers = [clientPhoneNumber];
 
