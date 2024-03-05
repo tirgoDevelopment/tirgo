@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
             request.url.startsWith('/api/v2/references/currencies/all')) {
             return true
         }
-
+ 
         if (!token) {
             throw new UnauthorizedException();
         }
@@ -46,7 +46,7 @@ export class AuthGuard implements CanActivate {
                 throw new BadRequestException(ResponseStauses.AccessDenied);
             }
             if (payload && !isNaN(payload.userId)) {
-
+console.log(payload)
                 const user = await this.customJwtService.findUserById(payload.userId, payload.userType);
                 if (user) {
                     request['user'] = user;

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { DriverMerchantsService } from './driver-merchant.service';
-import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '..';
+import { DriverMerchantsService } from '../services/driver-merchant.service';
+import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '../..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
  
@@ -50,18 +50,6 @@ export class DriverMerchantController {
     return this.driverDriverMerchantsService.createUser(createDriverMerchantUserDto);
   }
 
-  @ApiOperation({ summary: 'Get all merchants' })
-  @Get('all-merchants')
-  async getmerchants() {
-    return this.driverDriverMerchantsService.getMerchants()
-  }
-
-  @ApiOperation({ summary: 'Get client merchant by id' })
-  @Get('driver-merchant-by')
-  async getById(@Query('id') id: number) {
-    return this.driverDriverMerchantsService.findMerchantById(id);
-  }
-
   @ApiOperation({ summary: 'Verify driver merchant' })
   @Patch('verify-driver-merchant')
   async verifyMerchant(@Query('id') id: number, @Req() req: Request) {
@@ -91,5 +79,67 @@ export class DriverMerchantController {
   @UsePipes(ValidationPipe)
   async appendDriver(@Body() appendDriverMerchantDto: AppendDriverMerchantDto, @Req() req: Request) {
     return this.driverDriverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
+  }
+
+  //get methods  
+  @ApiOperation({ summary: 'Get all merchants' })
+  @Get('all-driver-merchants')
+  async getmerchants() {
+    return this.driverDriverMerchantsService.getMerchants()
+  }
+
+  @ApiOperation({ summary: 'Get client merchant by id' })
+  @Get('driver-merchant-by')
+  async getById(@Query('id') id: number) {
+    return this.driverDriverMerchantsService.findMerchantById(id);
+  }
+
+  @ApiOperation({ summary: 'Get all unverified driver merchants' })
+  @Get('unverified-driver-merchants')
+  async getUnverifiedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driverDriverMerchantsService.getUnverifiedMerchants(pageSize, pageIndex, sortBy, sortType)
+  }
+
+  @ApiOperation({ summary: 'Get all verified driver merchants' })
+  @Get('verified-driver-merchants')
+  async getVerifiedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('merchantId') id: number,
+    @Query('companyName') companyName: string,
+    @Query('createdFrom') createdFrom: string,
+    @Query('createdAtTo') createdAtTo: string,
+  ) {
+    return this.driverDriverMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
+  }
+
+  @ApiOperation({ summary: 'Get all rejected driver merchants' })
+  @Get('rejected-driver-merchants')
+  async getRejectedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driverDriverMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
+  }
+
+  
+  @ApiOperation({ summary: 'Get all rejected driver merchants' })
+  @Get('blocked-driver-merchants')
+  async getBlockedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.driverDriverMerchantsService.getBlockedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 }
