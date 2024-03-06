@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Put, Patch, Query, Delete, } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Put, Patch, Query, Delete, Req, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ClientMerchantsService } from '../services/client-merchant.service';
 import { ClientMerchantDto, CompleteClientMerchantDto, CreateClientMerchantDto, CreateClientMerchantUserDto, CreateInStepClientMerchantDto, UpdateClientMerchantUserDto } from '../..';
@@ -62,14 +62,14 @@ export class ClientMerchantController {
 
   @ApiOperation({ summary: 'Verify client merchant' })
   @Patch('verify-client-merchant')
-  async verifyMerchant(@Query('id') id: number) {
-   return this.clientMerchantsService.verifyMerchant(id)
+  async verifyMerchant(@Query('id') id: number, @Req() req: Request) {
+   return this.clientMerchantsService.verifyMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Reject client merchant' })
   @Patch('reject-client-merchant')
-  async rejectMerchant(@Query('id') id: number) {
-   return this.clientMerchantsService.rejectMerchant(id)
+  async rejectMerchant(@Query('id') id: number,  @Req() req: Request) {
+   return this.clientMerchantsService.rejectMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Delete client merchant' })
@@ -79,15 +79,15 @@ export class ClientMerchantController {
   }
 
   @ApiOperation({ summary: 'Block client merchant' })
-  @Patch('block-merchant')
-  async blockMerchant(@Query('id') id: number) {
-   return this.clientMerchantsService.blockMerchant(id)
+  @Patch('block-client-merchant')
+  async blockMerchant(@Query('id') id: number, @Req() req: Request) {
+   return this.clientMerchantsService.blockMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Activate client merchant' })
-  @Patch('activate-merchant')
-  async activateMerchant(@Query('id') id: number) {
-   return this.clientMerchantsService.activateMerchant(id)
+  @Patch('activate-client-merchant')
+  async activateMerchant(@Query('id') id: number, @Req() req: Request) {
+   return this.clientMerchantsService.unblockMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Get all merchant' })
@@ -97,7 +97,7 @@ export class ClientMerchantController {
   }
 
   @ApiOperation({ summary: 'Get all unverified client merchants' })
-  @Get('unverified-merchants')
+  @Get('unverified-client-merchants')
   async getUnverifiedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -108,7 +108,7 @@ export class ClientMerchantController {
   }
 
   @ApiOperation({ summary: 'Get all verified client merchants' })
-  @Get('verified-merchants')
+  @Get('verified-client-merchants')
   async getVerifiedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -123,7 +123,7 @@ export class ClientMerchantController {
   }
 
   @ApiOperation({ summary: 'Get all rejected client merchants' })
-  @Get('rejected-merchants')
+  @Get('rejected-client-merchants')
   async getRejectedMerchants(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -131,6 +131,17 @@ export class ClientMerchantController {
     @Query('sortType') sortType: string,
   ) {
     return this.clientMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
+  }
+
+  @ApiOperation({ summary: 'Get all rejected client merchants' })
+  @Get('blocked-client-merchants')
+  async getBlockedMerchants(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+  ) {
+    return this.clientMerchantsService.getBlockedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
   @ApiOperation({ summary: 'Get client merchant by id' })

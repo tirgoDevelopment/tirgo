@@ -82,11 +82,20 @@ export class User {
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)
     rejectedDriverMerchants: DriverMerchant[];
 
+    @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.rejectedBy)
+    rejectedClientMerchants: ClientMerchant[];
+
     // relations belongs to verified by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.verifiedBy)
     verifiedDriverMerchants: DriverMerchant[];
 
+    @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.verifiedBy)
+    verifiedClientMerchants: ClientMerchant[];
+
     // relations belongs to blocked by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.blockedBy)
     blockedDriverMerchants: DriverMerchant[];
+
+    @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.blockedBy)
+    blockedClientMerchants: ClientMerchant[];
 }
