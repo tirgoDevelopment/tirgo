@@ -488,7 +488,7 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.DriverAlreadyAppended)
       }
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, active: true, deleted: false } });
-      const agent: Agent = await this.agentsRepository.findOneOrFail({ where: { id: agentId, active: true, deleted: false } });
+      const agent: Agent = await this.agentsRepository.findOneOrFail({ where: { id: agentId, blocked: false, deleted: false } });
 
       driver.agent = agent;
       await this.driversRepository.save(driver);

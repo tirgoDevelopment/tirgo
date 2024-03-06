@@ -19,7 +19,7 @@ export class UserFile {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
     createdAt: Date;  
 
-    @ManyToOne(() => User, (user) => user.files)
+    @ManyToOne(() => User, (user) => user.createdFiles)
     @JoinColumn({ name: 'user_id' })
     createdBy: User;
 }

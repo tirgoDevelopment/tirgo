@@ -16,10 +16,6 @@ export class Account {
   @ManyToOne(() => Currency, (currency) => currency.bankAccounts)
   currency: string;
 
-  @ManyToOne(() => User, (user) => user.files)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-
   @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt?: Date;
 

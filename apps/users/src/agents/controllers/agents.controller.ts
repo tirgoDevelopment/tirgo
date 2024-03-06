@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Put, Delete, Query, UploadedFiles, UseInterceptors, UsePipes, ValidationPipe, } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Put, Delete, Query, Req, UploadedFiles, UseInterceptors, UsePipes, ValidationPipe, } from '@nestjs/common';
 import { AgentsService } from '../services/agents.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AgentDto } from '../..';
@@ -19,10 +19,10 @@ export class AgentsController {
     { name: 'managerPassportFilePath', maxCount: 1 },
   ]),
   )
-
   createAgent(
-    @UploadedFiles() files: { registrationCertificateFilePath?: any[], managerPassportFilePath?: any[] }, @Body() createAgentDto: AgentDto) {
-    return this.staffsService.createAgent(files, createAgentDto);
+    @UploadedFiles() files: { registrationCertificateFilePath?: any[], managerPassportFilePath?: any[] }, @Body() createAgentDto: AgentDto,
+    @Req() req: Request) {
+    return this.staffsService.createAgent(files, createAgentDto, req['user']);
   }
 
   @ApiOperation({ summary: 'Update agent' })
@@ -40,14 +40,14 @@ export class AgentsController {
 
   @ApiOperation({ summary: 'Block agent' })
   @Patch('block-agent')
-  blockAgent(@Query('id') id: number) {
-    return this.staffsService.blockAgent(id);
+  blockAgent(@Query('id') id: number, @Req() req: Request) {
+    return this.staffsService.blockAgent(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Activate agent' })
   @Patch('activate-agent')
-  activateAgent(@Query('id') id: number) {
-    return this.staffsService.activateAgent(id);
+  activateAgent(@Query('id') id: number, @Req() req: Request) {
+    return this.staffsService.activateAgent(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Restore agent' })

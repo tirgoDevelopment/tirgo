@@ -11,8 +11,8 @@ import { DriverMerchantUser } from '../driver-merchant/entites/driver-merchant-u
 import { DriverMerchant } from '../driver-merchant/entites/driver-merchant.entity';
 import { Order } from '../orders/entities/order.entity';
 import { UserFile } from '../files/file.entity';
-import { Account } from '../accounts/account.entity';
 import { Agent } from '../agents/entites/agent.entity';
+import { OrderOffer } from '../orders/entities/offer.entity';
 
 @Entity()
 export class User {
@@ -27,6 +27,11 @@ export class User {
 
     @Column({ nullable: true,  type: 'timestamp', name: 'last_login' })
     lastLogin: Date;
+
+    @ManyToOne(() => Role, role => role.users)
+    @JoinColumn({ name: 'role_id' })
+    role: Role;
+
 
     // related users
     @OneToOne(() => Staff, (staff) => staff.user)
@@ -59,24 +64,24 @@ export class User {
 
     // relations belongs to created by user
     @OneToMany(() => Transaction, (transaction) => transaction.createdBy)
-    transactions: Transaction[];
+    createdTransactions: Transaction[];
 
     @OneToMany(() => UserFile, (transaction) => transaction.createdBy)
-    files: UserFile [];
-
-    @OneToMany(() => Account, (transaction) => transaction.user)
-    account: Account[];
+    createdFiles: UserFile [];
 
     @OneToMany(() => Order, (order) => order.createdBy)
-    orders: Order[];
+    createdOrders: Order[];
+
+    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.createdBy)
+    createdOrderOffers: OrderOffer[];
 
     @OneToMany(() => Driver, (driver) => driver.createdBy)
-    drivers: Driver[];
+    createdDrivers: Driver[];
 
-    @ManyToOne(() => Role, role => role.users)
-    @JoinColumn({ name: 'role_id' })
-    role: Role;
+    @ManyToOne(() => Agent, role => role.createdBy)
+    createdAgents: Agent;
 
+  
 
     // relations belongs to rejected by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)
@@ -98,4 +103,7 @@ export class User {
 
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.blockedBy)
     blockedClientMerchants: ClientMerchant[];
+
+    @OneToMany(() => Agent, (clientMerchant) => clientMerchant.blockedBy)
+    blockedAgents: Agent[];
 }

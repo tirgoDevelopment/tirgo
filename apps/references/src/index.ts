@@ -13,7 +13,6 @@ import { Client,
     DriverMerchantUser,
     DriverBankAccount,
     OrderOffer,
-    OrderOfferReply,
     Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod,
     CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber, AuthModule, Account,
     Agent, AgentBankAccount, } from "@app/shared-modules";
@@ -24,6 +23,6 @@ export { CargoStatusDto, CargoPackageDto, CargoTypeGroupDto, CargoTypeDto, Curre
 
  export {
     CargoType, CargoTypeGroup, OrderOffer,
-    OrderOfferReply, Currency, Subscription, 
+    Currency, Subscription, 
     Agent, AgentBankAccount, TransportType, TransportKind, CargoStatus, User, SubscriptionPayment, CargoPackage, CargoLoadMethod, UserFile, AuthModule,
 };

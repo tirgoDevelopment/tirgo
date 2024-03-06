@@ -27,7 +27,6 @@ import { DriverBankAccount } from '../entites/driver-merchant/entites/bank-accou
 import { UserFile } from '../entites/files/file.entity';
 import { DriverMerchantUser } from '../entites/driver-merchant/entites/driver-merchant-user.entity';
 import { OrderOffer } from '../entites/orders/entities/offer.entity';
-import { OrderOfferReply } from '../entites/orders/entities/offer-reply.entity';
 import { AgentBankAccount } from '../entites/agents/entites/bank-account.entity';
 import { Agent } from '../entites/agents/entites/agent.entity';
 import { Config } from '../entites/config/config.entity';
@@ -68,7 +67,6 @@ const entities = [
     UserFile,
     DriverMerchantUser,
     OrderOffer,
-    OrderOfferReply,
     Account,
     Agent, 
     AgentBankAccount,

@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, ReplyOfferDto, OrderOffer, OrderOfferReply, OrderOfferDto, Driver } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -21,7 +21,6 @@ export class ClientsService {
     @InjectRepository(ClientMerchantUser) private readonly clientMerchantUsersRepository: Repository<ClientMerchantUser>,
     @InjectRepository(CargoLoadMethod) private readonly cargoLoadingMethodsRepository: Repository<CargoLoadMethod>,
     @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
-    @InjectRepository(OrderOfferReply) private readonly offerRepliesRepository: Repository<OrderOfferReply>,
     private rmqService: RabbitMQSenderService
   ) { }
 
@@ -348,42 +347,6 @@ export class ClientsService {
       }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
-        throw new BadRequestException(ResponseStauses.NotFound);
-      } else {
-        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
-      }
-    }
-  }
-
-  async replyToOffer(replyDto: ReplyOfferDto, userId: number): Promise<BpmResponse> {
-    try {
-
-      const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: replyDto.offerId }, relations: ['order'] });
-      const order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id } })
-      const replies: OrderOfferReply[] = await this.offerRepliesRepository.find({ where: { orderOffer: { id: replyDto.offerId } } })
-
-      if(replies.length) {
-        throw new BadRequestException(ResponseStauses.AlreadyReplied);
-      }
-
-      const createOfferReplyDto: OrderOfferReply = new OrderOfferReply();
-      const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: replyDto.curencyId } });
-      const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } });  
-
-
-      createOfferReplyDto.amount = replyDto.amount;
-      createOfferReplyDto.currency = currency;
-      createOfferReplyDto.createdBy = user;
-      createOfferReplyDto.orderOffer = offer;
-      createOfferReplyDto.order = order;
-
-      const res = await this.orderOffersRepository.save(createOfferReplyDto);
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
-    } catch(err: any) {
-      console.log(err)
-      if(err instanceof HttpException) {
-        throw err
-      } else if (err.name == 'EntityNotFoundError') {
         throw new BadRequestException(ResponseStauses.NotFound);
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);

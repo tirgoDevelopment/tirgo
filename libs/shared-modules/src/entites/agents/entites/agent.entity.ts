@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { AgentBankAccount } from './bank-account.entity';
 import { Driver } from '../../driver/entities/driver.entity';
@@ -51,8 +51,19 @@ export class Agent {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
-  @Column({ default: true })
-  active: boolean;
+  @ManyToOne(() => User, (user) => user.createdAgents)
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
+  @Column({ default: false })
+  blocked: boolean;
+
+  @Column({ name: 'blocked_at' })
+  blockedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.blockedAgents)
+  @JoinColumn({ name: 'blocked_by' })
+  blockedBy: User;
 
   @Column({ default: false })
   deleted: boolean;
