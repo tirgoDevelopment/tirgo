@@ -78,6 +78,9 @@ export class User {
     @OneToMany(() => Driver, (driver) => driver.createdBy)
     createdDrivers: Driver[];
 
+    @OneToMany(() => Client, (client) => client.createdBy)
+    createdClients: Client[];
+
     @ManyToOne(() => Agent, role => role.createdBy)
     createdAgents: Agent;
 
@@ -106,4 +109,10 @@ export class User {
 
     @OneToMany(() => Agent, (clientMerchant) => clientMerchant.blockedBy)
     blockedAgents: Agent[];
+
+    @OneToMany(() => Client, (client) => client.blockedBy)
+    blockedClients: Client[];
+
+    @OneToMany(() => Driver, (driver) => driver.blockedBy)
+    blockedDrivers: Driver[];
 }

@@ -14,7 +14,7 @@ export class ClientsService {
     private sundriesService: SundryService
   ) { }
 
-  async createClient(passportFile: any, createClientDto: ClientDto): Promise<BpmResponse> {
+  async createClient(passportFile: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
     const queryRunner = this.clientsRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     try {
@@ -33,6 +33,10 @@ export class ClientsService {
       client.citizenship = createClientDto.citizenship;
       client.additionalPhoneNumber = createClientDto.additionalPhoneNumber;
       client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
+
+      if(user && user.userType == UserTypes.Staff) {
+        client.createdBy = user;
+      }
 
         const clientPhoneNumber = new ClientPhoneNumber();
         clientPhoneNumber.phoneNumber = createClientDto.phoneNumber;
@@ -197,7 +201,7 @@ export class ClientsService {
       }
 
       const clients = await this.clientsRepository.find({ 
-        where: { active: true, deleted: false }, 
+        where: { blocked: false, deleted: false }, 
         relations: ['phoneNumbers', 'user'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
@@ -228,7 +232,7 @@ export class ClientsService {
       }
 
       const clients = await this.clientsRepository.find({ 
-        where: { active: false, deleted: false }, 
+        where: { blocked: true, deleted: false }, 
         relations: ['phoneNumbers', 'user'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
@@ -341,27 +345,28 @@ export class ClientsService {
     }
   }
 
-  async blockClient(id: number, blockReason: string): Promise<BpmResponse> {
+  async blockClient(id: number, blockReason: string, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
       const client = await this.clientsRepository.findOneOrFail({ where: { id } });
 
-      if (!client.active) {
+      if (client.blocked) {
         // Client is already blocked
         throw new BadRequestException(ResponseStauses.AlreadyBlocked);
       }
 
-      const updateResult = await this.clientsRepository.update({ id: client.id }, { active: false, blockReason });
+      client.blockReason = blockReason;
+      client.blocked = true;
+      client.blockedAt = new Date();
+      client.blockedBy = user;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
-        return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified);
-      }
+      await this.clientsRepository.save(client);
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Client not found
@@ -375,27 +380,29 @@ export class ClientsService {
     }
   }
 
-  async activateClient(id: number): Promise<BpmResponse> {
+  async activateClient(id: number, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
       const client = await this.clientsRepository.findOneOrFail({ where: { id } });
 
-      if (client.active) {
-        // Client is already blocked
+      if (!client.blocked) {
+        // Client is already unblocked
         throw new BadRequestException(ResponseStauses.AlreadyActive);
       }
 
-      const updateResult = await this.clientsRepository.update({ id: client.id }, { active: true });
+      client.blocked = false;
+      client.blockReason = null;
+      client.blockedAt = null;
+      client.blockedBy = null;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
+      await this.clientsRepository.save(client);
+
         return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified);
-      }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Client not found

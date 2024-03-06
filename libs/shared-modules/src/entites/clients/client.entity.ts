@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/user.entity';
 import { ClientPhoneNumber } from './client-phonenumber.entity';
@@ -36,10 +36,21 @@ export class Client {
   createdAt: Date;
 
   @Column({ default: true })
-  active: boolean;
+  blocked: boolean;
+
+  @Column({ name: 'blocked_at' })
+  blockedAt: Date;
 
   @Column({ nullable: true, name: 'block_reason' })
   blockReason: string;
+
+  @ManyToOne(() => User, (user) => user.blockedClients) 
+  @JoinColumn({ name: 'blocked_by' })
+  blockedBy: User;
+
+  @ManyToOne(() => User, (user) => user.createdClients) 
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
 
   @Column({ default: false })
   deleted: boolean;
