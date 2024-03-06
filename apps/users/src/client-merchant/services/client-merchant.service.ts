@@ -219,7 +219,10 @@ export class ClientMerchantsService {
     }
   }
 
-  async verifyMerchant(id: number): Promise<BpmResponse> {
+  async verifyMerchant(id: number, user: User): Promise<BpmResponse> {
+    if(user.userType !== UserTypes.Staff) {
+      throw new BadRequestException(ResponseStauses.AccessDenied);
+    }
     if (!id || isNaN(id)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
@@ -231,10 +234,13 @@ export class ClientMerchantsService {
       if (merchant) {
         if (merchant.verified) {
           throw new BadRequestException(ResponseStauses.MerchantAlreadyVerified)
+        } else if(merchant.rejected) {
+          throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
         }
 
         merchant.verified = true;
         merchant.verifiedAt = new Date()
+        merchant.verifiedBy = user;
         const verified = await this.clientMerchantsRepository.save(merchant);
 
         if (verified) {
@@ -272,14 +278,87 @@ export class ClientMerchantsService {
     }
   }
 
-  async rejectMerchant(id: number): Promise<BpmResponse> {
+  async rejectMerchant(id: number, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id || isNaN(id)) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const merchant: ClientMerchant = await this.clientMerchantsRepository.findOneByOrFail({ id });
+      if(merchant.verified) {
+        throw new BadRequestException(ResponseStauses.AlreadyVerified);
+      } else if(merchant.rejected) {
+        throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
+      }
+
       merchant.rejected = true;
       merchant.rejectedAt = new Date();
+      merchant.rejectedBy = user;
+      
+      await this.clientMerchantsRepository.save(merchant);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async blockMerchant(id: number, user: User): Promise<BpmResponse> {
+    try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      if (!id || isNaN(id)) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      const merchant: ClientMerchant = await this.clientMerchantsRepository.findOneByOrFail({ id });
+      if(merchant.blocked) {
+        throw new BadRequestException(ResponseStauses.AlreadyBlocked);
+      }
+
+      merchant.blocked = true;
+      merchant.blockedAt = new Date();
+      merchant.blockedBy = user;
+
+      await this.clientMerchantsRepository.save(merchant);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async unblockMerchant(id: number, user: User): Promise<BpmResponse> {
+    try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      if (!id || isNaN(id)) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      const merchant: ClientMerchant = await this.clientMerchantsRepository.findOneByOrFail({ id });
+      if(!merchant.blocked) {
+        throw new BadRequestException(ResponseStauses.AlreadyActive);
+      }
+
+      merchant.blocked = false;
+      merchant.blockedAt = null;
+      merchant.blockedBy = null;
+      
       await this.clientMerchantsRepository.save(merchant);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
     } catch (err: any) {
@@ -307,36 +386,9 @@ export class ClientMerchantsService {
     }
   }
 
-  async blockMerchant(id: number): Promise<BpmResponse> {
-    const isBlocked = await this.clientMerchantsRepository.createQueryBuilder()
-      .update(ClientMerchant)
-      .set({ active: false })
-      .where("id = :id", { id })
-      .execute();
-    if (isBlocked.affected) {
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
-    } else {
-      return new BpmResponse(true, null, [ResponseStauses.DeleteDataFailed]);
-    }
-  }
-
-
-  async activateMerchant(id: number): Promise<BpmResponse> {
-    const isActivate = await this.clientMerchantsRepository.createQueryBuilder()
-      .update(ClientMerchant)
-      .set({ active: true })
-      .where("id = :id", { id })
-      .execute();
-    if (isActivate.affected) {
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
-    } else {
-      return new BpmResponse(true, null, [ResponseStauses.DeleteDataFailed]);
-    }
-  }
-
   async findMerchantById(id: number) {
     try {
-      const data = await this.clientMerchantsRepository.findOneOrFail({ where: { id, active: true }, relations: ['bankAccounts', 'bankAccounts.currency', 'user'] });
+      const data = await this.clientMerchantsRepository.findOneOrFail({ where: { id, blocked: false }, relations: ['bankAccounts', 'bankAccounts.currency', 'user'] });
 
       const balances: Transaction[] = await this.transactionsRepository.query(`
         SELECT
@@ -516,6 +568,41 @@ export class ClientMerchantsService {
       }
       const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ 
         where: { completed: true, verified: false, rejected: true }, 
+        relations: ['bankAccounts', 'bankAccounts.currency'],
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+      });
+      if (merchants.length) {
+        return new BpmResponse(true, merchants, null);
+      } else {
+        throw new NoContentException();
+      }
+    }
+    catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async getBlockedMerchants(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ 
+        where: { completed: true, verified: false, blocked: true }, 
         relations: ['bankAccounts', 'bankAccounts.currency'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number

@@ -117,7 +117,7 @@ export class DriverMerchant {
   @Column({ default: false })
   blocked?: boolean;
 
-  @Column({ name: "block_at", nullable: true })
+  @Column({ name: "blocked_at", nullable: true })
   blockedAt?: Date;
 
   @ManyToOne(() => User, (user) => user.blockedDriverMerchants)

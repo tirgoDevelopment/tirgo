@@ -80,24 +80,39 @@ export class ClientMerchant {
 
   @OneToMany(() => ClientBankAccount, (bankAccount) => bankAccount.clientMerchant)
   bankAccounts?: ClientBankAccount[];
-  
+
   @OneToMany(() => Order, (order) => order.clientMerchant)
   orders?: Order[];
 
   @Column({ default: false })
   verified?: boolean;
 
+  @Column({ name: "verified_at", nullable: true })
+  verifiedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.verifiedClientMerchants)
+  @JoinColumn({ name: 'verified_by' })
+  verifiedBy: User;
+
   @Column({ default: false })
   rejected?: boolean;
 
-  @Column({ nullable: true, name: 'rejected_at' })
+  @Column({ name: "rejected_at", nullable: true })
   rejectedAt?: Date;
 
-  @Column({ nullable: true, name: 'verified_by' })
-  verifiedBy?: string;
+  @ManyToOne(() => User, (user) => user.rejectedClientMerchants)
+  @JoinColumn({ name: 'rejected_by' })
+  rejectedBy: User;
 
-  @Column({ nullable: true, name: 'verified_at' })
-  verifiedAt?: Date;
+  @Column({ default: false })
+  blocked?: boolean;
+
+  @Column({ name: "blocked_at", nullable: true })
+  blockedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.blockedClientMerchants)
+  @JoinColumn({ name: 'blocked_by' })
+  blockedBy: User;
 
   @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt?: Date;
@@ -107,9 +122,6 @@ export class ClientMerchant {
 
   @Column({ default: false })
   deleted?: boolean;
-
-  @Column({ default: true })
-  active?: boolean;
 
   @OneToMany(() => ClientMerchantUser, clientMerchantUser => clientMerchantUser.clientMerchant)
   users: ClientMerchantUser[];
