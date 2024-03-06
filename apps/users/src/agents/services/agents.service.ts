@@ -15,7 +15,7 @@ export class AgentsService {
     private awsService: AwsService
   ) { }
 
-  async createAgent(files: any, createAgentDto: any): Promise<BpmResponse> {
+  async createAgent(files: any, createAgentDto: any, user: User): Promise<BpmResponse> {
     try {
       const passwordHash = await this.sundriesService.generateHashPassword(createAgentDto.password);
       const user: User = await this.usersRepository.save({ userType: UserTypes.Agent, password: passwordHash });
@@ -32,6 +32,7 @@ export class AgentsService {
       agent.oked = createAgentDto.oked;
       agent.inn = createAgentDto.inn;
       agent.phoneNumber = createAgentDto.phoneNumber;
+      agent.createdBy = user;
       if (files) {
         const fileUploads = []
         if (files.registrationCertificateFilePath && files.registrationCertificateFilePath[0]) {
@@ -60,7 +61,7 @@ export class AgentsService {
         }
       }
 
-      const currencies = await this.agentsRepository.find({ where: { active: true } });
+      const currencies = await this.agentsRepository.find({ where: { blocked: false } });
       const bankAccounts: any[] = createAgentDto.bankAccounts.map((el: any) => {
         return {
           agent: newAgent,
@@ -129,7 +130,7 @@ export class AgentsService {
         }
       }
 
-      const currencies = await this.agentsRepository.find({ where: { active: true } })
+      const currencies = await this.agentsRepository.find({ where: { blocked: false } })
       const bankAccounts: any[] = createAgentDto.bankAccounts.map((el: any) => {
         return {
           agent: newAgent,
@@ -238,19 +239,27 @@ export class AgentsService {
     }
   }
 
-  async blockAgent(id: number): Promise<BpmResponse> {
+  async blockAgent(id: number, user: User): Promise<BpmResponse> {
     try {
+
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
       const agent = await this.agentsRepository.findOneOrFail({ where: { id } });
 
-      if (!agent.active) {
+      if (agent.blocked) {
         // agent is already blocked
         throw new BadRequestException(ResponseStauses.AlreadyBlocked);
       }
 
-      const updateResult = await this.agentsRepository.update({ id: agent.id }, { active: false });
+      agent.blocked = true;
+      agent.blockedAt = new Date();
+      agent.blockedBy = user;
+      const updateResult = await this.agentsRepository.update({ id: agent.id }, { blocked: true });
 
       if (updateResult.affected > 0) {
         // Update was successful
@@ -272,27 +281,28 @@ export class AgentsService {
     }
   }
 
-  async activateAgent(id: number): Promise<BpmResponse> {
+  async activateAgent(id: number, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
       const agent = await this.agentsRepository.findOneOrFail({ where: { id } });
 
-      if (agent.active) {
-        // agent is already blocked
+      if (!agent.blocked) {
+        // agent is already active
         throw new BadRequestException(ResponseStauses.AlreadyActive);
       }
 
-      const updateResult = await this.agentsRepository.update({ id: agent.id }, { active: true });
+      agent.blocked = false;
+      agent.blockedAt = null;
+      agent.blockedBy = null; 
 
-      if (updateResult.affected > 0) {
-        // Update was successful
+      await this.agentsRepository.save(agent);
+
         return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified);
-      }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // agent not found

@@ -1,4 +1,4 @@
-import { OrderOffer, Agent, AgentBankAccount, OrderOfferReply, User, UserFile, Permission, Staff, Config, Subscription, Client, Driver, ClientMerchant, Transaction, DriverMerchant, ClientMerchantUser, DriverMerchantUser, TransportType, CargoType, CargoTypeGroup, CargoStatus, Currency, Role, DriverTransport, TransportVerification, Order, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientBankAccount, DriverPhoneNumber, ClientPhoneNumber, DriverBankAccount, AuthModule, Account} from "@app/shared-modules";
+import { OrderOffer, Agent, AgentBankAccount, User, UserFile, Permission, Staff, Config, Subscription, Client, Driver, ClientMerchant, Transaction, DriverMerchant, ClientMerchantUser, DriverMerchantUser, TransportType, CargoType, CargoTypeGroup, CargoStatus, Currency, Role, DriverTransport, TransportVerification, Order, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientBankAccount, DriverPhoneNumber, ClientPhoneNumber, DriverBankAccount, AuthModule, Account} from "@app/shared-modules";
 
 export { OrderDto, ClientDto} from "@app/shared-modules";
 
@@ -38,7 +38,6 @@ export { AwsService, SundryService, CustomJwtService , DatabaseModule} from '@ap
     UserFile,
     AuthModule,
     OrderOffer,
-    OrderOfferReply,
     Account,
     Agent, AgentBankAccount,
   };

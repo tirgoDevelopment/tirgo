@@ -3,7 +3,6 @@ import { Currency } from '../../references/entities/currency.entity';
 import { User } from '../../users/user.entity';
 import { Driver } from '../../driver/entities/driver.entity';
 import { Order } from './order.entity';
-import { OrderOfferReply } from './offer-reply.entity';
 
 @Entity()
 export class OrderOffer {
@@ -25,7 +24,7 @@ export class OrderOffer {
   @Column({ default: false })
   rejected: boolean;
 
-  @ManyToOne(() => User, (user) => user.orders, { nullable: false })
+  @ManyToOne(() => User, (user) => user.createdOrderOffers, { nullable: false })
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
   
@@ -40,9 +39,5 @@ export class OrderOffer {
   @ManyToOne(() => Currency, currency => currency.orderOffer)
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
-
-  @OneToOne(() => OrderOfferReply, (orderOfferReply) => orderOfferReply.orderOffer, { cascade: true, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'order_offer_reply_id' })
-  orderOfferReply?: OrderOfferReply;
 
 }

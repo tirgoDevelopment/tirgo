@@ -37,10 +37,8 @@ export { TransportVerification } from "./entites/driver/entities/transport-verif
 export { Config } from "./entites/config/config.entity";
 export { Order } from "./entites/orders/entities/order.entity";
 export { OrderOffer } from "./entites/orders/entities/offer.entity";
-export { OrderOfferReply } from "./entites/orders/entities/offer-reply.entity";
 export { OrderDto } from "./entites/orders/dtos/order.dto";
 export { OrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
-export { ReplyOfferDto } from './entites/orders/dtos/reply-offer.dto'
 export { CargoLoadMethod } from "./entites/references/entities/cargo-load-method.entity";
 export { CargoPackage } from "./entites/references/entities/cargo-package.entity";
 export { TransportKind } from "./entites/references/entities/transport-kind.entity";

@@ -2,7 +2,6 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn
 import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/user.entity';
 import { ClientPhoneNumber } from './client-phonenumber.entity';
-import { OrderOfferReply } from '../orders/entities/offer-reply.entity';
 
 @Entity()
 export class Client {

@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver, ReplyOfferDto, OrderOfferReply } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -20,7 +20,6 @@ export class DriversService {
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     @InjectRepository(CargoStatus) private readonly cargoStatusesRepository: Repository<CargoStatus>,
     @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
-    @InjectRepository(OrderOfferReply) private readonly offerRepliesRepository: Repository<OrderOfferReply>,
     private rmqService: RabbitMQSenderService
   ) { }
 
@@ -230,7 +229,7 @@ export class DriversService {
 
   async getDriverOffers() {
     try {
-      const offered: OrderOffer[] = await this.orderOffersRepository.find({ where: { canceled: false }, relations: ['order', 'driver', 'currency', 'orderOfferReply'] });
+      const offered: OrderOffer[] = await this.orderOffersRepository.find({ where: { canceled: false }, relations: ['order', 'driver', 'currency'] });
 
       return new BpmResponse(true, offered, null);
     } catch(err: any) {

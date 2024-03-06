@@ -63,7 +63,7 @@ export class Transaction {
   @JoinColumn({ name: 'agent_id' })
   agent: Agent;
 
-  @ManyToOne(() => User, (user) => user.transactions)
+  @ManyToOne(() => User, (user) => user.createdTransactions)
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
 }

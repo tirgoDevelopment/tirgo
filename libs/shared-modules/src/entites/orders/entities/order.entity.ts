@@ -160,7 +160,7 @@ export class Order {
   @Column({ default: false })
   deleted: boolean;
 
-  @ManyToOne(() => User, (user) => user.orders, { nullable: false })
+  @ManyToOne(() => User, (user) => user.createdOrders, { nullable: false })
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
 

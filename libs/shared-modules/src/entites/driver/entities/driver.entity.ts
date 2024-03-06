@@ -4,7 +4,6 @@ import { User } from '../../users/user.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { DriverPhoneNumber } from './driver-phonenumber.entity';
 import { OrderOffer } from '../../orders/entities/offer.entity';
-import { OrderOfferReply } from '../../orders/entities/offer-reply.entity';
 import { Agent } from '../../agents/entites/agent.entity';
 import { Subscription } from '../../references/entities/subscription.entity';
 import { Transaction } from '../../transactions/transaction.entity';
@@ -42,7 +41,7 @@ export class Driver {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
 
-  @ManyToOne(() => User, (user) => user.orders, { nullable: false }) 
+  @ManyToOne(() => User, (user) => user.createdDrivers, { nullable: false }) 
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
 
@@ -66,9 +65,6 @@ export class Driver {
 
   @OneToMany(() => OrderOffer, orderOffer => orderOffer.driver)
   orderOffers: OrderOffer[];
-
-  @OneToMany(() => OrderOfferReply, orderOfferReply => orderOfferReply.driver)
-  orderOfferReplies: OrderOfferReply[];
 
   @OneToMany(() => DriverPhoneNumber, phoneNumber => phoneNumber.driver, { cascade: true })
   phoneNumbers: DriverPhoneNumber[];

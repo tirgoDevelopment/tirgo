@@ -43,6 +43,7 @@ export class AgentDriversService {
       driver.lastName = createDriverDto.lastName;
       driver.email = createDriverDto.email;
       driver.citizenship = createDriverDto.citizenship;
+      driver.createdBy = user;
 
       if (files) {
         const fileUploads = []
