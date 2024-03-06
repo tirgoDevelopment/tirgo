@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Delete, Patch, Put, } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Delete, Patch, Put, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ClientsService } from './client.service';
 import { ClientDto } from '..';
@@ -20,8 +20,9 @@ export class ClientsController {
   async createClient(
     @UploadedFiles() files: { passport?: any[] },
     @Body() clientData: ClientDto,
+    @Req() req: Request
   ) {
-    return this.clientsService.createClient(files.passport[0], clientData)
+    return this.clientsService.createClient(files.passport[0], clientData, req['user'])
   }
 
   @ApiOperation({ summary: 'Update client' })
@@ -62,7 +63,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get all active clients' })
-  @Get('active')
+  @Get('active-clients')
   async getAllActiveClient(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -73,7 +74,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get all non-active clients' })
-  @Get('non-active')
+  @Get('non-active-clients')
   async getAllNonActiveClient(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -84,7 +85,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get all deleted clients' })
-  @Get('deleted')
+  @Get('deleted-clients')
   async getAllDeletedClient(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -107,15 +108,15 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Block client' })
-  @Patch('block')
-  async blockClient(@Query('id') id: number, @Body('blockReason') blockReason: string) {
-    return this.clientsService.blockClient(id, blockReason);
+  @Patch('block-client')
+  async blockClient(@Query('id') id: number, @Body('blockReason') blockReason: string, @Req() req: Request) {
+    return this.clientsService.blockClient(id, blockReason, req['user']);
   }
 
-  @ApiOperation({ summary: 'Activate client' })
-  @Patch('activate')
-  async activateClient(@Query('id') id: number) {
-    return this.clientsService.activateClient(id);
+  @ApiOperation({ summary: 'Unblock client' })
+  @Patch('unblock-client')
+  async activateClient(@Query('id') id: number, @Req() req: Request) {
+    return this.clientsService.activateClient(id, req['user']);
   }
 
 }

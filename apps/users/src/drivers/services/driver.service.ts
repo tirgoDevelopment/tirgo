@@ -278,7 +278,7 @@ export class DriversService {
         sort['id'] = 'DESC'
       }
       const drivers = await this.driversRepository.find({ 
-        where: { active: true, deleted: false }, 
+        where: { blocked: false, deleted: false }, 
         relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
@@ -311,7 +311,7 @@ export class DriversService {
         sort['id'] = 'DESC'
       }
       const drivers = await this.driversRepository.find({ 
-        where: { active: false, deleted: false }, 
+        where: { blocked: true, deleted: false }, 
         relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
@@ -400,27 +400,29 @@ export class DriversService {
     }
   }
 
-  async blockDriver(id: number, blockReason: string): Promise<BpmResponse> {
+  async blockDriver(id: number, blockReason: string, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const driver = await this.driversRepository.findOneOrFail({ where: { id } });
 
-      if (!driver.active) {
+      if (driver.blocked) {
         // Driver is already blocked
         throw new BadRequestException(ResponseStauses.AlreadyBlocked);
       }
 
-      const updateResult = await this.driversRepository.update({ id: driver.id }, { active: false, blockReason });
+      driver.blocked = true;
+      driver.blockedAt = new Date();
+      driver.blockReason = blockReason;
+      driver.blockedBy = user;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
+      await this.driversRepository.save(driver);
+
         return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified)
-      }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Driver not found
@@ -434,27 +436,29 @@ export class DriversService {
     }
   }
 
-  async activateDriver(id: number): Promise<BpmResponse> {
+  async activateDriver(id: number, user: User): Promise<BpmResponse> {
     try {
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const driver = await this.driversRepository.findOneOrFail({ where: { id } });
 
-      if (driver.active) {
-        // Driver is already blocked
+      if (!driver.blocked) {
+        // Driver is already active
         throw new BadRequestException(ResponseStauses.AlreadyActive);
       }
 
-      const updateResult = await this.driversRepository.update({ id: driver.id }, { active: true });
+      driver.blockReason = null;
+      driver.blockedAt = null;
+      driver.blockedBy = null;
+      driver.blocked = false;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
+      await this.driversRepository.save(driver);
+
         return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified)
-      }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Driver not found
@@ -483,11 +487,11 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.AgentIdIsRequired);
       }
 
-      const isExists: boolean = await this.driversRepository.exists({ where: { id: driverId, agent: { id: agentId }, active: true, deleted: false } });
+      const isExists: boolean = await this.driversRepository.exists({ where: { id: driverId, agent: { id: agentId }, blocked: false, deleted: false } });
       if(isExists) {
         throw new BadRequestException(ResponseStauses.DriverAlreadyAppended)
       }
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, active: true, deleted: false } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, blocked: false, deleted: false } });
       const agent: Agent = await this.agentsRepository.findOneOrFail({ where: { id: agentId, blocked: false, deleted: false } });
 
       driver.agent = agent;
@@ -511,7 +515,7 @@ export class DriversService {
       if (!id || isNaN(id)) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const drivers: Driver[] = await this.driversRepository.find({ where: { agent: { id }, active: true, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      const drivers: Driver[] = await this.driversRepository.find({ where: { agent: { id }, blocked: false, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
       if (!drivers.length) {
         throw new NoContentException();
       } else {
@@ -532,7 +536,7 @@ export class DriversService {
       if (!id || isNaN(id)) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const drivers: Driver[] = await this.driversRepository.find({ where: { driverMerchant: { id }, active: true, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      const drivers: Driver[] = await this.driversRepository.find({ where: { driverMerchant: { id }, blocked: false, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
       if (!drivers.length) {
         throw new NoContentException();
       } else {

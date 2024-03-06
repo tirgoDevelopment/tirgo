@@ -51,7 +51,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get all drivers' })
-  @Get('all') 
+  @Get('all-drivers') 
   async getDrivers(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -73,7 +73,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get all active drivers' })
-  @Get('active')
+  @Get('active-drivers')
   async getAllActiveDriver(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -84,7 +84,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get all non-active drivers' })
-  @Get('non-active')
+  @Get('non-active-drivers')
   async getAllNonActiveDriver(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -95,7 +95,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get all deleted drivers' })
-  @Get('deleted')
+  @Get('deleted-drivers')
   async getAllDeletedDriver(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
@@ -112,19 +112,19 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Block driver' })
-  @Patch('block')
-  async blockDriver(@Query('id') id: number, @Body('blockReason') blockReason: string) {
-    return this.driversService.blockDriver(id, blockReason);
+  @Patch('block-driver')
+  async blockDriver(@Query('id') id: number, @Body('blockReason') blockReason: string, @Req() req: Request) {
+    return this.driversService.blockDriver(id, blockReason, req['user']);
   }
 
-  @ApiOperation({ summary: 'Activate driver' })
-  @Patch('activate')
-  async activateDriver(@Query('id') id: number) {
-    return this.driversService.activateDriver(id);
+  @ApiOperation({ summary: 'Unblock driver' })
+  @Patch('unblock-driver')
+  async activateDriver(@Query('id') id: number, @Req() req: Request) {
+    return this.driversService.activateDriver(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Admin append driver to agent' })
-  @Post('append-to-agent')
+  @Post('append-driver-to-agent')
   async appendToAgent(@Body('driverId') driverId: number, @Body('agentId') agentId: number, @Req() req: Request) {
     return this.driversService.appendDriverToAgent(driverId, agentId, req['user']?.id)
   }
