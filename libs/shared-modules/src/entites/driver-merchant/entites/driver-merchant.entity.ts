@@ -97,6 +97,9 @@ export class DriverMerchant {
   @Column({ default: false })
   verified?: boolean;
 
+  @Column({ default: false })
+  deleted?: boolean;
+
   @Column({ name: "verified_at", nullable: true })
   verifiedAt?: Date;
 

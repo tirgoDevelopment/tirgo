@@ -58,7 +58,7 @@ export class Agent {
   @Column({ default: false })
   blocked: boolean;
 
-  @Column({ name: 'blocked_at' })
+  @Column({ name: 'blocked_at', nullable: true })
   blockedAt: Date;
 
   @ManyToOne(() => User, (user) => user.blockedAgents)

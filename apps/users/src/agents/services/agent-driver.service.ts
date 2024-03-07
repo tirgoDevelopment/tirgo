@@ -220,7 +220,7 @@ export class AgentDriversService {
       }
 
       const subscription: Subscription = await this.subscriptionsRepository.findOneOrFail({ where: { active: true, id: subscriptionId }, relations: ['currency'] });
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { active: true, id: driverId } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { blocked: false, id: driverId } });
 
       driver.subscribedAt = new Date();
       driver.subscription = subscription;

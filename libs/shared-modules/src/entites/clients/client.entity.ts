@@ -38,7 +38,7 @@ export class Client {
   @Column({ default: true })
   blocked: boolean;
 
-  @Column({ name: 'blocked_at' })
+  @Column({ name: 'blocked_at', nullable: true })
   blockedAt: Date;
 
   @Column({ nullable: true, name: 'block_reason' })

@@ -371,22 +371,24 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const driver = await this.driversRepository.findOneOrFail({ where: { id } });
+      const driver = await this.driversRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
       if (driver.deleted) {
         // Driver is already deleted
         throw new BadRequestException(ResponseStauses.AlreadyDeleted);
       }
 
-      const updateResult = await this.driversRepository.update({ id: driver.id }, { deleted: true });
+      driver.deleted = true;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
-        return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified)
+      // Update phoneNumbers by adding underscores
+      if (driver.phoneNumbers) {
+        driver.phoneNumbers.forEach(phone => {
+              phone.phoneNumber = '_' + phone.phoneNumber;
+          });
       }
+      await this.driversRepository.save(driver);
+
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Driver not found

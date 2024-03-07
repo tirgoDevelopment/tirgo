@@ -12,7 +12,7 @@ export class ClientMerchant {
   @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ nullable: true, name: 'phone_number' })
+  @Column({ nullable: true, name: 'phone_number', unique: true })
   phoneNumber: string;
 
   @Column({ nullable: false, name: 'company_name' })

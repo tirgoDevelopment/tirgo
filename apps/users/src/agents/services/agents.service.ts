@@ -328,7 +328,7 @@ export class AgentsService {
         throw new BadRequestException(ResponseStauses.AlreadyDeleted);
       }
 
-      const updateResult = await this.agentsRepository.update({ id: agent.id }, { deleted: true });
+      const updateResult = await this.agentsRepository.update({ id: agent.id }, { deleted: true, phoneNumber: '_'+agent.phoneNumber });
 
       if (updateResult.affected > 0) {
         // Update was successful
