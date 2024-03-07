@@ -22,9 +22,19 @@ export class Staff {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
+  
+  @Column({ default: false })
+  blocked: boolean;
 
-  @Column({ default: true })
-  active: boolean;
+  @ManyToOne(() => User, (user) => user.blockedDrivers) 
+  @JoinColumn({ name: 'blocked_by' })
+  blockedBy: User;
+
+  @Column({ name: 'blocked_at', nullable: true })
+  blockedAt: Date;  
+
+  @Column({ nullable: true, name: 'block_reason' })
+  blockReason: string;
 
   @Column({ default: false })
   deleted: boolean;

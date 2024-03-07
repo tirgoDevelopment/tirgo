@@ -115,4 +115,7 @@ export class User {
 
     @OneToMany(() => Driver, (driver) => driver.blockedBy)
     blockedDrivers: Driver[];
+
+    @OneToMany(() => Agent, (agent) => agent.blockedBy)
+    blockedStaffs: Agent[];
 }

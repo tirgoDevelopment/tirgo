@@ -135,4 +135,28 @@ export class StaffsService {
             }
         }
     }
+
+    async blockStaff(id: number, blockReason: string, user: User): Promise<BpmResponse> {
+        try {   
+            if(!id || isNaN(id)) {
+                throw new BadRequestException(ResponseStauses.IdIsRequired)
+            }
+            const staff: Staff = await this.staffsRepository.findOneOrFail({ where: { deleted: false, id } });
+            staff.blocked = true;
+            staff.blockedAt = new Date();
+            staff.blockReason = blockReason;
+            staff.blockedBy = user;
+
+            await this.staffsRepository.save(staff);
+            return new BpmResponse(true, staff);
+        } catch (err: any) {
+            if (err instanceof HttpException) {
+                throw err;
+            } else if(err.name == 'EntityNotFoundError') {
+                throw new NotFoundException(ResponseStauses.RoleNotFound);
+            } else {
+                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+            }
+        }
+    }
 }
