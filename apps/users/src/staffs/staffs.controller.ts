@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Query, Delete, UsePipes, ValidationPipe, Put } from '@nestjs/common';
+import { Body, Controller, Post, Get, Query, Delete, UsePipes, ValidationPipe, Put, Req, Patch } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CreateStaffDto } from '..';
@@ -49,6 +49,13 @@ export class StaffsController {
   @UsePipes(ValidationPipe)
   deleteStaff(@Query('id') id: number) {
     return this.staffsService.deleteStaff(id);
+  }
+
+  @ApiOperation({ summary: 'Block staff user' })
+  @Patch()
+  @UsePipes(ValidationPipe)
+  blockStaff(@Query('id') id: number, @Body() blockDto: { blockReason: string }, @Req() req: Request) {
+    return this.staffsService.blockStaff(id, blockDto.blockReason, req['user']);
   }
 
 }
