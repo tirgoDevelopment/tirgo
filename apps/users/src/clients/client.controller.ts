@@ -45,7 +45,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get all clients' })
-  @Get('all')
+  @Get('all-clients')
   async getAllClient(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,

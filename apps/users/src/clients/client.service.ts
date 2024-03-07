@@ -38,11 +38,20 @@ export class ClientsService {
         client.createdBy = user;
       }
 
+      if(typeof createClientDto.phoneNumbers == 'string') {
+        createClientDto.phoneNumbers = JSON.parse(createClientDto.phoneNumbers)
+      }
+      if(!(createClientDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
+      const clientPhoneNumbers = createClientDto.phoneNumbers.map(phoneNumber => {
         const clientPhoneNumber = new ClientPhoneNumber();
-        clientPhoneNumber.phoneNumber = createClientDto.phoneNumber;
-        clientPhoneNumber.client = client;
-        client.phoneNumbers = [clientPhoneNumber];
+        clientPhoneNumber.phoneNumber = phoneNumber;
+        clientPhoneNumber.client = client; 
+        return clientPhoneNumber;
+      });
 
+        client.phoneNumbers = clientPhoneNumbers;
 
       await this.awsService.uploadFile('client', passportFile);
 
@@ -189,7 +198,7 @@ export class ClientsService {
     }
   }
 
-  async getAllActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+  async getAllActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
@@ -220,7 +229,7 @@ export class ClientsService {
     }
   }
 
-  async getAllNonActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+  async getAllNonActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
@@ -251,7 +260,7 @@ export class ClientsService {
     }
   }
 
-  async getAllDeletedClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string,): Promise<BpmResponse> {
+  async getAllDeletedClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
@@ -284,37 +293,40 @@ export class ClientsService {
 
   async deleteClient(id: number): Promise<BpmResponse> {
     try {
-      if (!id) {
-        return new BpmResponse(false, null, ['Id is required']);
-      }
-      const client = await this.clientsRepository.findOneOrFail({ where: { id } });
+        if (!id) {
+            return new BpmResponse(false, null, ['Id is required']);
+        }
+        const client = await this.clientsRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
-      if (client.deleted) {
-        // Client is already deleted
-        throw new BadRequestException(ResponseStauses.AlreadyDeleted);
-      }
+        if (client.deleted) {
+            // Client is already deleted
+            throw new BadRequestException(ResponseStauses.AlreadyDeleted);
+        }
 
-      const updateResult = await this.clientsRepository.update({ id: client.id }, { deleted: true });
+        client.deleted = true;
 
-      if (updateResult.affected > 0) {
-        // Update was successful
+        // Update phoneNumbers by adding underscores
+        if (client.phoneNumbers) {
+            client.phoneNumbers.forEach(phone => {
+                phone.phoneNumber = '_' + phone.phoneNumber;
+            });
+        }
+
+        await this.clientsRepository.save(client);
+
         return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified);
-      }
     } catch (err: any) {
-      if (err.name == 'EntityNotFoundError') {
-        // Client not found
-        throw new NoContentException();
-      } else if(err instanceof HttpException) {
-        throw err
-      } else {
-        // Other error (handle accordingly)
-       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-      }
+        if (err.name == 'EntityNotFoundError') {
+            // Client not found
+            throw new NoContentException();
+        } else if (err instanceof HttpException) {
+            throw err
+        } else {
+            // Other error (handle accordingly)
+            throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+        }
     }
-  }
+}
 
   async restoreClient(id: number): Promise<BpmResponse> {
     try {

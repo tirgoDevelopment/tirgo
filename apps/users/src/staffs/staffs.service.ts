@@ -122,6 +122,7 @@ export class StaffsService {
             }
             const staff: Staff = await this.staffsRepository.findOneOrFail({ where: { deleted: false, id } });
             staff.deleted = true;
+            staff.username = '_'+staff.username;
             await this.staffsRepository.save(staff);
             return new BpmResponse(true, staff);
         } catch (err: any) {

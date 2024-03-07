@@ -52,7 +52,7 @@ export class Driver {
   @JoinColumn({ name: 'blocked_by' })
   blockedBy: User;
 
-  @Column({ name: 'blocked_at' })
+  @Column({ name: 'blocked_at', nullable: true })
   blockedAt: Date;  
 
   @Column({ nullable: true, name: 'block_reason' })

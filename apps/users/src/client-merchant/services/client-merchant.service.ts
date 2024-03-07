@@ -296,7 +296,7 @@ export class ClientMerchantsService {
       merchant.rejected = true;
       merchant.rejectedAt = new Date();
       merchant.rejectedBy = user;
-      
+
       await this.clientMerchantsRepository.save(merchant);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
     } catch (err: any) {
@@ -358,7 +358,7 @@ export class ClientMerchantsService {
       merchant.blocked = false;
       merchant.blockedAt = null;
       merchant.blockedBy = null;
-      
+
       await this.clientMerchantsRepository.save(merchant);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
     } catch (err: any) {
@@ -374,17 +374,22 @@ export class ClientMerchantsService {
   }
 
   async deleteMerchant(id: number): Promise<BpmResponse> {
-    const isDeleted = await this.clientMerchantsRepository.createQueryBuilder()
-      .update(ClientMerchant)
-      .set({ deleted: true })
-      .where("id = :id", { id })
-      .execute();
-    if (isDeleted.affected) {
+    try {
+      const clientMerchant: ClientMerchant = await this.clientMerchantsRepository.findOneOrFail({ where: { id } });
+      if(clientMerchant.deleted) {
+        throw new BadRequestException(ResponseStauses.AlreadyDeleted);
+      }
+  
+      clientMerchant.deleted = true;
+      clientMerchant.phoneNumber = '_'+clientMerchant.phoneNumber;
+  
+      await this.clientMerchantsRepository.save(clientMerchant);
+  
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
-    } else {
-      return new BpmResponse(true, null, [ResponseStauses.DeleteDataFailed]);
+    } catch(err: any) {
+      throw new InternalErrorException(ResponseStauses.InternalServerError);
     }
-  }
+  } 
 
   async findMerchantById(id: number) {
     try {
@@ -399,7 +404,7 @@ export class ClientMerchantsService {
         c.name as currencyName
         FROM
             transaction t
-        LEFT JOIN currency c on c.id = t.currency_id 
+        LEFT JOIN currency c on c.id = t.currency_id
         WHERE
             t.merchant_id = ${id}
         GROUP BY
@@ -503,7 +508,7 @@ export class ClientMerchantsService {
         c.name as currencyName
         FROM
             transaction t
-        LEFT JOIN currency c on c.id = t.currency_id 
+        LEFT JOIN currency c on c.id = t.currency_id
         WHERE
             t.merchant_id = ${merchant.id}
         GROUP BY
@@ -566,8 +571,8 @@ export class ClientMerchantsService {
       } else {
         sort['id'] = 'DESC'
       }
-      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ 
-        where: { completed: true, verified: false, rejected: true }, 
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({
+        where: { completed: true, verified: false, rejected: true },
         relations: ['bankAccounts', 'bankAccounts.currency'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
@@ -601,8 +606,8 @@ export class ClientMerchantsService {
       } else {
         sort['id'] = 'DESC'
       }
-      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({ 
-        where: { completed: true, verified: false, blocked: true }, 
+      const merchants: ClientMerchant[] = await this.clientMerchantsRepository.find({
+        where: { completed: true, verified: false, blocked: true },
         relations: ['bankAccounts', 'bankAccounts.currency'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number

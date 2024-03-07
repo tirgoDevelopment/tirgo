@@ -1,10 +1,9 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AwsService, BadRequestException, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
+import { BadRequestException, BpmResponse, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
 import { LoginDto } from '../auth.dto';
 import * as bcrypt from 'bcrypt';
-import { VerifyPhoneDto } from '@app/shared-modules/entites/client-merchant/dtos/client-merchant-user.dto';
 
 @Injectable()
 export class LoginService {
@@ -133,20 +132,4 @@ export class LoginService {
         }
     }
 
-    async restoreUser(restoreUserDto: any): Promise<BpmResponse> {
-        try {
-            
-
-            return new BpmResponse(true, null)
-        } catch (err: any) {
-            console.log(err)
-            if (err.name == 'EntityNotFoundError') {
-                throw new NotFoundException(ResponseStauses.UserNotFound)
-            } if (err instanceof HttpException) {
-                throw err
-            } else {
-                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
-            } 
-        }
-        }
     }

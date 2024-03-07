@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch, Delete } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { DriverMerchantsService } from '../services/driver-merchant.service';
 import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '../..';
@@ -9,14 +9,14 @@ import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merc
 @Controller('driver-merchants')
 export class DriverMerchantController {
   constructor(
-    private driverDriverMerchantsService: DriverMerchantsService,
+    private driverMerchantsService: DriverMerchantsService,
   ) { }
 
   @ApiOperation({ summary: 'Create driver merchant' })
   @Post('register')
   @UsePipes(ValidationPipe)
   async create(@Body() createDriverMerchantDto: CreateDriverMerchantDto) {
-    return this.driverDriverMerchantsService.createDriverMerchant(createDriverMerchantDto);
+    return this.driverMerchantsService.createDriverMerchant(createDriverMerchantDto);
   }
  
   @ApiOperation({ summary: 'Create driver merchant step2' })
@@ -33,65 +33,71 @@ export class DriverMerchantController {
     @UploadedFiles() files: { passport?: any[], logo?: any[], registrationCertificate?: any[], transportationCertificate?: any[] },
     @Body() merchantData: CreateInStepDriverMerchantDto
   ) {
-    return this.driverDriverMerchantsService.createInStepMerchant(files, merchantData)
+    return this.driverMerchantsService.createInStepMerchant(files, merchantData)
   }
 
   @ApiOperation({ summary: 'Create driver merchant step3' })
   @Post('register/complete')
   @UsePipes(ValidationPipe)
   async complete(@Body() createDriverMerchantDto: CompleteDriverMerchantDto) {
-    return this.driverDriverMerchantsService.completeMerchant(createDriverMerchantDto);
+    return this.driverMerchantsService.completeMerchant(createDriverMerchantDto);
   }
 
   @ApiOperation({ summary: 'Create driver merchant user' })
   @Post('register/user')
   @UsePipes(ValidationPipe)
   async createUser(@Body() createDriverMerchantUserDto: CreateDriverMerchantUserDto) {
-    return this.driverDriverMerchantsService.createUser(createDriverMerchantUserDto);
+    return this.driverMerchantsService.createUser(createDriverMerchantUserDto);
   }
 
   @ApiOperation({ summary: 'Verify driver merchant' })
   @Patch('verify-driver-merchant')
   async verifyMerchant(@Query('id') id: number, @Req() req: Request) {
-   return this.driverDriverMerchantsService.verifyMerchant(id, req['user'])
+   return this.driverMerchantsService.verifyMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Reject driver merchant' })
   @Patch('reject-driver-merchant')
   async rejectMerchant(@Query('id') id: number, @Req() req: Request) {
-   return this.driverDriverMerchantsService.rejectMerchant(id, req['user'])
+   return this.driverMerchantsService.rejectMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Block driver merchant' })
   @Patch('block-driver-merchant')
   async blockMerchant(@Query('id') id: number, @Req() req: Request) {
-   return this.driverDriverMerchantsService.blockMerchant(id, req['user'])
+   return this.driverMerchantsService.blockMerchant(id, req['user'])
   }
 
   @ApiOperation({ summary: 'Unblock driver merchant' })
   @Patch('unblock-driver-merchant')
   async unblockMerchant(@Query('id') id: number, @Req() req: Request) {
-   return this.driverDriverMerchantsService.unblockMerchant(id, req['user'])
+   return this.driverMerchantsService.unblockMerchant(id, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Delete driver merchant' })
+  @Delete()
+  async deleteMerchant(@Query('id') id: number) {
+   return this.driverMerchantsService.deleteMerchant(id)
   }
 
   @ApiOperation({ summary: 'Append driver' })
   @Post('append-driver')
   @UsePipes(ValidationPipe)
   async appendDriver(@Body() appendDriverMerchantDto: AppendDriverMerchantDto, @Req() req: Request) {
-    return this.driverDriverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
+    return this.driverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
   }
 
   //get methods  
   @ApiOperation({ summary: 'Get all merchants' })
   @Get('all-driver-merchants')
   async getmerchants() {
-    return this.driverDriverMerchantsService.getMerchants()
+    return this.driverMerchantsService.getMerchants()
   }
 
   @ApiOperation({ summary: 'Get client merchant by id' })
   @Get('driver-merchant-by')
   async getById(@Query('id') id: number) {
-    return this.driverDriverMerchantsService.findMerchantById(id);
+    return this.driverMerchantsService.findMerchantById(id);
   }
 
   @ApiOperation({ summary: 'Get all unverified driver merchants' })
@@ -102,7 +108,7 @@ export class DriverMerchantController {
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
   ) {
-    return this.driverDriverMerchantsService.getUnverifiedMerchants(pageSize, pageIndex, sortBy, sortType)
+    return this.driverMerchantsService.getUnverifiedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
   @ApiOperation({ summary: 'Get all verified driver merchants' })
@@ -117,7 +123,7 @@ export class DriverMerchantController {
     @Query('createdFrom') createdFrom: string,
     @Query('createdAtTo') createdAtTo: string,
   ) {
-    return this.driverDriverMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
+    return this.driverMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
   }
 
   @ApiOperation({ summary: 'Get all rejected driver merchants' })
@@ -128,7 +134,7 @@ export class DriverMerchantController {
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
   ) {
-    return this.driverDriverMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
+    return this.driverMerchantsService.getRejectedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 
   
@@ -140,6 +146,6 @@ export class DriverMerchantController {
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
   ) {
-    return this.driverDriverMerchantsService.getBlockedMerchants(pageSize, pageIndex, sortBy, sortType)
+    return this.driverMerchantsService.getBlockedMerchants(pageSize, pageIndex, sortBy, sortType)
   }
 }

@@ -337,6 +337,24 @@ export class DriverMerchantsService {
     }
   }
 
+  async deleteMerchant(id: number): Promise<BpmResponse> {
+    try {
+      const driverMerchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id } });
+      if(driverMerchant.deleted) {
+        throw new BadRequestException(ResponseStauses.AlreadyDeleted);
+      }
+  
+      driverMerchant.deleted = true;
+      driverMerchant.phoneNumber = '_'+driverMerchant.phoneNumber;
+  
+      await this.driverMerchantsRepository.save(driverMerchant);
+  
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
+    } catch(err: any) {
+      throw new InternalErrorException(ResponseStauses.InternalServerError);
+    }
+  } 
+
   async appendDriverToMerchant(dto: AppendDriverMerchantDto, user: User): Promise<BpmResponse> {
     try {
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: dto.driverId } });
@@ -358,7 +376,6 @@ export class DriverMerchantsService {
       }
     }
   }
-
 
   async getMerchants() {
     return await this.driverMerchantsRepository.find()
