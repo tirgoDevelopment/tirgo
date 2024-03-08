@@ -1,8 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { AwsService, BpmResponse, ClientMerchant, InternalErrorException, ResponseStauses, SundryService, User, CreateClientMerchantDto, NotFoundException, UserTypes, CreateInStepClientMerchantDto, CompleteClientMerchantDto, ClientBankAccount, CreateClientMerchantUserDto, ClientMerchantUser, Role, ClientMerchantDto, BadRequestException, NoContentException, Transaction, TransactionTypes, Currency } from '../..';
-import * as bcrypt from 'bcrypt';
 import * as dateFns from 'date-fns'
 
 @Injectable()
@@ -445,7 +444,10 @@ export class ClientMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+
+        const merchantsCount = await this.clientMerchantsRepository.count({ where: { completed: true, verified: false, rejected: false } });
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -517,34 +519,10 @@ export class ClientMerchantsService {
         merchant['balances'] = topupTransactions;
       }
 
-
-      //  const merchants = await this.clientMerchantsRepository.createQueryBuilder('cm')
-      //     .leftJoinAndSelect('cm.bankAccounts', 'bankAccounts')
-      //     .leftJoinAndSelect('bankAccounts.currency', 'currency')
-      //     .addSelect(`(
-      //         SELECT
-      //             SUM(CASE WHEN t.transaction_type = '${TransactionTypes.TopUp}' THEN t.amount ELSE 0 END) -
-      //             SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' THEN t.amount ELSE 0 END) -
-      //             SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS activeBalance
-      //         FROM
-      //             transaction t
-      //         WHERE
-      //             t.merchant_id = cm.id
-      //     )`, 'activeBalance')
-      //     .addSelect(`(
-      //         SELECT
-      //             SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS frozenBalance
-      //         FROM
-      //             transaction t
-      //         WHERE
-      //             t.merchant_id = cm.id
-      //     )`, 'frozenBalance')
-      //     .where(`completed = true AND verified = true AND rejected = false`)
-      //     .getMany();
-
-
+      const merchantsCount = await this.clientMerchantsRepository.count({ where: filter });
+      const totalPagesCount = Math.ceil(merchantsCount / size);
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -579,7 +557,11 @@ export class ClientMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+
+        const merchantsCount = await this.clientMerchantsRepository.count({ where: { completed: true, verified: false, rejected: true } });
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -614,7 +596,9 @@ export class ClientMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        const merchantsCount = await this.clientMerchantsRepository.count({ where: { completed: true, verified: false, blocked: true } });
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
