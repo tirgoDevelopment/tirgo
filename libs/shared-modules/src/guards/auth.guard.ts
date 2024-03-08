@@ -29,7 +29,8 @@ export class AuthGuard implements CanActivate {
             request.url.startsWith('/api/v2/users/client-merchant-user/verify-code') || 
             request.url.startsWith('/api/v2/users/login') ||
             request.url.startsWith('/api/v2/users/staffs/register') ||
-            request.url.startsWith('/api/v2/users/client-merchant') ||
+            request.url.startsWith('/api/v2/users/client-merchants/register') ||
+            request.url.startsWith('/api/v2/users/client-merchants/client-merchant-by') ||
             request.url.startsWith('/api/v2/users/driver-merchants/register') ||
             request.url.startsWith('/api/v2/users/register/client-merchant') ||
             request.url.startsWith('/api/v2/users/client-merchant-user/send-code') ||

@@ -20,12 +20,16 @@ import { CargoLoadingMethodesController } from './references/controllers/cargo-l
 import { CargoLoadingMethodsService } from './references/services/cargo-loading-method.service';
 import { CargoPackagesService } from './references/services/cargo-package.service';
 import { FilesController } from './references/controllers/files.controller';
+import { CitiesController } from './references/controllers/cities.controller';
+import { CitiesService } from './references/services/cities.service';
+import { HttpService, HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
       DatabaseModule,
       AuthModule,
       TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
+      HttpModule
     ],
     controllers: [
       TransportTypesController,
@@ -37,7 +41,8 @@ import { FilesController } from './references/controllers/files.controller';
       CargoStatusesController,
       CargoPackagesController,
       CargoLoadingMethodesController,
-      FilesController
+      FilesController,
+      CitiesController
     ],
     providers: [
       TransportTypesService,
@@ -49,7 +54,8 @@ import { FilesController } from './references/controllers/files.controller';
       CargoStatusesService,
       CargoPackagesService,
       CargoLoadingMethodsService,
-      AwsService
+      AwsService,
+      CitiesService,
     ],
     exports: [
       TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
