@@ -41,6 +41,7 @@ export class DriverMerchantUser {
   deleted?: boolean;
   
   @ManyToOne(() => DriverMerchant, (driverMerchant) => driverMerchant.users)
+  @JoinColumn({ name: 'driver_merchant_id' })
   driverMerchant: DriverMerchant;
 
   @OneToOne(() => User, (user) => user.driverMerchantUser, { cascade: true, onDelete: 'CASCADE' })

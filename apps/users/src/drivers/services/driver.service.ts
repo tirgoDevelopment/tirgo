@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverMerchant, DriverPhoneNumber, InternalErrorException, NoContentException, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
+import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, InternalErrorException, NoContentException, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
 import * as dateFns from 'date-fns'
 
 @Injectable()
@@ -253,7 +253,9 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, drivers, null);
+      const driversCount = await this.driversRepository.count({ where: filter })
+      const totalPagesCount = Math.ceil(driversCount / size);
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
@@ -287,7 +289,9 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, drivers, null);
+      const driversCount = await this.driversRepository.count({ where: { blocked: false, deleted: false } })
+      const totalPagesCount = Math.ceil(driversCount / size);
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
@@ -320,7 +324,10 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, drivers, null);
+
+      const driversCount = await this.driversRepository.count({ where: { blocked: true, deleted: false } })
+      const totalPagesCount = Math.ceil(driversCount / size);
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
@@ -335,8 +342,8 @@ export class DriversService {
 
   async getAllDeletedDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
     try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 1
+      const size = +pageSize || 10;
+      const index = +pageIndex || 1;
       const sort: any = {};
       if(sortBy && sortType) {
         sort[sortBy] = sortType; 
@@ -347,14 +354,69 @@ export class DriversService {
         where: { deleted: true }, 
         relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
         order: sort,
-        skip: (index - 1) * size, // Skip the number of items based on the page number
+        skip: (index - 1) * size,
         take: size,
       });
       if (!drivers.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, drivers, null);
+      
+      const driversCount = await this.driversRepository.count({ 
+        where: { deleted: true }, 
+      });
+      const totalPagesCount = Math.ceil(driversCount / size);
+
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getMerchantDeletedDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, merchantId: number): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      if (!sortBy) {
+        sortBy = 'd.id';
+      } 
+      const drivers = await this.driversRepository.createQueryBuilder('d')
+      .leftJoin('d.subscription', 'subscription')
+      .leftJoin('d.driverTransports', 'driverTransports')
+      .leftJoin('d.agent', 'agent')
+      .leftJoin('d.phoneNumbers', 'phoneNumber')
+      .addSelect('phoneNumber.phoneNumber')
+      .addSelect('phoneNumber.id')
+      .leftJoin(User, 'u', 'u.id = d.created_by')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
+      .skip((index - 1) * size) // Skip the number of items based on the page number
+      .take(size)
+      .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
+      .getMany();
+
+      const driversCount = await this.driversRepository.createQueryBuilder('d')
+      .leftJoin(User, 'u', 'u.id = d.created_by')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
+      .getCount();
+
+      const totalPagesCount = Math.ceil(driversCount / size);
+
+      if (!drivers.length) {
+        throw new NoContentException();
+      }
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
+    } catch (err: any) {
+      console.log(err)
       if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
       } else if (err instanceof HttpException) {

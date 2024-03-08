@@ -94,6 +94,18 @@ export class DriversController {
     return this.driversService.getAllNonActiveDrivers(pageSize, pageIndex, sortBy, sortType);
   }
 
+  @ApiOperation({ summary: 'Get all merchant archive drivers' })
+  @Get('merchant-archive-drivers')
+  async getMerchantDeletedDrivers(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('merchantId') merchantId: number,
+  ) {
+    return this.driversService.getMerchantDeletedDrivers(pageSize, pageIndex, sortBy, sortType, merchantId);
+  }
+
   @ApiOperation({ summary: 'Get all deleted drivers' })
   @Get('deleted-drivers')
   async getAllDeletedDriver(
