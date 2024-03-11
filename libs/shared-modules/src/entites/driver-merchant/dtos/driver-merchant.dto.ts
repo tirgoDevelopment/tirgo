@@ -33,7 +33,6 @@ export class CreateDriverMerchantDto {
 export class CreateInStepDriverMerchantDto {
 
   @ApiProperty({ required: true })
-  @IsNumber()
   @IsNotEmpty()
   merchantId: number;
 

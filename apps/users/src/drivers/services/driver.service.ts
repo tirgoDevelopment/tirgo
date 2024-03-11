@@ -29,7 +29,6 @@ export class DriversService {
 
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
-
       if(user.userType == UserTypes.DriverMerchantUser) {
         const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
@@ -394,22 +393,22 @@ export class DriversService {
       .addSelect('phoneNumber.phoneNumber')
       .addSelect('phoneNumber.id')
       .leftJoin(User, 'u', 'u.id = d.created_by')
-      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
-      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
+      // .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      // .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      // .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
       .skip((index - 1) * size) // Skip the number of items based on the page number
       .take(size)
       .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
       .getMany();
 
-      const driversCount = await this.driversRepository.createQueryBuilder('d')
-      .leftJoin(User, 'u', 'u.id = d.created_by')
-      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
-      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
-      .getCount();
-
-      const totalPagesCount = Math.ceil(driversCount / size);
+      // const driversCount = await this.driversRepository.createQueryBuilder('d')
+      // .leftJoin(User, 'u', 'u.id = d.created_by')
+      // .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      // .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      // .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
+      // .getCount();
+ 
+      const totalPagesCount = Math.ceil(10 / size);
 
       if (!drivers.length) {
         throw new NoContentException();

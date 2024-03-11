@@ -24,26 +24,25 @@ export class AuthGuard implements CanActivate {
         if (request.url.startsWith('/api/v2/users/sse/events')) {
             token = request.query.token
         }
-        if (
-            request.url.startsWith('/api/v2/users/client-merchant-user/phone-verify') ||
-            request.url.startsWith('/api/v2/users/client-merchant-user/verify-code') || 
-            request.url.startsWith('/api/v2/users/login') ||
-            request.url.startsWith('/api/v2/users/staffs/register') ||
-            request.url.startsWith('/api/v2/users/client-merchants/register') ||
-            request.url.startsWith('/api/v2/users/client-merchants/client-merchant-by') ||
-            request.url.startsWith('/api/v2/users/driver-merchants/register') ||
-            request.url.startsWith('/api/v2/users/register/client-merchant') ||
-            request.url.startsWith('/api/v2/users/client-merchant-user/send-code') ||
-            request.url.startsWith('/api/v2/references/currencies/all')) {
-            return true
-        }
- 
         if (!token) {
+            if (
+                request.url.includes('register') ||
+                request.url.includes('phone-verify') ||
+                request.url.includes('verify-code') ||
+                request.url.includes('send-code') ||
+                request.url == '/api/v2/users/login' ||
+                request.url == '/api/v2/users/client-merchants/client-merchant-by' ||
+                request.url == '/api/v2/users/driver-merchants/driver-merchant-by' ||
+                request.url == '/api/v2/references/currencies/all'
+                ) {
+                return true
+            }
+     
             throw new UnauthorizedException();
         }
         try {
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
-            if (payload.merchantId && !payload.verified && request.url !== '/api/v2/users/driver-merchants/driver-merchant-by') {
+            if (payload.merchantId && !payload.verified && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by')) {
                 throw new BadRequestException(ResponseStauses.AccessDenied);
             }
             if (payload && !isNaN(payload.userId)) {
@@ -56,7 +55,9 @@ export class AuthGuard implements CanActivate {
                     throw new InternalErrorException(ResponseStauses.UserNotFound);
                 }
             } else {
-                throw new InternalErrorException(ResponseStauses.UserNotFound);
+                if(payload.merchantId && !payload.verified && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by')) {
+                    throw new InternalErrorException(ResponseStauses.UserNotFound);
+                }
             }
             // 💡 We're assigning the payload to the request object here
             // so that we can access it in our route handlers
