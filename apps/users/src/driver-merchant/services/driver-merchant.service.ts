@@ -59,7 +59,7 @@ export class DriverMerchantsService {
 
   async createInStepMerchant(files: any, createMerchantDto: CreateInStepDriverMerchantDto) {
     try {
-      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: createMerchantDto.merchantId } });
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: Number(createMerchantDto.merchantId) } });
 
       merchant.supervisorFirstName = createMerchantDto.supervisorFirstName;
       merchant.supervisorLastName = createMerchantDto.supervisorLastName;

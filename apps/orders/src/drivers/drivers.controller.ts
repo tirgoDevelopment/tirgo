@@ -27,6 +27,36 @@ export class DriversController {
     return this.driversService.getOrders(sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
   }
 
+  @ApiOperation({ summary: 'Get all waiting orders' })
+  @Get('all-waiting-orders')
+  async getAllWaitginOrders(
+    @Query('pageIndex') pageIndex: string,
+    @Query('pageSize') pageSize: string,
+    @Query('orderId') orderId: number,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('loadingLocation') loadingLocation: string,
+    @Query('deliveryLocation') deliveryLocation: string,
+    @Query('transportKindId') transportKindId: string,
+    @Query('transportTypeId') transportTypeId: string,
+    @Query('createdAt') createdAt: string,
+    @Query('sendDate') sendDate: string
+  ) {
+    return this.driversService.getWaitingOrders(sortBy, sortType, pageIndex, pageSize, orderId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
+  }
+
+  @ApiOperation({ summary: 'Get order by order id' })
+  @Get('active-order-by')
+  async getActiveOrder(@Query('driverId') id: number) {
+    return this.driversService.getActiveOrderByDriverId(id)
+  }
+
+  @ApiOperation({ summary: 'Get order by order id' })
+  @Get('archive-orders-by')
+  async getArchiveOrders(@Query('driverId') id: number) {
+    return this.driversService.getArchiveOrdersByDriverId(id)
+  }
+
   @ApiOperation({ summary: 'Get order by order id' })
   @Get('order-by-id')
   async getOrderById(@Query('orderId') id: number) {
