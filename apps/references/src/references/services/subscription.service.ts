@@ -88,7 +88,7 @@ export class SubscriptionsService {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
     try {
-      const subscription = await this.subscriptionRepository.findOneOrFail({ where: { id, deleted: false } });
+      const subscription = await this.subscriptionRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['currency']  });
       return new BpmResponse(true, subscription, null);
     } catch (err: any) {
       if(err.name == 'EntityNotFoundError') {
@@ -101,7 +101,7 @@ export class SubscriptionsService {
 
   async getAllSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: false } });
+      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: false }, relations: ['currency'] });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -117,7 +117,7 @@ export class SubscriptionsService {
 
   async getAllActiveSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { active: true, deleted: false } });
+      const subscriptions = await this.subscriptionRepository.find({ where: { active: true, deleted: false }, relations: ['currency']  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -133,7 +133,7 @@ export class SubscriptionsService {
 
   async getAllNonActiveSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { active: false, deleted: false } });
+      const subscriptions = await this.subscriptionRepository.find({ where: { active: false, deleted: false }, relations: ['currency']  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -149,7 +149,7 @@ export class SubscriptionsService {
 
   async getAllDeletedSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true } });
+      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true }, relations: ['currency']  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
