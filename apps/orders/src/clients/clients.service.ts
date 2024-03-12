@@ -425,7 +425,7 @@ export class ClientsService {
       const isAlreadyAccepted: boolean = await this.orderOffersRepository.exists({ where: { order: { id: offer.order?.id}, accepted: true } });
       if(isAlreadyAccepted) {
         throw new BadRequestException(ResponseStauses.AlreadyAccepted)
-      }
+      } 
 
       offer.accepted = true;
       await this.orderOffersRepository.save(offer);
