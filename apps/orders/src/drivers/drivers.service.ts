@@ -121,7 +121,7 @@ export class DriversService {
         sort['id'] = 'DESC'
       }
 
-      const filter: any = { deleted: false };
+      const filter: any = { deleted: false, cargoStatus: { code: CargoStatusCodes.Waiting } };
       if (transportTypeId) {
         filter.transportType = { id: transportTypeId }
       }
@@ -149,7 +149,7 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations: ['clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations: ['driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
       if (orders.length) {
         return new BpmResponse(true, orders, null);
@@ -167,18 +167,39 @@ export class DriversService {
       }
     }
   }
-
+ 
   async getActiveOrderByDriverId(id: number): Promise<BpmResponse> {
     try {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const order = await this.ordersRepository.findOneOrFail({
-        where: { id, deleted: false, driverOffers: { driver: { id }, accepted: true }, cargoStatus: { code: CargoStatusCodes.Active } },
-        relations: ['driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        where: { deleted: false, driverOffers: { driver: { id }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
+        relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
 
       return new BpmResponse(true, order, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getMerchantActiveOrders(id: number): Promise<BpmResponse> {
+    try {
+      if (!id) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      const orders = await this.ordersRepository.find({
+        where: { deleted: false, driverOffers: { driver: { driverMerchant: { id } }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
+        relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.driver.driverMerchant', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+      });
+
+      return new BpmResponse(true, orders, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
@@ -198,6 +219,7 @@ export class DriversService {
         .leftJoinAndSelect("order.driverOffers", "driverOffer")
         .leftJoinAndSelect("driverOffer.driver", "driver")
         .leftJoinAndSelect("driver.phoneNumbers", "phoneNumbers")
+        .leftJoinAndSelect("driverOffer.currency", "currency")
         .leftJoinAndSelect("order.clientMerchant", "clientMerchant")
         .leftJoinAndSelect("order.inAdvancePriceCurrency", "inAdvancePriceCurrency")
         .leftJoinAndSelect("order.offeredPriceCurrency", "offeredPriceCurrency")

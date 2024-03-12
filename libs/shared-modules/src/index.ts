@@ -139,7 +139,8 @@ export enum ResponseStauses {
     OfferWasRejected = 'offerWasRejected',
     OfferWasCanceled = 'offerWasCanceled',
     NotEnoughBalance = 'notEnoughBalance',
-    AccessDenied = 'accessDenied'
+    AccessDenied = 'accessDenied',
+    TokenExpired = 'tokenExpired'
   } 
   
   export enum CargoStatusCodes {

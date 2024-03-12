@@ -24,23 +24,22 @@ export class AuthGuard implements CanActivate {
         if (request.url.startsWith('/api/v2/users/sse/events')) {
             token = request.query.token
         }
+        if (
+            request.url.includes('register') ||
+            request.url.includes('phone-verify') ||
+            request.url.includes('verify-code') ||
+            request.url.includes('send-code') ||
+            request.url == '/api/v2/users/login' ||
+            request.url == '/api/v2/users/client-merchants/client-merchant-by' ||
+            request.url == '/api/v2/users/driver-merchants/driver-merchant-by' ||
+            request.url == '/api/v2/references/currencies/all'
+            ) {
+            return true
+        }
         if (!token) {
-            if (
-                request.url.includes('register') ||
-                request.url.includes('phone-verify') ||
-                request.url.includes('verify-code') ||
-                request.url.includes('send-code') ||
-                request.url == '/api/v2/users/login' ||
-                request.url == '/api/v2/users/client-merchants/client-merchant-by' ||
-                request.url == '/api/v2/users/driver-merchants/driver-merchant-by' ||
-                request.url == '/api/v2/references/currencies/all'
-                ) {
-                return true
-            }
-     
             throw new UnauthorizedException();
         }
-        try {
+        try { 
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
             if (payload.merchantId && !payload.verified && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by')) {
                 throw new BadRequestException(ResponseStauses.AccessDenied);
@@ -63,7 +62,9 @@ export class AuthGuard implements CanActivate {
             // so that we can access it in our route handlers
         } catch (err: any) {
             console.log(err)
-            if (err instanceof HttpException) {
+            if(err.message.includes('Token verification failed')) {
+                throw new BadRequestException(ResponseStauses.TokenExpired);
+            } if (err instanceof HttpException) {
                 throw err
             } else {
                 throw new UnauthorizedException();
