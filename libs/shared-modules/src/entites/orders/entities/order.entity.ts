@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Client } from '../../clients/client.entity';
 import { Currency } from '../../references/entities/currency.entity';
 import { CargoType } from '../../references/entities/cargo-type.entity';
@@ -11,6 +11,7 @@ import { CargoStatus } from '../../references/entities/cargo-status.entity';
 import { ClientMerchant } from '../../client-merchant/entites/client-merchant.entity';
 import { User } from '../../users/user.entity';
 import { OrderOffer } from './offer.entity';
+import { LocationPlace } from './location.entity';
 
 @Entity()
 export class Order {
@@ -56,11 +57,13 @@ export class Order {
   @Column({ nullable: true, name: 'is_safe_transaction' })
   isSafeTransaction: boolean;
 
-  @Column({ nullable: true, name: 'loading_location' })
-  loadingLocation: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'loading_location_id' })
+  loadingLocation: LocationPlace;
 
-  @Column({ nullable: true, name: 'delivery_location' })
-  deliveryLocation: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'delivery_location_id' })
+  deliveryLocation: LocationPlace;
 
   @Column({ nullable: true })
   volume: number
@@ -77,17 +80,21 @@ export class Order {
   @JoinColumn({ name: 'cargo_status_id' })
   cargoStatus?: CargoStatus;
 
-  @Column({ nullable: true, name: 'customs_place_location' })
-  customsPlaceLocation?: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'customs_place_location_id' })
+  customsPlaceLocation?: LocationPlace;
 
-  @Column({ nullable: true, name: 'customs_clearance_place_location' })
-  customsClearancePlaceLocation?: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'customs_clearance_place_location_id' })
+  customsClearancePlaceLocation?: LocationPlace;
 
-  @Column({ nullable: true, name: 'additional_loading_location' })
-  additionalLoadingLocation?: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'additional_loading_location_id' })
+  additionalLoadingLocation?: LocationPlace;
 
-  @Column({ nullable: true, name: 'additional_delivery_location' })
-  additionalDeliveryLocation?: string;
+  @OneToOne(() => LocationPlace)
+  @JoinColumn({ name: 'additional_delivery_location_id' })
+  additionalDeliveryLocation?: LocationPlace;
 
   @Column({ nullable: true, name: 'refrigerator_from' })
   refrigeratorFrom?: string;

@@ -36,6 +36,7 @@ export { DriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
 export { TransportVerification } from "./entites/driver/entities/transport-verification.entity";
 export { Config } from "./entites/config/config.entity";
 export { Order } from "./entites/orders/entities/order.entity";
+export { LocationPlace } from "./entites/orders/entities/location.entity";
 export { OrderOffer } from "./entites/orders/entities/offer.entity";
 export { OrderDto } from "./entites/orders/dtos/order.dto";
 export { OrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
