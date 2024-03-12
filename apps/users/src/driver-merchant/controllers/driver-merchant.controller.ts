@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch, Delete, Put } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { DriverMerchantsService } from '../services/driver-merchant.service';
 import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '../..';
@@ -48,6 +48,21 @@ export class DriverMerchantController {
   @UsePipes(ValidationPipe)
   async createUser(@Body() createDriverMerchantUserDto: CreateDriverMerchantUserDto) {
     return this.driverMerchantsService.createUser(createDriverMerchantUserDto);
+  }
+
+  @ApiOperation({ summary: 'Update driver merchant' })
+  @Put('update-driver-merchant')
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'registrationCertificate', maxCount: 1 },
+    { name: 'transportationCertificate', maxCount: 1 },
+    { name: 'passport', maxCount: 1 },
+    { name: 'logo', maxCount: 1 },
+  ]),
+  )
+  async updateMerchant(@Body() dto: any, 
+  @UploadedFiles() files: any ) {
+   return this.driverMerchantsService.updateDriverMerchant(dto, files)
   }
 
   @ApiOperation({ summary: 'Verify driver merchant' })
