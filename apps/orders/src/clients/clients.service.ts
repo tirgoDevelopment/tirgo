@@ -77,7 +77,7 @@ export class ClientsService {
       order.customsPlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsPlaceLocation.name, latitude: createOrderDto.customsPlaceLocation.latitude, logitude: createOrderDto.customsPlaceLocation.logitude });
       order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsClearancePlaceLocation.name, latitude: createOrderDto.customsClearancePlaceLocation.latitude, logitude: createOrderDto.customsClearancePlaceLocation.logitude });
       order.additionalLoadingLocation = await this.locationsRepository.save({ name: createOrderDto.additionalLoadingLocation.name, latitude: createOrderDto.additionalLoadingLocation.latitude, logitude: createOrderDto.additionalLoadingLocation.logitude });
-      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, logitude: createOrderDto.additionalDeliveryLocation.logitude });;
+      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, logitude: createOrderDto.additionalDeliveryLocation.logitude });
       order.isAdr = createOrderDto.isAdr;
       order.isCarnetTir = createOrderDto.isCarnetTir;
       order.isGlonas = createOrderDto.isGlonas;
