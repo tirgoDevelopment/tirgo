@@ -35,7 +35,7 @@ export class Client {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
-  @Column({ default: true })
+  @Column({ default: false })
   blocked: boolean;
 
   @Column({ name: 'blocked_at', nullable: true })
