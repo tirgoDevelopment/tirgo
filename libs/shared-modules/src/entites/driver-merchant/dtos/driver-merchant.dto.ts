@@ -208,6 +208,12 @@ export class DriverMerchantDto {
 
   @ApiProperty({ required: false })
   garageAddress: string;
+
+  @ApiProperty({ required: false })
+  email: string;
+  
+  @ApiProperty({ required: false })
+  companyType: string;
 }
 
 export interface iBankAccount {

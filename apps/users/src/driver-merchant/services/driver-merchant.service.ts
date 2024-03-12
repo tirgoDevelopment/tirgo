@@ -2,7 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual,  } from 'typeorm';
 import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, Transaction, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver, NoContentException, TransactionTypes } from '../..';
-import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
+import { AppendDriverMerchantDto, DriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
 import * as dateFns from 'date-fns'
 
 @Injectable()
@@ -126,6 +126,70 @@ export class DriverMerchantsService {
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async updateDriverMerchant(updateDriverMerchantDto: DriverMerchantDto, files: any) {
+    try {
+      const driverMerchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: updateDriverMerchantDto.id } });
+      driverMerchant.email = updateDriverMerchantDto.email || driverMerchant.email;
+      driverMerchant.phoneNumber = updateDriverMerchantDto.phoneNumber || driverMerchant.phoneNumber;
+      driverMerchant.companyName = updateDriverMerchantDto.companyName || driverMerchant.companyName;
+      driverMerchant.companyType = updateDriverMerchantDto.companyType || driverMerchant.companyType;
+
+      driverMerchant.bankName = updateDriverMerchantDto.bankName || driverMerchant.bankName;
+      driverMerchant.bankBranchName = updateDriverMerchantDto.bankBranchName || driverMerchant.bankBranchName;
+      driverMerchant.inn = updateDriverMerchantDto.inn || driverMerchant.inn;
+      driverMerchant.taxPayerCode = updateDriverMerchantDto.taxPayerCode || driverMerchant.taxPayerCode;
+      driverMerchant.oked = updateDriverMerchantDto.oked || driverMerchant.oked;
+      driverMerchant.mfo = updateDriverMerchantDto.mfo || driverMerchant.mfo;
+      driverMerchant.dunsNumber = updateDriverMerchantDto.dunsNumber || driverMerchant.dunsNumber;
+      driverMerchant.ibanNumber = updateDriverMerchantDto.ibanNumber || driverMerchant.ibanNumber;
+      driverMerchant.notes = updateDriverMerchantDto.notes || driverMerchant.notes;
+      
+      driverMerchant.supervisorFirstName = updateDriverMerchantDto.supervisorFirstName || driverMerchant.supervisorFirstName;
+      driverMerchant.supervisorLastName = updateDriverMerchantDto.supervisorLastName || driverMerchant.supervisorLastName;
+      driverMerchant.responsiblePersonFistName = updateDriverMerchantDto.responsiblePersonFistName || driverMerchant.responsiblePersonFistName;
+      driverMerchant.responsiblePersonLastName = updateDriverMerchantDto.responsiblePersonLastName || driverMerchant.responsiblePersonLastName;
+      driverMerchant.responsbilePersonPhoneNumber = updateDriverMerchantDto.responsbilePersonPhoneNumber || driverMerchant.responsbilePersonPhoneNumber;
+      driverMerchant.factAddress = updateDriverMerchantDto.factAddress || driverMerchant.factAddress;
+      driverMerchant.legalAddress = updateDriverMerchantDto.legalAddress || driverMerchant.legalAddress;
+      driverMerchant.postalCode = updateDriverMerchantDto.postalCode || driverMerchant.postalCode;
+      driverMerchant.garageAddress = updateDriverMerchantDto.garageAddress || driverMerchant.garageAddress;
+
+      if(files) {
+        const uploads = [];
+        if(files.registrationCertificate) {
+          driverMerchant.registrationCertificateFilePath = files.registrationCertificate[0].originalname.split(' ').join('').trim();
+          uploads.push(files.registrationCertificate[0]);
+        }
+        if(files.transportationCertificate) {
+          driverMerchant.transportationCertificateFilePath = files.transportationCertificate[0].originalname.split(' ').join('').trim();
+          uploads.push(files.transportationCertificate[0]);
+        }
+        if(files.passport) {
+          driverMerchant.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          uploads.push(files.originalname[0]);
+        }
+        if(files.logo) {
+          driverMerchant.logoFilePath = files.logo[0].originalname.split(' ').join('').trim();
+          uploads.push(files.originalname[0]);
+        }
+        await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.DriverMerchant, file)));
+      }
+
+        return new BpmResponse(true, null, null)
+    } catch (err: any) {
+      console.log(err)
+      if (err.code == '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else if (err.name == 'EntityNotFoundError') {
         throw new NotFoundException(ResponseStauses.UserNotFound);
       } else if (err instanceof HttpException) {
         throw err
