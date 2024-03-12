@@ -15,7 +15,7 @@ class LocationDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
-  logitude: string;
+  longitude: string;
 }
 
 export class OrderDto {
