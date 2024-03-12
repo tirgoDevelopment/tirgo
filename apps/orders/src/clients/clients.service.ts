@@ -67,17 +67,24 @@ export class ClientsService {
       }
 
       
-
       order.transportKinds = transportKinds;
       order.transportTypes = transportTypes;
       order.cargoType = cargoType;
       order.cargoStatus = cargoStatus;
-      order.loadingLocation =  await this.locationsRepository.save({ name: createOrderDto.loadingLocation.name, latitude: createOrderDto.loadingLocation.latitude, logitude: createOrderDto.loadingLocation.logitude })
-      order.deliveryLocation = await this.locationsRepository.save({ name: createOrderDto.deliveryLocation.name, latitude: createOrderDto.deliveryLocation.latitude, logitude: createOrderDto.deliveryLocation.logitude });
-      order.customsPlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsPlaceLocation.name, latitude: createOrderDto.customsPlaceLocation.latitude, logitude: createOrderDto.customsPlaceLocation.logitude });
-      order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsClearancePlaceLocation.name, latitude: createOrderDto.customsClearancePlaceLocation.latitude, logitude: createOrderDto.customsClearancePlaceLocation.logitude });
-      order.additionalLoadingLocation = await this.locationsRepository.save({ name: createOrderDto.additionalLoadingLocation.name, latitude: createOrderDto.additionalLoadingLocation.latitude, logitude: createOrderDto.additionalLoadingLocation.logitude });
-      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, logitude: createOrderDto.additionalDeliveryLocation.logitude });
+      order.loadingLocation =  await this.locationsRepository.save({ name: createOrderDto.loadingLocation.name, latitude: createOrderDto.loadingLocation.latitude, longitude: createOrderDto.loadingLocation.longitude })
+      order.deliveryLocation = await this.locationsRepository.save({ name: createOrderDto.deliveryLocation.name, latitude: createOrderDto.deliveryLocation.latitude, longitude: createOrderDto.deliveryLocation.longitude });
+      if(createOrderDto.customsPlaceLocation) {
+        order.customsPlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsPlaceLocation.name, latitude: createOrderDto.customsPlaceLocation.latitude, longitude: createOrderDto.customsPlaceLocation.longitude });
+      }
+      if(createOrderDto.customsClearancePlaceLocation) {
+        order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsClearancePlaceLocation.name, latitude: createOrderDto.customsClearancePlaceLocation.latitude, longitude: createOrderDto.customsClearancePlaceLocation.longitude });
+      }
+      if(createOrderDto.additionalLoadingLocation) {
+        order.additionalLoadingLocation = await this.locationsRepository.save({ name: createOrderDto.additionalLoadingLocation.name, latitude: createOrderDto.additionalLoadingLocation.latitude, longitude: createOrderDto.additionalLoadingLocation.longitude });
+      } 
+      if(createOrderDto.additionalDeliveryLocation) { 
+        order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, longitude: createOrderDto.additionalDeliveryLocation.longitude });;
+      }
       order.isAdr = createOrderDto.isAdr;
       order.isCarnetTir = createOrderDto.isCarnetTir;
       order.isGlonas = createOrderDto.isGlonas;
@@ -135,12 +142,21 @@ export class ClientsService {
     try {
 
       const order: Order = new Order();
-      order.loadingLocation =  await this.locationsRepository.save({ name: updateOrderDto.loadingLocation.name, latitude: updateOrderDto.loadingLocation.latitude, logitude: updateOrderDto.loadingLocation.logitude })
-      order.deliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.deliveryLocation.name, latitude: updateOrderDto.deliveryLocation.latitude, logitude: updateOrderDto.deliveryLocation.logitude });
-      order.customsPlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsPlaceLocation.name, latitude: updateOrderDto.customsPlaceLocation.latitude, logitude: updateOrderDto.customsPlaceLocation.logitude });
-      order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsClearancePlaceLocation.name, latitude: updateOrderDto.customsClearancePlaceLocation.latitude, logitude: updateOrderDto.customsClearancePlaceLocation.logitude });
-      order.additionalLoadingLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalLoadingLocation.name, latitude: updateOrderDto.additionalLoadingLocation.latitude, logitude: updateOrderDto.additionalLoadingLocation.logitude });
-      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, logitude: updateOrderDto.additionalDeliveryLocation.logitude });;
+      order.loadingLocation =  await this.locationsRepository.save({ name: updateOrderDto.loadingLocation.name, latitude: updateOrderDto.loadingLocation.latitude, longitude: updateOrderDto.loadingLocation.longitude })
+      order.deliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.deliveryLocation.name, latitude: updateOrderDto.deliveryLocation.latitude, longitude: updateOrderDto.deliveryLocation.longitude });
+      if(updateOrderDto.customsPlaceLocation) {
+        order.customsPlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsPlaceLocation.name, latitude: updateOrderDto.customsPlaceLocation.latitude, longitude: updateOrderDto.customsPlaceLocation.longitude });
+      }
+      if(updateOrderDto.customsClearancePlaceLocation) {
+        order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsClearancePlaceLocation.name, latitude: updateOrderDto.customsClearancePlaceLocation.latitude, longitude: updateOrderDto.customsClearancePlaceLocation.longitude });
+      }
+      if(updateOrderDto.additionalLoadingLocation) {
+        order.additionalLoadingLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalLoadingLocation.name, latitude: updateOrderDto.additionalLoadingLocation.latitude, longitude: updateOrderDto.additionalLoadingLocation.longitude });
+      } 
+      if(updateOrderDto.additionalDeliveryLocation) { 
+        order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, longitude: updateOrderDto.additionalDeliveryLocation.longitude });;
+      }
+
       order.isAdr = updateOrderDto.isAdr || order.isAdr;
       order.isCarnetTir = updateOrderDto.isCarnetTir || order.isCarnetTir;
       order.isGlonas = updateOrderDto.isGlonas || order.isGlonas;
@@ -234,7 +250,10 @@ export class ClientsService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['driverOffers.currency', 'driverOffers', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'cargoStatus', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+      const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false },
+         relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation', 'driverOffers.currency', 'driverOffers', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'cargoStatus', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
@@ -312,7 +331,9 @@ export class ClientsService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 
-        relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation', 'driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
         
         const ordersCount = await this.ordersRepository.count({ where : filter });
   
