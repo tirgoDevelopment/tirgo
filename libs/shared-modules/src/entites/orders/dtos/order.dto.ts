@@ -1,5 +1,22 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateNested } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
+
+class LocationDto {
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  latitude: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  logitude: string;
+}
 
 export class OrderDto {
 
@@ -7,14 +24,14 @@ export class OrderDto {
   id?: number;
   
   @ApiProperty({ required: true })
-  @IsString()
+  @ValidateNested()
   @IsNotEmpty()
-  loadingLocation: string;
+  loadingLocation: LocationDto;
 
   @ApiProperty({ required: true })
-  @IsString()
+  @ValidateNested()
   @IsNotEmpty()
-  deliveryLocation: string;
+  deliveryLocation: LocationDto;
 
   @ApiProperty({ required: false })
   merchantId: number;
@@ -28,14 +45,25 @@ export class OrderDto {
   @ApiProperty({ required: false })
   cargoStatusId?: number;
 
-  @ApiProperty({ required: false })
-  customsPlaceLocation?: string;
+  @ApiProperty({ required: true })
+  @ValidateNested()
+  @IsNotEmpty()
+  customsPlaceLocation?: LocationDto;
 
-  @ApiProperty({ required: false })
-  customsClearancePlaceLocation?: string;
+  @ApiProperty({ required: true })
+  @ValidateNested()
+  @IsNotEmpty()
+  customsClearancePlaceLocation?: LocationDto;
 
-  @ApiProperty({ required: false })
-  additionalLoadingLocation?: string;
+  @ApiProperty({ required: true })
+  @ValidateNested()
+  @IsNotEmpty()
+  additionalLoadingLocation?: LocationDto;
+
+  @ApiProperty({ required: true })
+  @ValidateNested()
+  @IsNotEmpty()
+  additionalDeliveryLocation?: LocationDto;
 
   @ApiProperty({ required: false })
   isAdr?: boolean;

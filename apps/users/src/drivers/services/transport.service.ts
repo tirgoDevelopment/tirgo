@@ -339,13 +339,14 @@ export class TransportsService {
       }
       const transports: DriverTransport[] = await this.driverTransportsRepository.find({
         where: { driver: { id: driverId }, id: transportId },
-        relations: ['driver', 'transportTypes', 'transportKinds', 'cargoTypes', 'cargoPackages', 'cargoLoadMethods', 'transportVerification']
+        relations: ['driver', 'transportTypes', 'transportKinds', 'cargoTypes', 'cargoLoadMethods', 'transportVerification']
       })
       if (!transports.length) {
         throw new NoContentException()
       }
       return new BpmResponse(true, transports, null);
     } catch (err: any) {
+      console.log(err)
       if (err instanceof HttpException) {
         throw err;
       } else if (err.name == 'EntityNotFoundError') {
