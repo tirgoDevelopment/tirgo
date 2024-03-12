@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace } from '..';
 
 @Injectable()
 export class StaffsService {
@@ -17,6 +17,7 @@ export class StaffsService {
     @InjectRepository(CargoLoadMethod) private readonly cargoLoadingMethodsRepository: Repository<CargoLoadMethod>,
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     @InjectRepository(CargoStatus) private readonly cargoStatusesRepository: Repository<CargoStatus>,
+    @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
   ) { }
 
   async createOrder(createOrderDto: OrderDto, user: User): Promise<BpmResponse> {
@@ -58,11 +59,12 @@ export class StaffsService {
   
       const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
       order.cargoStatus = cargoStatus;
-      order.loadingLocation = createOrderDto.loadingLocation;
-      order.deliveryLocation = createOrderDto.deliveryLocation;
-      order.customsPlaceLocation = createOrderDto.customsPlaceLocation;
-      order.customsClearancePlaceLocation = createOrderDto.customsClearancePlaceLocation;
-      order.additionalLoadingLocation = createOrderDto.additionalLoadingLocation;
+      order.loadingLocation =  await this.locationsRepository.save({ name: createOrderDto.loadingLocation.name, latitude: createOrderDto.loadingLocation.latitude, logitude: createOrderDto.loadingLocation.logitude })
+      order.deliveryLocation = await this.locationsRepository.save({ name: createOrderDto.deliveryLocation.name, latitude: createOrderDto.deliveryLocation.latitude, logitude: createOrderDto.deliveryLocation.logitude });
+      order.customsPlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsPlaceLocation.name, latitude: createOrderDto.customsPlaceLocation.latitude, logitude: createOrderDto.customsPlaceLocation.logitude });
+      order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: createOrderDto.customsClearancePlaceLocation.name, latitude: createOrderDto.customsClearancePlaceLocation.latitude, logitude: createOrderDto.customsClearancePlaceLocation.logitude });
+      order.additionalLoadingLocation = await this.locationsRepository.save({ name: createOrderDto.additionalLoadingLocation.name, latitude: createOrderDto.additionalLoadingLocation.latitude, logitude: createOrderDto.additionalLoadingLocation.logitude });
+      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, logitude: createOrderDto.additionalDeliveryLocation.logitude });
       order.isAdr = createOrderDto.isAdr;
       order.isCarnetTir = createOrderDto.isCarnetTir;
       order.isGlonas = createOrderDto.isGlonas;
@@ -158,11 +160,12 @@ export class StaffsService {
   
       const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
       order.cargoStatus = cargoStatus;
-      order.loadingLocation = updateOrderDto.loadingLocation || order.loadingLocation;
-      order.deliveryLocation = updateOrderDto.deliveryLocation || order.deliveryLocation;
-      order.customsPlaceLocation = updateOrderDto.customsPlaceLocation || order.customsPlaceLocation;
-      order.customsClearancePlaceLocation = updateOrderDto.customsClearancePlaceLocation || order.customsClearancePlaceLocation;
-      order.additionalLoadingLocation = updateOrderDto.additionalLoadingLocation || order.additionalLoadingLocation;
+      order.loadingLocation =  await this.locationsRepository.save({ name: updateOrderDto.loadingLocation.name, latitude: updateOrderDto.loadingLocation.latitude, logitude: updateOrderDto.loadingLocation.logitude })
+      order.deliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.deliveryLocation.name, latitude: updateOrderDto.deliveryLocation.latitude, logitude: updateOrderDto.deliveryLocation.logitude });
+      order.customsPlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsPlaceLocation.name, latitude: updateOrderDto.customsPlaceLocation.latitude, logitude: updateOrderDto.customsPlaceLocation.logitude });
+      order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsClearancePlaceLocation.name, latitude: updateOrderDto.customsClearancePlaceLocation.latitude, logitude: updateOrderDto.customsClearancePlaceLocation.logitude });
+      order.additionalLoadingLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalLoadingLocation.name, latitude: updateOrderDto.additionalLoadingLocation.latitude, logitude: updateOrderDto.additionalLoadingLocation.logitude });
+      order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, logitude: updateOrderDto.additionalDeliveryLocation.logitude });
       order.isAdr = updateOrderDto.isAdr || order.isAdr;
       order.isCarnetTir = updateOrderDto.isCarnetTir || order.isCarnetTir;
       order.isGlonas = updateOrderDto.isGlonas || order.isGlonas;
