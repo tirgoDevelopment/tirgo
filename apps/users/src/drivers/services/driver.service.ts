@@ -29,7 +29,7 @@ export class DriversService {
 
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
-      if(user.userType == UserTypes.DriverMerchantUser) {
+      if(user && user.userType == UserTypes.DriverMerchantUser) {
         const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
       }
