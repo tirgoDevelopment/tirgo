@@ -88,7 +88,6 @@ const entities = [
         }),
     ],
 })
-
 export class DatabaseModule { }
 
 
