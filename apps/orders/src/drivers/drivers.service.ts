@@ -89,7 +89,9 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations: ['clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
       if (orders.length) {
         return new BpmResponse(true, orders, null);
@@ -149,7 +151,9 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations: ['driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
       if (orders.length) {
         return new BpmResponse(true, orders, null);
@@ -175,7 +179,9 @@ export class DriversService {
       }
       const order = await this.ordersRepository.findOneOrFail({
         where: { deleted: false, driverOffers: { driver: { id }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
-        relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','driverOffers', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
 
       return new BpmResponse(true, order, null);
@@ -196,7 +202,9 @@ export class DriversService {
       }
       const orders = await this.ordersRepository.find({
         where: { deleted: false, driverOffers: { driver: { driverMerchant: { id } }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
-        relations: ['driverOffers', 'driverOffers.currency', 'driverOffers.driver.driverMerchant', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','driverOffers', 'driverOffers.currency', 'driverOffers.driver.driverMerchant', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
 
       return new BpmResponse(true, orders, null);
@@ -219,6 +227,12 @@ export class DriversService {
         .leftJoinAndSelect("order.driverOffers", "driverOffer")
         .leftJoinAndSelect("driverOffer.driver", "driver")
         .leftJoinAndSelect("driver.phoneNumbers", "phoneNumbers")
+        .leftJoinAndSelect("driver.loadingLocation", "loadingLocation")
+        .leftJoinAndSelect("driver.deliveryLocation", "deliveryLocation")
+        .leftJoinAndSelect("driver.customsPlaceLocation", "customsPlaceLocation")
+        .leftJoinAndSelect("driver.customsClearancePlaceLocation", "customsClearancePlaceLocation")
+        .leftJoinAndSelect("driver.additionalLoadingLocation", "additionalLoadingLocation")
+        .leftJoinAndSelect("driver.additionalDeliveryLocation", "additionalDeliveryLocation")
         .leftJoinAndSelect("driverOffer.currency", "currency")
         .leftJoinAndSelect("order.clientMerchant", "clientMerchant")
         .leftJoinAndSelect("order.inAdvancePriceCurrency", "inAdvancePriceCurrency")
