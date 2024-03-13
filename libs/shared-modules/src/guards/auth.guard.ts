@@ -60,7 +60,7 @@ export class AuthGuard implements CanActivate {
                     throw new InternalErrorException(ResponseStauses.UserNotFound);
                 }
             } else {
-                if(payload.merchantId && !payload.verified && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by')) {
+                if(payload.merchantId && !payload.verified && !request.url.includes('driver-merchant-by') && !request.url.includes('client-merchant-by')) {
                     throw new InternalErrorException(ResponseStauses.UserNotFound);
                 }
             }
