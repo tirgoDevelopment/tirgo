@@ -41,7 +41,9 @@ export class AuthGuard implements CanActivate {
         }
         try { 
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
-            if (payload.merchantId && !payload.verified && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by')) {
+            if (payload.merchantId && !payload.verified 
+                && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by') 
+                && !request.url.startsWith('/api/v2/users/client-merchants/client-merchant-by')) {
                 throw new BadRequestException(ResponseStauses.AccessDenied);
             }
             if (payload && !isNaN(payload.userId)) {
