@@ -1,5 +1,4 @@
-import { Staff } from '../../staffs/staff.entity';
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Permission } from './permission.entity';
 import { User } from '../../users/user.entity';
 

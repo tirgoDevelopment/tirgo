@@ -36,17 +36,44 @@ export class Permission {
   @Column({ nullable: false, default: false, name: 'driver_finance' })
   driverFinance: boolean;
 
-  @Column({ nullable: false, default: false, name: 'ClientMerchant_finance' })
-  ClientMerchantFinance: boolean;
+  @Column({ nullable: false, default: false, name: 'client_merchant_finance' })
+  clientMerchantFinance: boolean;
 
-  @Column({ nullable: false, default: false, name: 'register_ClientMerchant' })
-  registrClientMerchant: boolean;
+  @Column({ nullable: false, default: false, name: 'driver_merchant_finance' })
+  driverMerchantFinance: boolean;
+
+  @Column({ nullable: false, default: false, name: 'register_client_merchant' })
+  registerClientMerchant: boolean;
+
+  @Column({ nullable: false, default: false, name: 'register_driver_merchant' })
+  registerDriverMerchant: boolean;
 
   @Column({ nullable: false, default: false, name: 'verify_order' })
   verifyDriver: boolean;
 
-  @Column({ nullable: false, default: false, name: 'ClientMerchant_list' })
-  ClientMerchantList: boolean;
+  @Column({ nullable: false, default: false, name: 'client_merchant_list' })
+  clientMerchantList: boolean;
+
+  @Column({ nullable: false, default: false, name: 'driver_merchant_list' })
+  driverMerchantList: boolean;
+
+  @Column({ nullable: false, default: false, name: 'admin_page' })
+  adminPage: boolean;
+
+  @Column({ nullable: false, default: false, name: 'fin_request' })
+  finRequest: boolean;
+
+  @Column({ nullable: false, default: false, name: 'driver_merchant_page' })
+  driverMerchantPage: boolean;
+
+  @Column({ nullable: false, default: false, name: 'client_merchant_page' })
+  clientMerchantPage: boolean;
+
+  @Column({ nullable: false, default: false, name: 'driver_verification' })
+  driverVerification: boolean;
+
+  @Column({ nullable: false, default: false, name: 'agent_page' })
+  agentPage: boolean;
 
   @OneToOne(() => Role, (role) => role.permission)
   @JoinColumn({ name: 'role_id' })
