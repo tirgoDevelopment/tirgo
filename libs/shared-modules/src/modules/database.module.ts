@@ -69,10 +69,10 @@ const entities = [
     DriverMerchantUser,
     OrderOffer,
     Account,
-    Agent,
+    Agent, 
     AgentBankAccount,
     LocationPlace
-];
+  ];
 
 @Module({
     imports: [
