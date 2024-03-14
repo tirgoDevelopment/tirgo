@@ -1,11 +1,11 @@
 
 export { multerConfig } from "./configs/aws-bucket";
 
+export { RoleDto } from "./entites/role/dtos/role.dto";
 export { BadRequestException } from "./exceptions/bad-request.exception";
 export { InternalErrorException } from "./exceptions/internal.exception";
 export { NoContentException } from "./exceptions/no-content.exception";
 export { NotFoundException } from "./exceptions/not-found.exception";
-
 export { AgentBankAccount } from "./entites/agents/entites/bank-account.entity";
 export { Agent } from "./entites/agents/entites/agent.entity";
 export { AgentDto } from "./entites/agents/agent.dto";
@@ -60,7 +60,7 @@ export { CustomJwtService } from './services/jwt.service';
 export { SmsService } from './services/sms.service';
 export { MailService } from './services/mail.service';
 
-export { CargoStatusDto } from './entites/references/dtos/cargo-status.dto';  
+export { CargoStatusDto } from './entites/references/dtos/cargo-status.dto';
 export { CargoTypeGroupDto } from './entites/references/dtos/cargo-type-group.dto'
 export { CargoTypeDto } from './entites/references/dtos/cargo-type.dto'
 export { CurrencyDto } from './entites/references/dtos/currency.dto'
@@ -71,130 +71,130 @@ export { CargoLoadingMethodDto } from './entites/references/dtos/cargo-loading-m
 export { TransportTypeDto } from './entites/references/dtos/transport-type.dto'
 
 export enum ResponseStauses {
-    NotFound = 'dataNotFound',
-    UserNotFound = 'userNotFound',
-    OrderNotFound = 'orderNotFound',
-    MerchantNotFound = 'ClientMerchantNotFound',
-    AgentNotFound = 'agentNotFound',
-    StaffNotFound = 'staffNotFound',
-    RoleNotFound = 'roleNotFound',
-    IdIsRequired = 'idIsRequired',
-    DriverIdIsRequired = 'driverIdIsRequired',
-    SubscriptionIsRequired = 'subscriptionIsRequired',
-    AgentIdIsRequired = 'agentIdIsRequired',
-    ClientIdIsRequired = 'clientIdIsRequired',
-    ClientIdOrMerchantIdIsRequired = 'clientIdOrMerchantIdIsRequired',
-    MerchantIdIsRequired = 'MerchantIdIsRequired',
-    AllFieldsRequired = 'allFieldsAreRequired',
-    SubscriptionNotFound = 'subscriptionNotFound',  
-    CurrencyNotFound = 'currencyNotfound',
-    CargoTypeNotFound = 'cargoTypeNotfound',
-    CargoStatusNotFound = 'cargoStatusNotFound',
-    TransportTypeNotfound = 'transportTypeNotFound',
-    TransportKindNotfound = 'transportKindNotFound',
-    CargoLoadingMethodNotFound = 'cargoLoadingMethodNotFound',
-    CargoPackageNotFound = 'cargoPackageNotFound',
-    DriverNotFound = 'driverNotFound',
-    UserTypeRequired = 'userTypeRequired',
-    InvalidUserType = 'invalidUserType  ',
-    SuccessfullyCreated = 'successfullyCreated',
-    SuccessfullyUpdated = 'successfullyUpdated',
-    SuccessfullyDeleted = 'successfullyDeleted',
-    SuccessfullyCanceled = 'successfullyCanceled',
-    SuccessfullyRejected = 'successfullyRejected',
-    SuccessfullyBlocked = 'successfullyBlocked',
-    SuccessfullyActivated = 'successfullyActivated',
-    SuccessfullyVerified = 'successfullyVerified',
-    CreateDataFailed = 'createFailed',
-    SendCodeFailed = 'sendCodeFailed',
-    UpdateDataFailed = 'updateFalied',
-    DeleteDataFailed = 'deleteFalied',
-    CancelDataFailed = 'cancelFalied',
-    RejectDataFailed = 'rejectFalied',
-    VerifyDataFailed = 'verifyFalied',
-    BlockDataFailed = 'blockFalied',
-    AwsStoreFileFailed = 'fileStoreFailed',
-    DuplicateError = 'duplicateError',
-    PhoneNumberDuplicateError = 'phoneNumberDuplicateError',
-    PhoneNumbeersMustBeArray = 'phoneNumbeersMustBeArray',
-    AlreadyDeleted = 'alreadyDeleted',
-    AlreadyBlocked = 'alreadyBlocked',
-    AlreadyActive = 'alreadyActive',
-    AlreadyVerified = 'alreadyVerified',
-    AlreadyAppended = 'alreadyAppended',
-    AlreadyRejecteed = 'alreadyRejecteed',
-    AlreadyAccepted = 'alreadyAccepted',
-    DriverHasOrder = 'driverHasOrder',
-    AlreadyOffered = 'alreadyOfferedToThisOrder',
-    AlreadyReplied = 'alreadyRepliedToThisOffer',
-    OfferLimit = 'offerLimitExceeded',
-    MerchantAlreadyVerified = 'merchantAlreadyVerified',
-    InternalServerError = 'internalError',
-    NotModified = 'notModified',
-    InvalidPassword = 'invalidPassword',
-    PasswordShouldCointainNumStr = 'passwordShouldContainerNumStr',
-    InvalidBankAccount = 'invalidBankAccount',
-    BankAccountIsRequired = 'bankAccountIsRequired',
-    FileIsRequired = 'fileIsRequired',
-    DriverAlreadyAppended = 'driverAlreadyAppended',
-    OfferWasRejected = 'offerWasRejected',
-    OfferWasCanceled = 'offerWasCanceled',
-    NotEnoughBalance = 'notEnoughBalance',
-    AccessDenied = 'accessDenied',
-    TokenExpired = 'tokenExpired'
-  } 
-  
-  export enum CargoStatusCodes {
-    Waiting = 0, //Ожидающий
-    Accepted = 1,  //Принято
-    Active = 2, //Выполняется
-    Completed = 3, //Выполнен
-    Closed = 4,  //Завершенный
-    Canceled = 5, //Отменено
-    Archive = 6
-  }
+  NotFound = 'dataNotFound',
+  UserNotFound = 'userNotFound',
+  OrderNotFound = 'orderNotFound',
+  MerchantNotFound = 'ClientMerchantNotFound',
+  AgentNotFound = 'agentNotFound',
+  StaffNotFound = 'staffNotFound',
+  RoleNotFound = 'roleNotFound',
+  IdIsRequired = 'idIsRequired',
+  DriverIdIsRequired = 'driverIdIsRequired',
+  SubscriptionIsRequired = 'subscriptionIsRequired',
+  AgentIdIsRequired = 'agentIdIsRequired',
+  ClientIdIsRequired = 'clientIdIsRequired',
+  ClientIdOrMerchantIdIsRequired = 'clientIdOrMerchantIdIsRequired',
+  MerchantIdIsRequired = 'MerchantIdIsRequired',
+  AllFieldsRequired = 'allFieldsAreRequired',
+  SubscriptionNotFound = 'subscriptionNotFound',
+  CurrencyNotFound = 'currencyNotfound',
+  CargoTypeNotFound = 'cargoTypeNotfound',
+  CargoStatusNotFound = 'cargoStatusNotFound',
+  TransportTypeNotfound = 'transportTypeNotFound',
+  TransportKindNotfound = 'transportKindNotFound',
+  CargoLoadingMethodNotFound = 'cargoLoadingMethodNotFound',
+  CargoPackageNotFound = 'cargoPackageNotFound',
+  DriverNotFound = 'driverNotFound',
+  UserTypeRequired = 'userTypeRequired',
+  InvalidUserType = 'invalidUserType  ',
+  SuccessfullyCreated = 'successfullyCreated',
+  SuccessfullyUpdated = 'successfullyUpdated',
+  SuccessfullyDeleted = 'successfullyDeleted',
+  SuccessfullyCanceled = 'successfullyCanceled',
+  SuccessfullyRejected = 'successfullyRejected',
+  SuccessfullyBlocked = 'successfullyBlocked',
+  SuccessfullyActivated = 'successfullyActivated',
+  SuccessfullyVerified = 'successfullyVerified',
+  CreateDataFailed = 'createFailed',
+  SendCodeFailed = 'sendCodeFailed',
+  UpdateDataFailed = 'updateFalied',
+  DeleteDataFailed = 'deleteFalied',
+  CancelDataFailed = 'cancelFalied',
+  RejectDataFailed = 'rejectFalied',
+  VerifyDataFailed = 'verifyFalied',
+  BlockDataFailed = 'blockFalied',
+  AwsStoreFileFailed = 'fileStoreFailed',
+  DuplicateError = 'duplicateError',
+  PhoneNumberDuplicateError = 'phoneNumberDuplicateError',
+  PhoneNumbeersMustBeArray = 'phoneNumbeersMustBeArray',
+  AlreadyDeleted = 'alreadyDeleted',
+  AlreadyBlocked = 'alreadyBlocked',
+  AlreadyActive = 'alreadyActive',
+  AlreadyVerified = 'alreadyVerified',
+  AlreadyAppended = 'alreadyAppended',
+  AlreadyRejecteed = 'alreadyRejecteed',
+  AlreadyAccepted = 'alreadyAccepted',
+  DriverHasOrder = 'driverHasOrder',
+  AlreadyOffered = 'alreadyOfferedToThisOrder',
+  AlreadyReplied = 'alreadyRepliedToThisOffer',
+  OfferLimit = 'offerLimitExceeded',
+  MerchantAlreadyVerified = 'merchantAlreadyVerified',
+  InternalServerError = 'internalError',
+  NotModified = 'notModified',
+  InvalidPassword = 'invalidPassword',
+  PasswordShouldCointainNumStr = 'passwordShouldContainerNumStr',
+  InvalidBankAccount = 'invalidBankAccount',
+  BankAccountIsRequired = 'bankAccountIsRequired',
+  FileIsRequired = 'fileIsRequired',
+  DriverAlreadyAppended = 'driverAlreadyAppended',
+  OfferWasRejected = 'offerWasRejected',
+  OfferWasCanceled = 'offerWasCanceled',
+  NotEnoughBalance = 'notEnoughBalance',
+  AccessDenied = 'accessDenied',
+  TokenExpired = 'tokenExpired'
+}
 
-  export enum UserTypes {
-    Client = 'client',
-    Driver = 'driver',
-    ClientMerchant = 'client_merchant',
-    ClientMerchantUser = 'client_merchant_user',
-    DriverMerchant = 'driver_merchant',
-    DriverMerchantUser = 'driver_merchant_user',
-    Staff = 'staff',
-    Agent = 'agent'
-  }
+export enum CargoStatusCodes {
+  Waiting = 0, //Ожидающий
+  Accepted = 1,  //Принято
+  Active = 2, //Выполняется
+  Completed = 3, //Выполнен
+  Closed = 4,  //Завершенный
+  Canceled = 5, //Отменено
+  Archive = 6
+}
 
-  export enum UsersRoleNames {
-    SuperAdmin = 'Super admin'
-  }
+export enum UserTypes {
+  Client = 'client',
+  Driver = 'driver',
+  ClientMerchant = 'client_merchant',
+  ClientMerchantUser = 'client_merchant_user',
+  DriverMerchant = 'driver_merchant',
+  DriverMerchantUser = 'driver_merchant_user',
+  Staff = 'staff',
+  Agent = 'agent'
+}
 
-  export class BpmResponse {
-    success: boolean;
-    data: any;
-    messages: string[] | undefined;
-    totalPagesCount: number;
+export enum UsersRoleNames {
+  SuperAdmin = 'Super admin'
+}
 
-    constructor(success: boolean, data: any, messages?: string[], totalPages?: number) {
-      this.success = success;
-      this.data = data;
-      this.messages = messages;
-      this.totalPagesCount = totalPages
-    }
-  }
+export class BpmResponse {
+  success: boolean;
+  data: any;
+  messages: string[] | undefined;
+  totalPagesCount: number;
 
-  export enum TransactionTypes {
-    TopUp = 'topupAccount',
-    Withdraw = 'withdrawAccount',
-    SecureTransaction = 'secureTransaction',
-    TopUpAgentAccount = 'topUpAgentAccount',
-    DriverSubscriptionPayment = 'driverSubscriptionPayment'
+  constructor(success: boolean, data: any, messages?: string[], totalPages?: number) {
+    this.success = success;
+    this.data = data;
+    this.messages = messages;
+    this.totalPagesCount = totalPages
   }
+}
 
-  export enum AccountTypes {
-    BankAccount = 'BankAccount',
-    CustomAccount = 'CustomAccount'
-  }
+export enum TransactionTypes {
+  TopUp = 'topupAccount',
+  Withdraw = 'withdrawAccount',
+  SecureTransaction = 'secureTransaction',
+  TopUpAgentAccount = 'topUpAgentAccount',
+  DriverSubscriptionPayment = 'driverSubscriptionPayment'
+}
+
+export enum AccountTypes {
+  BankAccount = 'BankAccount',
+  CustomAccount = 'CustomAccount'
+}
 export * from './modules/shared-modules.module';
 export * from './modules/auth.module';
 export * from './modules/database.module';

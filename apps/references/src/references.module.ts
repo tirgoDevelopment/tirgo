@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService, DatabaseModule } from '.';
+import { CargoType, CargoTypeGroup, Currency, Role, Permission, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService, DatabaseModule } from '.';
 import { TransportTypesController } from './references/controllers/transport-types.controller';
 import { CargoTypesController } from './references/controllers/cargo-type.controller';
 import { CargoTypeGroupsController } from './references/controllers/cargo-type-groups.controller';
@@ -23,48 +23,52 @@ import { FilesController } from './references/controllers/files.controller';
 import { CitiesController } from './references/controllers/cities.controller';
 import { CitiesService } from './references/services/cities.service';
 import { HttpService, HttpModule } from '@nestjs/axios';
+import { RolesController } from './references/controllers/roles.controller';
+import { RolesService } from './references/services/roles.service';
 
 @Module({
-    imports: [
-      DatabaseModule,
-      AuthModule,
-      TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
-      HttpModule
-    ],
-    controllers: [
-      TransportTypesController,
-      CargoTypesController,
-      CargoTypeGroupsController,
-      CurrenciesController,
-      SubscriptionsController,
-      TransportKindsController,
-      CargoStatusesController,
-      CargoPackagesController,
-      CargoLoadingMethodesController,
-      FilesController,
-      CitiesController
-    ],
-    providers: [
-      TransportTypesService,
-      CargoTypesService,
-      CargoTypeGroupsService,
-      CurrenciesService,
-      SubscriptionsService,
-      TransportKindsService,
-      CargoStatusesService,
-      CargoPackagesService,
-      CargoLoadingMethodsService,
-      AwsService,
-      CitiesService,
-    ],
-    exports: [
-      TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
-      TransportTypesService,
-      CargoTypesService,
-      CargoTypeGroupsService,
-      CurrenciesService,
-      SubscriptionsService,
-      TransportKindsService
-    ]
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    TypeOrmModule.forFeature([Role, Permission, TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
+    HttpModule
+  ],
+  controllers: [
+    TransportTypesController,
+    CargoTypesController,
+    CargoTypeGroupsController,
+    CurrenciesController,
+    SubscriptionsController,
+    TransportKindsController,
+    CargoStatusesController,
+    CargoPackagesController,
+    CargoLoadingMethodesController,
+    FilesController,
+    CitiesController,
+    RolesController
+  ],
+  providers: [
+    TransportTypesService,
+    CargoTypesService,
+    CargoTypeGroupsService,
+    CurrenciesService,
+    SubscriptionsService,
+    TransportKindsService,
+    CargoStatusesService,
+    CargoPackagesService,
+    CargoLoadingMethodsService,
+    AwsService,
+    CitiesService,
+    RolesService
+  ],
+  exports: [
+    TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
+    TransportTypesService,
+    CargoTypesService,
+    CargoTypeGroupsService,
+    CurrenciesService,
+    SubscriptionsService,
+    TransportKindsService
+  ]
 })
-export class ReferencesModule {}
+export class ReferencesModule { }
