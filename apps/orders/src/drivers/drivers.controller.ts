@@ -53,14 +53,25 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Get order by order id' })
   @Get('merchant-active-orders')
-  async getMerchantOrders(@Query('merchantId') id: number) {
-    return this.driversService.getMerchantActiveOrders(id)
+  async getMerchantOrders(
+    @Query('merchantId') id: number,
+    @Query('pageIndex') pageIndex: string,
+    @Query('pageSize') pageSize: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    ) {
+    return this.driversService.getMerchantActiveOrders(id, sortBy, sortType, pageIndex, pageSize)
   }
 
   @ApiOperation({ summary: 'Get order by order id' })
   @Get('archive-orders-by')
-  async getArchiveOrders(@Query('driverId') id: number) {
-    return this.driversService.getArchiveOrdersByDriverId(id)
+  async getArchiveOrders(
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('driverId') id: number,
+    @Query('pageIndex') pageIndex: string,
+    @Query('pageSize') pageSize: string,) {
+    return this.driversService.getArchiveOrdersByDriverId(id, sortBy, sortType, pageIndex, pageSize)
   }
 
   @ApiOperation({ summary: 'Get order by order id' })

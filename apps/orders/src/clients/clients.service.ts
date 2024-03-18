@@ -336,10 +336,133 @@ export class ClientsService {
         'additionalDeliveryLocation', 'driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
         
         const ordersCount = await this.ordersRepository.count({ where : filter });
-  
+        const totalPagesCount = Math.ceil(ordersCount / size);
 
         if(orders.length) {
-        return new BpmResponse(true, orders, null, Math.ceil(ordersCount / size));
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
+      } else {
+        throw new NoContentException();
+      }
+    } catch (err: any) {
+      console.log(err)
+      if(err instanceof HttpException) {
+        throw err
+      }else if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getClientArchiveOrderByUserId(user: User, sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, loadingLocationId: string, deliveryLocationId: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      if (!user) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      const filter: any = { deleted: false };
+      if(!sortBy) {
+        sortBy = 'id';
+      } 
+      if(!sortType) {
+        sortType = 'DESC'
+      }
+
+      // managing access to orders according to userType
+      if (user.userType == UserTypes.ClientMerchantUser) {
+      
+        // check if requesting user is Super admin then give merchant's all orders
+        // if it is not give orders only ones created by him
+
+        if( user.role.name == UsersRoleNames.SuperAdmin) {
+          filter.clientMerchant = { id: user.clientMerchantUser.clientMerchant?.id }; 
+        } else {
+          filter.createdBy = user.id;
+        }
+      } else if(user.userType == UserTypes.Staff || user.userType == UserTypes.Client) {
+        filter.createdBy = { id: userId }
+      } else {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      if(transportTypeId) {
+        filter.transportType = { id: transportTypeId }
+      }
+      if(orderId) {
+        filter.id = orderId;
+      }
+      if(transportKindId) {
+        filter.transportKind = { id: transportKindId }
+      }
+      if(loadingLocationId) {
+        filter.loadingLocation = { id: loadingLocationId }
+      }
+      if(deliveryLocationId) {
+        filter.deliveryLocation = { id: deliveryLocationId }
+      }
+      if(createdAt) {
+        filter.createdAt = createdAt
+      }
+      if(sendDate) {
+        filter.sendDate = sendDate
+      }
+      // const orders = await this.ordersRepository.find({ 
+      //   order: sort, 
+      //   where: filter,
+      //   skip: (index - 1) * size, // Skip the number of items based on the page number
+      //   take: size, 
+      //   relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+      //   'additionalLoadingLocation',
+      //   'additionalDeliveryLocation', 'driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+        
+
+        const orders = await this.ordersRepository.createQueryBuilder("order")
+        .leftJoinAndSelect("order.driverOffers", "driverOffer")
+        .leftJoinAndSelect("driverOffer.driver", "driver")
+        .leftJoinAndSelect("driverOffer.currency", "currency")
+        .leftJoin("driverOffer.createdBy", "offerCreatedBy")
+        .addSelect('offerCreatedBy.id')
+        .addSelect('offerCreatedBy.userType')
+        .addSelect('offerCreatedBy.lastLogin')
+        .leftJoinAndSelect("driver.phoneNumbers", "phoneNumbers")
+        .leftJoinAndSelect("order.loadingLocation", "loadingLocation")
+        .leftJoinAndSelect("order.deliveryLocation", "deliveryLocation")
+        .leftJoinAndSelect("order.customsPlaceLocation", "customsPlaceLocation")
+        .leftJoinAndSelect("order.customsClearancePlaceLocation", "customsClearancePlaceLocation")
+        .leftJoinAndSelect("order.additionalLoadingLocation", "additionalLoadingLocation")
+        .leftJoinAndSelect("order.additionalDeliveryLocation", "additionalDeliveryLocation")
+        .leftJoinAndSelect("order.clientMerchant", "clientMerchant")
+        .leftJoinAndSelect("order.inAdvancePriceCurrency", "inAdvancePriceCurrency")
+        .leftJoinAndSelect("order.offeredPriceCurrency", "offeredPriceCurrency")
+        .leftJoinAndSelect("order.cargoType", "cargoType")
+        .leftJoinAndSelect("order.cargoStatus", "cargoStatus")
+        .leftJoinAndSelect("order.cargoPackage", "cargoPackage") 
+        .leftJoinAndSelect("order.transportTypes", "transportTypes")
+        .leftJoinAndSelect("order.loadingMethod", "cargoLoadMethod")
+        .leftJoinAndSelect("order.transportKinds", "transportKinds")
+        .where("order.deleted = :deleted", { deleted: false })
+        .andWhere("driverOffer.driver.id = :driverId", { driverId: 0 })
+        .andWhere("driverOffer.accepted = :accepted", { accepted: true })
+        .andWhere(`CASE 
+               WHEN order.is_safe_transaction THEN cargoStatus.code = :closed 
+               ELSE cargoStatus.code = :completed 
+               END `, {
+          completed: CargoStatusCodes.Completed,
+          closed: CargoStatusCodes.Closed
+        })
+        .skip((index - 1) * size) // Skip the number of items based on the page number
+        .take(size)
+        .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
+        .getMany();
+
+
+        const ordersCount = await this.ordersRepository.count({ where : filter });
+        const totalPagesCount = Math.ceil(ordersCount / size);
+
+        if(orders.length) {
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -391,6 +514,15 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
       }
 
+      const isDriverArchived: boolean = await this.driversRepository.exists({ where: { id: offerDto.driverId, deleted: true} });
+      if(isDriverArchived) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: offerDto.driverId, deleted: true} });
+      if(isDriverBlocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
+      }
 
       const offered: OrderOffer[] = await this.orderOffersRepository.find({ where: { order: { id: offerDto.orderId }, driver: { id: offerDto.driverId }, createdBy: { id: userId }} });
       if((offered.filter((el: any) => !el.rejected && !el.canceled)).length) {

@@ -93,8 +93,12 @@ export class DriversService {
         'additionalLoadingLocation',
         'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
+
+      const merchantsCount = await this.ordersRepository.count({ where: filter });
+      const totalPagesCount = Math.ceil(merchantsCount / size);
+
       if (orders.length) {
-        return new BpmResponse(true, orders, null);
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size}, null);
       } else {
         throw new NoContentException();
       }
@@ -156,7 +160,11 @@ export class DriversService {
         'additionalDeliveryLocation','driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
       if (orders.length) {
-        return new BpmResponse(true, orders, null);
+
+        const merchantsCount = await this.ordersRepository.count({ where: filter });
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size}, null);
       } else {
         throw new NoContentException();
       }
@@ -195,19 +203,39 @@ export class DriversService {
     }
   }
 
-  async getMerchantActiveOrders(id: number): Promise<BpmResponse> {
+  async getMerchantActiveOrders(id: number, sortBy: string, sortType: string, pageIndex: string, pageSize: string): Promise<BpmResponse> {
     try {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
+
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC';
+      }
+
       const orders = await this.ordersRepository.find({
+        order: sort,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
         where: { deleted: false, driverOffers: { driver: { driverMerchant: { id } }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
         relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
         'additionalLoadingLocation',
         'additionalDeliveryLocation','driverOffers', 'driverOffers.currency', 'driverOffers.driver.driverMerchant', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
 
-      return new BpmResponse(true, orders, null);
+      if(orders.length) {
+        const merchantsCount = await this.ordersRepository.count({ where: { deleted: false, driverOffers: { driver: { driverMerchant: { id } }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) }  } });
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
+      } else {
+        throw new NoContentException();
+      }
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
@@ -218,22 +246,30 @@ export class DriversService {
     }
   }
 
-  async getArchiveOrdersByDriverId(driverId: number): Promise<BpmResponse> {
+  async getArchiveOrdersByDriverId(driverId: number, sortBy: string, sortType: string, pageIndex: string, pageSize: string): Promise<BpmResponse> {
     try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
       if (!driverId) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      if(!sortBy) {
+        sortBy = 'order.id';
+      } 
+      if(!sortType) {
+        sortType = 'DESC'
       }
       const orders = await this.ordersRepository.createQueryBuilder("order")
         .leftJoinAndSelect("order.driverOffers", "driverOffer")
         .leftJoinAndSelect("driverOffer.driver", "driver")
-        .leftJoinAndSelect("driver.phoneNumbers", "phoneNumbers")
-        .leftJoinAndSelect("driver.loadingLocation", "loadingLocation")
-        .leftJoinAndSelect("driver.deliveryLocation", "deliveryLocation")
-        .leftJoinAndSelect("driver.customsPlaceLocation", "customsPlaceLocation")
-        .leftJoinAndSelect("driver.customsClearancePlaceLocation", "customsClearancePlaceLocation")
-        .leftJoinAndSelect("driver.additionalLoadingLocation", "additionalLoadingLocation")
-        .leftJoinAndSelect("driver.additionalDeliveryLocation", "additionalDeliveryLocation")
         .leftJoinAndSelect("driverOffer.currency", "currency")
+        .leftJoinAndSelect("driver.phoneNumbers", "phoneNumbers")
+        .leftJoinAndSelect("order.loadingLocation", "loadingLocation")
+        .leftJoinAndSelect("order.deliveryLocation", "deliveryLocation")
+        .leftJoinAndSelect("order.customsPlaceLocation", "customsPlaceLocation")
+        .leftJoinAndSelect("order.customsClearancePlaceLocation", "customsClearancePlaceLocation")
+        .leftJoinAndSelect("order.additionalLoadingLocation", "additionalLoadingLocation")
+        .leftJoinAndSelect("order.additionalDeliveryLocation", "additionalDeliveryLocation")
         .leftJoinAndSelect("order.clientMerchant", "clientMerchant")
         .leftJoinAndSelect("order.inAdvancePriceCurrency", "inAdvancePriceCurrency")
         .leftJoinAndSelect("order.offeredPriceCurrency", "offeredPriceCurrency")
@@ -252,10 +288,28 @@ export class DriversService {
                END `, {
           completed: CargoStatusCodes.Completed,
           closed: CargoStatusCodes.Closed
-  })
+        })
+        .skip((index - 1) * size) // Skip the number of items based on the page number
+        .take(size)
+        .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
         .getMany();
-        console.log(orders)
-      return new BpmResponse(true, orders, null);
+
+         const merchantsCount = await this.ordersRepository.createQueryBuilder('o')
+        .leftJoinAndSelect("order.driverOffers", "driverOffer")
+        .where("order.deleted = :deleted", { deleted: false })
+        .andWhere("driverOffer.driver.id = :driverId", { driverId: driverId })
+        .andWhere("driverOffer.accepted = :accepted", { accepted: true })
+        .andWhere(`CASE 
+               WHEN order.is_safe_transaction THEN cargoStatus.code = :closed 
+               ELSE cargoStatus.code = :completed 
+               END `, {
+          completed: CargoStatusCodes.Completed,
+          closed: CargoStatusCodes.Closed
+        })
+        .getCount()
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+
+      return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') { 
@@ -293,6 +347,16 @@ export class DriversService {
       const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: offerDto.driverId }, accepted: true } });
       if (isDriverBusy) {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
+      }
+
+      const isDriverArchived: boolean = await this.driversRepository.exists({ where: { id: offerDto.driverId, deleted: true} });
+      if(isDriverArchived) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: offerDto.driverId, deleted: true} });
+      if(isDriverBlocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
       }
 
       const isAlreadyAccepted: boolean = await this.orderOffersRepository.exists({ where: { order: { id: offerDto.orderId }, accepted: true } });
@@ -353,6 +417,16 @@ export class DriversService {
       const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: offer.driver?.id }, accepted: true } });
       if (isDriverBusy) {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
+      }
+
+      const isDriverArchived: boolean = await this.driversRepository.exists({ where: { id: offer.driver?.id, deleted: true} });
+      if(isDriverArchived) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: offer.driver?.id, deleted: true} });
+      if(isDriverBlocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
       }
 
       if (offer.rejected) {

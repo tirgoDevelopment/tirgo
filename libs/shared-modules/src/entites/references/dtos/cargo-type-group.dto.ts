@@ -7,4 +7,8 @@ export class CargoTypeGroupDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  codeTNVED: string;
 }

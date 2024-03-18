@@ -195,7 +195,9 @@ export class AgentsService {
       if(!agents.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, agents, null);
+      const merchantsCount = await this.agentsRepository.count({ where: filter })
+      const totalPagesCount = Math.ceil(merchantsCount / size);
+      return new BpmResponse(true, { content: agents, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch(err: any) {
       if (err instanceof HttpException) {
         throw err;

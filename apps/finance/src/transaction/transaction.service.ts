@@ -73,7 +73,7 @@ export class TransactionService {
     if (!userId && isNaN(userId)) {
       throw new BadRequestException(ResponseStauses.IdIsRequired);
     }
-    try {
+     try {
       const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
       .select([
           't.id as id',
@@ -133,7 +133,7 @@ export class TransactionService {
       const totalRecords = await totalRecordsQuery;
       const totalPages = Math.ceil(totalRecords / size);
       if (transactions) {
-        return new BpmResponse(true, transactions, [], totalPages);
+        return new BpmResponse(true, { content: transactions, totalPAgesCount: totalPages, pageIndex: index, pageSize: size }, []);
       } else {
         throw new NoContentException();
       }
@@ -187,7 +187,18 @@ export class TransactionService {
       const transactions = await queryBuilder.getRawMany();
   
       if (transactions) {
-        return new BpmResponse(true, transactions, []);
+
+        const totalRecordsQuery = this.transactionsRepository.createQueryBuilder('t')
+        .leftJoin(User, 'u', 'u.id = t.created_by')
+        .leftJoin(Role, 'r', 'r.id = u.role_id')
+        .leftJoin(ClientMerchantUser, 'cmu', 'cmu.user_id = u.id')
+        .leftJoin(ClientMerchant, 'cm', 'cm.id = cmu.merchant_id')
+        .where(`t.is_merchant = true AND t.merchant_id = ${userId}`)
+        .andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
+        .getCount();
+
+
+        return new BpmResponse(true, { content: transactions, totalPAgesCount: totalRecordsQuery, pageIndex: index, pageSize: size }, []);
       } else {
         throw new NoContentException();
       }
@@ -239,7 +250,10 @@ export class TransactionService {
       const transactions = await queryBuilder.getRawMany();
   
       if (transactions.length) {
-        return new BpmResponse(true, transactions, []);
+
+        const transactionsCount = await queryBuilder.getCount();
+
+        return new BpmResponse(true, { content: transactions, totalPAgesCount: transactionsCount, pageIndex: index, pageSize: size }, []);
       } else {
         throw new NoContentException();
       }

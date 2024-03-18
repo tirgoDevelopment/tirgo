@@ -12,6 +12,9 @@ export class CargoTypeGroup {
   @OneToMany(() => CargoType, cargoType => cargoType.group)
   cargoTypes: CargoType[];
 
+  @Column({ nullable: true })
+  codeTNVED: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 

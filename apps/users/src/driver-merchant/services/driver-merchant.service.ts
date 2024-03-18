@@ -495,7 +495,9 @@ export class DriverMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        const merchantsCount = await this.driverMerchantsRepository.count({ where: { completed: true, verified: false, rejected: false } })
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -568,7 +570,9 @@ export class DriverMerchantsService {
       }
 
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        const merchantsCount = await this.driverMerchantsRepository.count({ where: filter })
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -603,7 +607,9 @@ export class DriverMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        const merchantsCount = await this.driverMerchantsRepository.count({ where: { completed: true, verified: false, rejected: true } })
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }
@@ -638,7 +644,9 @@ export class DriverMerchantsService {
         take: size,
       });
       if (merchants.length) {
-        return new BpmResponse(true, merchants, null);
+        const merchantsCount = await this.driverMerchantsRepository.count({ where: { completed: true, verified: false, blocked: true } })
+        const totalPagesCount = Math.ceil(merchantsCount / size);
+        return new BpmResponse(true, { content: merchants, totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }

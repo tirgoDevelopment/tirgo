@@ -125,6 +125,8 @@ export enum ResponseStauses {
   AlreadyRejecteed = 'alreadyRejecteed',
   AlreadyAccepted = 'alreadyAccepted',
   DriverHasOrder = 'driverHasOrder',
+  DriverArchived = 'driverArchived',
+  DriverBlocked = 'driverBlocked',
   AlreadyOffered = 'alreadyOfferedToThisOrder',
   AlreadyReplied = 'alreadyRepliedToThisOffer',
   OfferLimit = 'offerLimitExceeded',
@@ -171,15 +173,13 @@ export enum UsersRoleNames {
 
 export class BpmResponse {
   success: boolean;
-  data: any;
+  data: { content: any, totalPagesCount: number, pageIndex: number, pageSize: number };
   messages: string[] | undefined;
-  totalPagesCount: number;
 
-  constructor(success: boolean, data: any, messages?: string[], totalPages?: number) {
+  constructor(success: boolean, data: any, messages?: string[]) {
     this.success = success;
     this.data = data;
     this.messages = messages;
-    this.totalPagesCount = totalPages
   }
 }
 

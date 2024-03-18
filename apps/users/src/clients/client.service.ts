@@ -187,7 +187,9 @@ export class ClientsService {
       if (!clients.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, clients, null);
+      const clientsCount = await this.clientsRepository.count({ where: filter })
+      const totalPagesCount = Math.ceil(clientsCount / size);
+      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)
       if(err instanceof HttpException) {
@@ -219,7 +221,9 @@ export class ClientsService {
       if (!clients.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, clients, null);
+      const clientsCount = await this.clientsRepository.count({ where: { blocked: false, deleted: false } })
+      const totalPagesCount = Math.ceil(clientsCount / size);
+      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       if(err instanceof HttpException) {
         throw err;
@@ -250,7 +254,9 @@ export class ClientsService {
       if (!clients.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, clients, null);
+      const clientsCount = await this.clientsRepository.count({ where: { blocked: true, deleted: false } })
+      const totalPagesCount = Math.ceil(clientsCount / size);
+      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       if(err instanceof HttpException) {
         throw err;
@@ -281,7 +287,9 @@ export class ClientsService {
       if (!clients.length) {
         throw new NoContentException();
       }
-      return new BpmResponse(true, clients, null);
+      const clientsCount = await this.clientsRepository.count({ where: { deleted: false } })
+      const totalPagesCount = Math.ceil(clientsCount / size);
+      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       if(err instanceof HttpException) {
         throw err;
