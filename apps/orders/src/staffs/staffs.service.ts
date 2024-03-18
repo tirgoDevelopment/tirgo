@@ -317,8 +317,11 @@ export class StaffsService {
           'loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
         'additionalLoadingLocation',
         'additionalDeliveryLocation', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
-      if(orders.length) {
-        return new BpmResponse(true, orders, null);
+        if(orders.length) {
+        const ordersCount = await this.ordersRepository.count({ where: filter });
+        const totalPagesCount = Math.ceil(ordersCount / size);
+
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
       } else {
         throw new NoContentException();
       }

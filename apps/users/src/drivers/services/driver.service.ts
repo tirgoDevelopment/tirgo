@@ -382,9 +382,17 @@ export class DriversService {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
-      if (!sortBy) {
-        sortBy = 'd.id';
+      if(!merchantId || isNaN(merchantId)) {
+        throw new BadRequestException(ResponseStauses.MerchantIdIsRequired)
+      }
+
+      if(!sortBy) {
+        sortBy = 'order.id';
       } 
+      if(!sortType) {
+        sortType = 'DESC'
+      }
+
       const drivers = await this.driversRepository.createQueryBuilder('d')
       .leftJoin('d.subscription', 'subscription')
       .leftJoin('d.driverTransports', 'driverTransports')
@@ -393,22 +401,22 @@ export class DriversService {
       .addSelect('phoneNumber.phoneNumber')
       .addSelect('phoneNumber.id')
       .leftJoin(User, 'u', 'u.id = d.created_by')
-      // .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
-      // .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-      // .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId} AND d.deleted = true`)
       .skip((index - 1) * size) // Skip the number of items based on the page number
       .take(size)
       .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
       .getMany();
 
-      // const driversCount = await this.driversRepository.createQueryBuilder('d')
-      // .leftJoin(User, 'u', 'u.id = d.created_by')
-      // .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
-      // .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-      // .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId}`)
-      // .getCount();
+      const driversCount = await this.driversRepository.createQueryBuilder('d')
+      .leftJoin(User, 'u', 'u.id = d.created_by')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId} AND d.deleted = true`)
+      .getCount();
  
-      const totalPagesCount = Math.ceil(10 / size);
+      const totalPagesCount = Math.ceil(driversCount / size);
 
       if (!drivers.length) {
         throw new NoContentException();

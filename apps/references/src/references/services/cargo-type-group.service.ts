@@ -14,6 +14,7 @@ export class CargoTypeGroupsService {
         try {
             const cargoTypeGroup: CargoTypeGroup = new CargoTypeGroup();
             cargoTypeGroup.name = createCargoTypeGroupDto.name;
+            cargoTypeGroup.codeTNVED = createCargoTypeGroupDto.codeTNVED;
 
             const saveResult = await this.cargoTypeGroupsRepository.save(cargoTypeGroup);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
@@ -28,6 +29,7 @@ export class CargoTypeGroupsService {
         try {
             const cargoTypeGroup: CargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id: updateCargoTypeGroupDto.id } })
             cargoTypeGroup.name = updateCargoTypeGroupDto.name;
+            cargoTypeGroup.codeTNVED = updateCargoTypeGroupDto.codeTNVED;
 
             await this.cargoTypeGroupsRepository.update({ id: cargoTypeGroup.id }, cargoTypeGroup);
 

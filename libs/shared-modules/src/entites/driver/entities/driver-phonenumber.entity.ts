@@ -6,7 +6,7 @@ export class DriverPhoneNumber {
     @PrimaryGeneratedColumn('increment')
     id?: number;
 
-    @Column({ nullable: false, unique: true, name: 'phone_number' })
+    @Column({ nullable: false, unique: true,  name: 'phone_number' })
     phoneNumber: string;
 
     @ManyToOne(() => Driver, driver => driver.phoneNumbers)

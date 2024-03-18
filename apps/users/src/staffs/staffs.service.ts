@@ -84,7 +84,9 @@ export class StaffsService {
                 take: size,
             });
             if(staffs.length) {
-                return new BpmResponse(true, staffs);
+                const staffsCount = await this.staffsRepository.count({ where: { deleted: false } })
+                const totalPagesCount = Math.ceil(staffsCount / size);
+                return new BpmResponse(true, { content: staffs, totalPagesCount, pageIndex: index, pageSize: size });
             } else {
                 throw new NoContentException();
             }
