@@ -20,8 +20,11 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Get all archive users' })
   @Get('archive')
-  getArchivedUsers() {
-    return this.authService.getArchivedUsers()
+  getArchivedUsers(
+    @Query('userId') id: number,
+    @Query('userType') userType: string
+  ) {
+    return this.authService.getArchivedUsers(id, userType)
   }
 
   @ApiOperation({ summary: 'Get archive user by id' })

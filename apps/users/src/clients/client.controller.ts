@@ -54,12 +54,12 @@ export class ClientsController {
     @Query('clientId') clientId: number, 
     @Query('firstName') firstName: string, 
     @Query('phoneNumber') phoneNumber: string, 
-    @Query('createdFrom') createdFrom: string, 
+    @Query('createdAtFrom') createdAtFrom: string, 
     @Query('createdAtTo') createdAtTo: string, 
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.clientsService.getAllClients(pageSize, pageIndex, sortBy, sortType, clientId, firstName, phoneNumber, createdFrom, createdAtTo, lastLoginFrom, lastLoginTo);
+    return this.clientsService.getAllClients(pageSize, pageIndex, sortBy, sortType, clientId, firstName, phoneNumber, createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo);
   }
 
   @ApiOperation({ summary: 'Get all active clients' })

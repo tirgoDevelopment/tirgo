@@ -149,7 +149,6 @@ export class DriversService {
       if (sendDate) {
         filter.sendDate = sendDate
       }
-
       const orders = await this.ordersRepository.find({
         order: sort,
         where: filter,
@@ -160,7 +159,7 @@ export class DriversService {
         'additionalDeliveryLocation','driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
       if (orders.length) {
-
+ 
         const merchantsCount = await this.ordersRepository.count({ where: filter });
         const totalPagesCount = Math.ceil(merchantsCount / size);
 
@@ -254,7 +253,7 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       if(!sortBy) {
-        sortBy = 'order.id';
+        sortBy = 'id';
       } 
       if(!sortType) {
         sortType = 'DESC'

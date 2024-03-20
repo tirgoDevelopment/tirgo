@@ -156,7 +156,7 @@ export class AgentsService {
     }
   }
 
-  async getAgents(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getAgents(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
       const filter: any = { deleted: false };
       const size = +pageSize || 10; // Number of items per page
@@ -173,13 +173,13 @@ export class AgentsService {
       if(companyName) {
         filter.companyName = companyName;
       }
-      if (createdFrom && createdAtTo) {
+      if (createdAtFrom && createdAtTo) {
         filter.createdAt = Between(
-          dateFns.parseISO(createdFrom),
+          dateFns.parseISO(createdAtFrom),
           dateFns.parseISO(createdAtTo)
         );
-      } else if (createdFrom) {
-        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdFrom));
+      } else if (createdAtFrom) {
+        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdAtFrom));
       } else if (createdAtTo) {
         filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
       }

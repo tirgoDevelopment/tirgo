@@ -74,7 +74,7 @@ export class StaffsService {
         order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, longitude: createOrderDto.additionalDeliveryLocation.longitude });;
       }
       order.isAdr = createOrderDto.isAdr;
-      order.isCarnetTir = createOrderDto.isCarnetTir;
+      order.isCarnetTir = createOrderDto.isCarnetTir; 
       order.isGlonas = createOrderDto.isGlonas;
       order.isParanom = createOrderDto.isParanom;
       order.offeredPrice = createOrderDto.offeredPrice;
@@ -105,8 +105,8 @@ export class StaffsService {
       if (err instanceof HttpException) {
         throw err
       } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.UserNotFound);
         if (err.message.includes('ClientMerchant')) {
-          throw new BadRequestException(ResponseStauses.UserNotFound);
         } else if (err.message.includes('Currency')) {
           throw new BadRequestException(ResponseStauses.CurrencyNotFound);
         } else if (err.message.includes('TransportType')) {

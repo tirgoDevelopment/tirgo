@@ -74,7 +74,7 @@ export enum ResponseStauses {
   NotFound = 'dataNotFound',
   UserNotFound = 'userNotFound',
   OrderNotFound = 'orderNotFound',
-  MerchantNotFound = 'ClientMerchantNotFound',
+  MerchantNotFound = 'clientMerchantNotFound',
   AgentNotFound = 'agentNotFound',
   StaffNotFound = 'staffNotFound',
   RoleNotFound = 'roleNotFound',
@@ -186,6 +186,7 @@ export class BpmResponse {
 export enum TransactionTypes {
   TopUp = 'topupAccount',
   Withdraw = 'withdrawAccount',
+  WithdrawSecureAccount = 'withdrawSecureAccount',
   SecureTransaction = 'secureTransaction',
   TopUpAgentAccount = 'topUpAgentAccount',
   DriverSubscriptionPayment = 'driverSubscriptionPayment'

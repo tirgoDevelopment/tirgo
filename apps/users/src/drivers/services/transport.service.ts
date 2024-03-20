@@ -24,21 +24,32 @@ export class TransportsService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const transport: DriverTransport = new DriverTransport();
-      console.log(JSON.parse(transportDto.transportKindIds), 'transportKindIds')
-      console.log(JSON.parse(transportDto.transportTypeIds), 'transportTypeIds')
-      console.log(JSON.parse(transportDto.loadingMethodIds), 'loadingMethodIds')
-      console.log(JSON.parse(transportDto.cargoTypeIds), 'cargoTypeIds')
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: transportDto.driverId } });
-      const transportKinds: TransportKind[] = await this.transportKindsRepository.find({ where: { id: In(JSON.parse(transportDto.transportKindIds)) } });
+      
+      if(transportDto.transportKindIds) {
+        console.log(JSON.parse(transportDto.transportKindIds), 'transportKindIds')
+        const transportKinds: TransportKind[] = await this.transportKindsRepository.find({ where: { id: In(JSON.parse(transportDto.transportKindIds)) } });
+        transport.transportKinds = transportKinds;
+      }
+      if(transportDto.transportTypeIds) {
+      console.log(JSON.parse(transportDto.transportTypeIds), 'transportTypeIds')
       const transportTypes: TransportType[] = await this.transportTypesRepository.find({ where: { id: In(JSON.parse(transportDto.transportTypeIds)) } });
-      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.loadingMethodIds)) } });
-      const cargoTypes: CargoType[] = await this.cargoTypesRepository.find({ where: { id: In(JSON.parse(transportDto.cargoTypeIds)) } });
-
-      transport.transportKinds = transportKinds;
       transport.transportTypes = transportTypes;
+        
+      }
+      if(transportDto.loadingMethodIds) {
+      console.log(JSON.parse(transportDto.loadingMethodIds), 'loadingMethodIds')
+      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.loadingMethodIds)) } });
       transport.cargoLoadMethods = cargoLoads;
+      }
+      if(transportDto.cargoTypeIds) {
+      console.log(JSON.parse(transportDto.cargoTypeIds), 'cargoTypeIds')
+      const cargoTypes: CargoType[] = await this.cargoTypesRepository.find({ where: { id: In(JSON.parse(transportDto.cargoTypeIds)) } });
       transport.cargoTypes = cargoTypes;
+      }
+
       transport.driver = driver;
+
       if (transportDto.name) {
         transport.name = transportDto.name;
       }
@@ -48,9 +59,11 @@ export class TransportsService {
       if (transportDto.stateNumber) {
         transport.stateNumber = transportDto.stateNumber;
       }
+      console.log(transportDto.isAdr)
       if (transportDto.isAdr) {
         transport.isAdr = transportDto.isAdr;
       }
+      console.log(transport.isAdr)
       if (transportDto.refrigeratorFrom) {
         transport.refrigeratorFrom = transportDto.refrigeratorFrom;
       }
@@ -62,6 +75,9 @@ export class TransportsService {
       }
       if (transportDto.isHook) {
         transport.isHook = transportDto.isHook;
+      }
+      if (transportDto.loadCapacity) {
+        transport.loadCapacity = transportDto.loadCapacity;
       }
       if (files) {
         const uploads: any = [];
@@ -260,7 +276,7 @@ export class TransportsService {
       if (transportDto.stateNumber && transportDto.stateNumber != null) {
         transport.stateNumber = transportDto.stateNumber;
       }
-      if (transportDto.isAdr && transportDto.isAdr != null) {
+      if (transportDto.isAdr) {
         transport.isAdr = transportDto.isAdr;
       }
       if (transportDto.refrigeratorFrom && transportDto.refrigeratorFrom != null) {

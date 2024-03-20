@@ -116,10 +116,10 @@ export class ClientMerchantController {
     @Query('sortType') sortType: string,
     @Query('merchantId') id: number,
     @Query('companyName') companyName: string,
-    @Query('createdFrom') createdFrom: string,
+    @Query('createdAtFrom') createdAtFrom: string,
     @Query('createdAtTo') createdAtTo: string,
   ) {
-    return this.clientMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdFrom, createdAtTo)
+    return this.clientMerchantsService.getVerifiedMerchants(id, pageSize, pageIndex, sortBy, sortType, companyName, createdAtFrom, createdAtTo)
   }
 
   @ApiOperation({ summary: 'Get all rejected client merchants' })

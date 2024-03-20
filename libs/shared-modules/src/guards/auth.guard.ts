@@ -25,15 +25,16 @@ export class AuthGuard implements CanActivate {
             token = request.query.token
         }
         if (
-            request.url.includes('register') ||
+           ( request.url.includes('register') ||
             request.url.includes('phone-verify') ||
             request.url.includes('verify-code') ||
             request.url.includes('send-code') ||
             request.url == '/api/v2/users/login' ||
             request.url == '/api/v2/users/client-merchants/client-merchant-by' ||
             request.url == '/api/v2/users/driver-merchants/driver-merchant-by' ||
-            request.url == '/api/v2/references/currencies/all'
+            request.url == '/api/v2/references/currencies/all') && !token
             ) {
+                console.log('kirdi', token)
             return true
         }
         if (!token) {
