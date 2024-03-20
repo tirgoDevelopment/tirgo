@@ -1,13 +1,14 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, InternalErrorException, NoContentException, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
+import { Between, In, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import { Agent, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
 import * as dateFns from 'date-fns'
 
 @Injectable()
 export class DriversService {
 
   constructor(
+    @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
@@ -30,7 +31,7 @@ export class DriversService {
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
       if(user && user.userType == UserTypes.DriverMerchantUser) {
-        const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchant?.id } }) 
+        const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
       }
 
@@ -71,13 +72,13 @@ export class DriversService {
       driver.phoneNumbers = driverPhoneNumbers;
 
       // Save driver and associated entities
-      await queryRunner.manager.save(Driver, driver);
+      const newDriver = await queryRunner.manager.save(Driver, driver);
 
       
       // Commit the transaction
       await queryRunner.commitTransaction();
 
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+      return new BpmResponse(true, { id: newDriver.id }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
       // this.awsService.deleteFile('driver', passportFile.split(' ').join('').trim());
@@ -137,12 +138,18 @@ export class DriversService {
         .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
         .leftJoinAndSelect('driver.agent', 'agent')
         .leftJoinAndSelect('driver.subscription', 'subscription')
+        .leftJoin('driver.orderOffers', 'orderOffers')
+        .leftJoinAndSelect('orderOffers.order', 'order')
         .leftJoin('driver.user', 'user')
         .addSelect('user.id')
         .addSelect('user.userType')
         .addSelect('user.lastLogin')
         .where(`driver.deleted = false AND driver.id = ${id}`)
         .getOneOrFail();
+
+        const canceledOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { cargoStatus: { code: CargoStatusCodes.Canceled } } } });
+        const closdOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: true,  cargoStatus: { code: CargoStatusCodes.Closed } } } });
+        const completedOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: false,  cargoStatus: { code: CargoStatusCodes.Completed } } } });
 
       const balances: Transaction[] = await this.transactionsRepository.query(`
       SELECT
@@ -159,6 +166,8 @@ export class DriversService {
           c.name;
     `);
       driver['balances'] = balances;
+      driver['canceledOrdersCount'] = canceledOrdersCount;
+      driver['completedOrdersCount'] = closdOrdersCount + completedOrdersCount;
 
 
       const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
@@ -176,7 +185,8 @@ export class DriversService {
         .leftJoin(Currency, 'c', 'c.id = t.currency_id')
         .where(`t.created_by = ${userId}`);
       driver['transactions'] = await queryBuilder.getRawMany();
-
+      const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+      driver['isBusy'] = isDriverBusy;
       return new BpmResponse(true, driver, null);
     } catch (err: any) {
       console.log(err)
@@ -194,7 +204,7 @@ export class DriversService {
 
   async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: number,
      isSubscribed: boolean, status: string, isVerified: boolean,
-     createdFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
+     createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
@@ -215,19 +225,29 @@ export class DriversService {
     if(firstName) {
       filter.firstName = { id: firstName }
     }
-    // if(transportKindId) {
-    //   filter.transportKind = { id: transportKindId }
-    // }
+    if(transportKindId) {
+      filter.driverTransports = { transportKinds: { id: transportKindId } }
+    }
     if(isVerified == true || isVerified == false) {
       filter.verified = isVerified;
     }
-    if (createdFrom && createdAtTo) {
+    if((isSubscribed)) {
+      console.log(isSubscribed)
+      filter.subscription = Not(IsNull());
+      filter.subscribedAt = LessThanOrEqual(new Date());
+      filter.subscribedTill = MoreThanOrEqual(new Date());
+    }
+    if(isSubscribed == false) {
+      filter.subscription = IsNull();
+    }
+    console.log(filter)
+    if (createdAtFrom && createdAtTo) {
       filter.createdAt = Between(
-        dateFns.parseISO(createdFrom),
+        dateFns.parseISO(createdAtFrom),
         dateFns.parseISO(createdAtTo)
       );
-    } else if (createdFrom) {
-      filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdFrom));
+    } else if (createdAtFrom) {
+      filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdAtFrom));
     } else if (createdAtTo) {
       filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
     }
@@ -252,6 +272,13 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
+
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
+      }
+
+
       const driversCount = await this.driversRepository.count({ where: filter })
       const totalPagesCount = Math.ceil(driversCount / size);
       return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
@@ -280,7 +307,7 @@ export class DriversService {
       }
       const drivers = await this.driversRepository.find({ 
         where: { blocked: false, deleted: false }, 
-        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
+        relations: ['phoneNumbers', 'driverTransports', 'driverTransports.transportTypes', 'driverTransports.transportKinds', 'driverTransports.cargoLoadMethods', 'agent', 'subscription'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
@@ -288,6 +315,13 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
+
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
+      }
+
+
       const driversCount = await this.driversRepository.count({ where: { blocked: false, deleted: false } })
       const totalPagesCount = Math.ceil(driversCount / size);
       return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
@@ -315,13 +349,17 @@ export class DriversService {
       }
       const drivers = await this.driversRepository.find({ 
         where: { blocked: true, deleted: false }, 
-        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'],
+        relations: ['phoneNumbers', 'driverTransports', 'driverTransports.transportTypes', 'driverTransports.transportKinds', 'driverTransports.cargoLoadMethods' ,'agent', 'subscription'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
       });
       if (!drivers.length) {
         throw new NoContentException();
+      }
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
       }
 
       const driversCount = await this.driversRepository.count({ where: { blocked: true, deleted: false } })
@@ -364,6 +402,10 @@ export class DriversService {
         where: { deleted: true }, 
       });
       const totalPagesCount = Math.ceil(driversCount / size);
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
+      }
 
       return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
@@ -387,16 +429,17 @@ export class DriversService {
       }
 
       if(!sortBy) {
-        sortBy = 'order.id';
+        sortBy = 'd.id';
       } 
       if(!sortType) {
         sortType = 'DESC'
       }
 
       const drivers = await this.driversRepository.createQueryBuilder('d')
-      .leftJoin('d.subscription', 'subscription')
-      .leftJoin('d.driverTransports', 'driverTransports')
-      .leftJoin('d.agent', 'agent')
+      .leftJoinAndSelect('d.subscription', 'subscription')
+      .leftJoinAndSelect('d.driverTransports', 'driverTransports')
+      .leftJoinAndSelect('driverTransports.transportKinds', 'transportKinds')
+      .leftJoinAndSelect('d.agent', 'agent')
       .leftJoin('d.phoneNumbers', 'phoneNumber')
       .addSelect('phoneNumber.phoneNumber')
       .addSelect('phoneNumber.id')
@@ -408,7 +451,6 @@ export class DriversService {
       .take(size)
       .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
       .getMany();
-
       const driversCount = await this.driversRepository.createQueryBuilder('d')
       .leftJoin(User, 'u', 'u.id = d.created_by')
       .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
@@ -421,6 +463,76 @@ export class DriversService {
       if (!drivers.length) {
         throw new NoContentException();
       }
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
+      }
+
+      return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getMerchantActiveDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, merchantId: number): Promise<BpmResponse> {
+    try {
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+      if(!merchantId || isNaN(merchantId)) {
+        throw new BadRequestException(ResponseStauses.MerchantIdIsRequired)
+      }
+
+      if(!sortBy) {
+        sortBy = 'd.id';
+      } 
+      if(!sortType) {
+        sortType = 'DESC'
+      }
+      const drivers = await this.driversRepository.createQueryBuilder('d')
+      .leftJoinAndSelect('d.subscription', 'subscription')
+      .leftJoinAndSelect('d.driverTransports', 'driverTransports')
+      .leftJoinAndSelect('driverTransports.transportKinds', 'transportKinds')
+      .leftJoinAndSelect('driverTransports.transportTypes', 'transportTypes')
+      .leftJoinAndSelect('driverTransports.cargoLoadMethods', 'cargoLoadMethods')
+      .leftJoinAndSelect('d.agent', 'agent')
+      .leftJoin('d.phoneNumbers', 'phoneNumber')
+      .addSelect('phoneNumber.phoneNumber')
+      .addSelect('phoneNumber.id')
+      .leftJoin(User, 'u', 'u.id = d.created_by')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId} AND d.deleted = false AND d.blocked = false`)
+      .skip((index - 1) * size) // Skip the number of items based on the page number
+      .take(size)
+      .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
+      .getMany();
+
+      const driversCount = await this.driversRepository.createQueryBuilder('d')
+      .leftJoin(User, 'u', 'u.id = d.created_by')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`u.user_type = '${UserTypes.DriverMerchantUser}'  AND  dm.id = ${merchantId} AND d.deleted = false AND d.blocked = false`)
+      .getCount();
+ 
+      const totalPagesCount = Math.ceil(driversCount / size);
+      if (!drivers.length) {
+        throw new NoContentException();
+      }
+
+      for(let driver of drivers) {
+        const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+        driver['isBusy'] = isDriverBusy;
+      }
+
+
       return new BpmResponse(true, { content: drivers, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)

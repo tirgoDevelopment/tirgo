@@ -514,7 +514,7 @@ export class DriverMerchantsService {
     }
   }
 
-  async getVerifiedMerchants(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getVerifiedMerchants(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
 
       const filter: any = { completed: true, verified: true, rejected: false, deleted: false };
@@ -532,13 +532,13 @@ export class DriverMerchantsService {
       if (companyName) {
         filter.companyName = companyName;
       }
-      if (createdFrom && createdAtTo) {
+      if (createdAtFrom && createdAtTo) {
         filter.createdAt = Between(
-          dateFns.parseISO(createdFrom),
+          dateFns.parseISO(createdAtFrom),
           dateFns.parseISO(createdAtTo)
         );
-      } else if (createdFrom) {
-        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdFrom));
+      } else if (createdAtFrom) {
+        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdAtFrom));
       } else if (createdAtTo) {
         filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
       }

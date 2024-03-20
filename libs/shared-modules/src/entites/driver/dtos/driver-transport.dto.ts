@@ -14,6 +14,9 @@ export class DriverTransportDto {
   transportKindIds: any;
 
   @ApiProperty({ required: false })
+  loadCapacity: string;
+
+  @ApiProperty({ required: false })
   transportTypeIds: any;
 
   @ApiProperty({ required: false })

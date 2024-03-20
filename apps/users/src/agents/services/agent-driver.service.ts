@@ -2,6 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { Agent, AwsService, BadRequestException, BpmResponse, Currency, Driver, DriverDto, DriverPhoneNumber, InternalErrorException, NotFoundException, ResponseStauses, Subscription, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
+import * as dateFns from 'date-fns'
 
 @Injectable()
 export class AgentDriversService {
@@ -91,6 +92,7 @@ export class AgentDriversService {
         await queryRunner.manager.save(Transaction, transaction);
         driver.subscription = subscription;
         driver.subscribedAt = new Date();
+        driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
         await await queryRunner.manager.save(Driver, driver);
       }
 
@@ -180,6 +182,7 @@ export class AgentDriversService {
         await queryRunner.manager.save(Transaction, transaction);
         driver.subscription = subscription;
         driver.subscribedAt = new Date();
+        driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
         await await queryRunner.manager.save(Driver, driver);
       }
 
@@ -223,6 +226,7 @@ export class AgentDriversService {
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { blocked: false, id: driverId } });
 
       driver.subscribedAt = new Date();
+      driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
       driver.subscription = subscription;
       await queryRunner.manager.save(Driver, driver);
 

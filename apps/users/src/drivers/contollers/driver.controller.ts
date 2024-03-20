@@ -3,7 +3,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { DriverDto } from '../..';
 import { DriversService } from '../services/driver.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-
+ 
 @ApiTags('Drivers')
 @Controller('drivers')
 export class DriversController {
@@ -64,12 +64,12 @@ export class DriversController {
     @Query('isSubscribed') isSubscribed: boolean,
     @Query('status') status: string,
     @Query('isVerified') isVerified: boolean,
-    @Query('createdFrom') createdFrom: string,
+    @Query('createdAtFrom') createdAtFrom: string,
     @Query('createdAtTo') createdAtTo: string,
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, isSubscribed, status, isVerified,  createdFrom, createdAtTo, lastLoginFrom, lastLoginTo)
+    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, isSubscribed, status, isVerified,  createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo)
   }
 
   @ApiOperation({ summary: 'Get all active drivers' })
@@ -104,6 +104,18 @@ export class DriversController {
     @Query('merchantId') merchantId: number,
   ) {
     return this.driversService.getMerchantDeletedDrivers(pageSize, pageIndex, sortBy, sortType, merchantId);
+  }
+
+  @ApiOperation({ summary: 'Get all merchant active drivers' })
+  @Get('merchant-active-drivers')
+  async getMerchantActiveDrivers(
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('merchantId') merchantId: number,
+  ) {
+    return this.driversService.getMerchantActiveDrivers(pageSize, pageIndex, sortBy, sortType, merchantId);
   }
 
   @ApiOperation({ summary: 'Get all deleted drivers' })

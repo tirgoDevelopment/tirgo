@@ -87,6 +87,9 @@ export class Driver {
   @Column({ type: 'timestamp', nullable: true, name: 'subscribed_at' })
   subscribedAt: Date; 
 
+  @Column({ type: 'timestamp', nullable: true, name: 'subscribed_till' })
+  subscribedTill: Date; 
+
   @OneToOne(() => User, (user) => user.driver, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

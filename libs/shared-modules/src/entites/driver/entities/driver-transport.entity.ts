@@ -36,6 +36,9 @@ export class DriverTransport {
   @Column({ nullable: true, name: 'is_hook' })
   isHook: boolean;
 
+  @Column({ nullable: true, name: 'load_capacity' })
+  loadCapacity: string;
+
   @Column({ nullable: true, name: 'tech_passport_front_file_path' })
   techPassportFrontFilePath?: string;
 

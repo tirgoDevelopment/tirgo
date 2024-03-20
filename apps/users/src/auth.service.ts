@@ -13,9 +13,13 @@ export class AuthService {
     return 'Hello World!';
   }
 
-  async getArchivedUsers(): Promise<BpmResponse> {
+  async getArchivedUsers(id: number, userType: string): Promise<BpmResponse> {
     try {
-       const users = await this.usersRepository.createQueryBuilder('user')
+      const filter: any = {};
+      if(id) {
+        filter.id = id;
+      } 
+       const queryRunner = await this.usersRepository.createQueryBuilder('user')
         .leftJoinAndSelect('user.client', 'client')
         .leftJoinAndSelect('client.phoneNumbers', 'phoneNumbers')
         .leftJoinAndSelect('user.driver', 'driver')
@@ -36,14 +40,17 @@ export class AuthService {
           'driverMerchantUser',
           'phoneNumbers'
       ])
-        .where(`(client.deleted = true AND user.user_type = '${UserTypes.Client}')`)
-        .orWhere(`(driver.deleted = true AND user.user_type = '${UserTypes.Driver}')`)
-        .orWhere(`(clientMerchantUser.deleted = true AND user.user_type = '${UserTypes.ClientMerchantUser}')`)
-        .orWhere(`(clientMerchant.deleted = true AND user.user_type = '${UserTypes.ClientMerchant}')`)
-        .orWhere(`(driverMerchantUser.deleted = true AND user.user_type = '${UserTypes.DriverMerchantUser}')`)
-        .orWhere(`(agent.deleted = true AND user.user_type = '${UserTypes.Agent}')`)
-        .orWhere(`(staff.deleted = true AND user.user_type = '${UserTypes.Staff}')`)
-        .getMany();
+        .where(`(client.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.Client}')`)
+        .orWhere(`(driver.deleted = true AND user.user_type = '${userType ? userType : UserTypes.Driver}')`)
+        .orWhere(`(clientMerchantUser.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.ClientMerchantUser}')`)
+        .orWhere(`(clientMerchant.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.ClientMerchant}')`)
+        .orWhere(`(driverMerchantUser.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.DriverMerchantUser}')`)
+        .orWhere(`(agent.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.Agent}')`)
+        .orWhere(`(staff.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.Staff}')`);
+        if(id) {
+          queryRunner.andWhere(`id = ${id}`)
+        }
+        const users = await queryRunner.getMany();
 
       return new BpmResponse(true, users, null);
     } catch (err: any) {

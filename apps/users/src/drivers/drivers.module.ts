@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { Agent, AwsService, CargoLoadMethod, CargoType, Client, Driver, DriverTransport, SundryService, Transaction, TransportKind, TransportType, User } from "..";
+import { Agent, AwsService, CargoLoadMethod, CargoType, Client, Driver, DriverTransport, OrderOffer, SundryService, Transaction, TransportKind, TransportType, User } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriversController } from "./contollers/driver.controller";
 import { DriversService } from "./services/driver.service";
@@ -9,7 +9,7 @@ import { DriverTransportsController } from "./contollers/transport.controller";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ Driver, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction ]),
+        TypeOrmModule.forFeature([ Driver, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, OrderOffer ]),
       ],
       controllers: [
         DriversController,
@@ -22,6 +22,7 @@ import { DriverTransportsController } from "./contollers/transport.controller";
         TransportsService
       ],
       exports: [
+        TypeOrmModule.forFeature([ Driver, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, OrderOffer ]),
       ]
 })
 export class DriversModule {

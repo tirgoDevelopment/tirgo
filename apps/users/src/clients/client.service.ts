@@ -32,7 +32,7 @@ export class ClientsService {
       client.email = createClientDto.email;
       client.citizenship = createClientDto.citizenship;
       client.additionalPhoneNumber = createClientDto.additionalPhoneNumber;
-      client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
+     
 
       if(user && user.userType == UserTypes.Staff) {
         client.createdBy = user;
@@ -53,8 +53,10 @@ export class ClientsService {
 
         client.phoneNumbers = clientPhoneNumbers;
 
-      await this.awsService.uploadFile('client', passportFile);
-
+        if(passportFile) {
+        await this.awsService.uploadFile('client', passportFile);
+        client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
+      }
       await this.clientsRepository.save(client);
 
       await queryRunner.commitTransaction();
