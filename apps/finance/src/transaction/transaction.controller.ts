@@ -45,6 +45,21 @@ async getTransactions(
     return this.transactionsService.getMerchantTransactionById(sortBy, sortType, pageSize, pageIndex, id, transactionType, fromDate, toDate);
 }
 
+@ApiOperation({ summary: 'Get merchant transactions' })
+@Get('driver-merchant-transactions')
+async getDriverTransactions(
+  @Query('pageSize') pageSize: string,
+  @Query('pageIndex') pageIndex: string,
+  @Query('sortBy') sortBy: string,
+  @Query('sortType') sortType: string,
+  @Query('userId') id: number,
+  @Query('transactionType') transactionType: string,
+  @Query('fromDate') fromDate: string,
+  @Query('toDate') toDate: string
+) {
+    return this.transactionsService.getDriverMerchantTransactionById(sortBy, sortType, pageSize, pageIndex, id, transactionType, fromDate, toDate);
+}
+
 @ApiOperation({ summary: 'Admin get merchant transactions' })
 @Get('admin-merchant-transactions')
 async getAdminTransactions(

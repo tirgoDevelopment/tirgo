@@ -26,10 +26,10 @@ export class LoginService {
             let user;
             if (userType == UserTypes.ClientMerchantUser) {
 
-                user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user'] });
+                user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user', 'user.role', 'user.role.permission'] });
             } else if (userType == UserTypes.DriverMerchantUser) {
 
-                user = await this.driverMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['driverMerchant', 'user'] });
+                user = await this.driverMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['driverMerchant', 'user', 'user.role', 'user.role.permission'] });
 
             } else if (userType == UserTypes.Client) {
 
@@ -54,7 +54,7 @@ export class LoginService {
                     .getOneOrFail();
 
             } else if (userType == UserTypes.Staff) {
-                user = await this.staffsRepository.findOneOrFail({ where: { username }, relations: ['user'] })
+                user = await this.staffsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
             } else if (userType == UserTypes.Agent) {
 
             } else {
@@ -64,7 +64,7 @@ export class LoginService {
             if (!isPasswordValid) {
                 throw new BadRequestException(ResponseStauses.InvalidPassword);
             } else {
-                let payload: any = { sub: user.id, userId: user.user.id, userType: user.user.userType };
+                let payload: any = { sub: user.id, userId: user.user.id, userType: user.user.userType, role: user.user?.role };
                 if (userType == UserTypes.ClientMerchantUser) {
                     payload.merchantId = user.clientMerchant?.id;
                     payload.verified = user.clientMerchant?.verified;
@@ -85,9 +85,9 @@ export class LoginService {
                 if (err.message.includes('Could not find any entity of type "ClientMerchantUser') || err.message.includes('Could not find any entity of type "DriverMerchantUser')) {
                     let merchant: any;
                     if (err.message.includes('Could not find any entity of type "DriverMerchantUser')) {
-                        merchant = (await this.driverMerchantsRepository.find({ where: { email: username }, relations: ['user'] }))[0];
+                        merchant = (await this.driverMerchantsRepository.find({ where: { email: username }, relations: ['user', 'user.role', 'user.role.permission'] }))[0];
                     } else if (err.message.includes('Could not find any entity of type "ClientMerchantUser')) {
-                        merchant = (await this.clientMerchantsRepository.find({ where: { email: username }, relations: ['user'] }))[0];
+                        merchant = (await this.clientMerchantsRepository.find({ where: { email: username }, relations: ['user', 'user.role', 'user.role.permission'] }))[0];
                     }
                     if (merchant) {
                         const isPasswordValid: boolean = await bcrypt.compare(password, merchant.user.password);

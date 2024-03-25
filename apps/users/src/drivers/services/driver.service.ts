@@ -65,7 +65,7 @@ export class DriversService {
       }
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber;
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
         driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
@@ -108,7 +108,7 @@ export class DriversService {
 
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber;
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
         driverPhoneNumber.driver = driver;
         return driverPhoneNumber;
       });
@@ -201,6 +201,46 @@ export class DriversService {
       }
     }
   }
+
+  async getDriverByPhone(phone: number): Promise<BpmResponse> {
+    // Parameter validation
+    if (!phone) {
+        return new BpmResponse(false, null, ['Phone number is required']);
+    }
+
+    try {
+        // Query to retrieve driver by phone number
+        const driver = await this.driversRepository
+            .createQueryBuilder('driver')
+            .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
+            .leftJoinAndSelect('driver.driverTransports', 'transports')
+            .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
+            .leftJoinAndSelect('driver.agent', 'agent')
+            .leftJoinAndSelect('driver.subscription', 'subscription')
+            .leftJoin('driver.orderOffers', 'orderOffers')
+            .leftJoinAndSelect('orderOffers.order', 'order')
+            .leftJoin('driver.user', 'user')
+            .addSelect('user.id')
+            .addSelect('user.userType')
+            .addSelect('user.lastLogin')
+            .where('phoneNumber.phoneNumber = :phone', { phone })
+            .getOneOrFail();
+
+        return new BpmResponse(true, driver, null);
+    } catch (err: any) {
+        console.error(err);
+
+        if (err.name === 'EntityNotFoundError') {
+            // Driver not found
+            throw new NoContentException();
+        } else if (err instanceof HttpException) {
+            throw err;
+        } else {
+            // Other errors (handle accordingly)
+            throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+        }
+    }
+}
 
   async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: number,
      isSubscribed: boolean, status: string, isVerified: boolean,

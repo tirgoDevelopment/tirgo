@@ -77,12 +77,18 @@ export class StaffsService {
             } else {
               sort['id'] = 'DESC'
             }
-            const staffs: Staff[] = await this.staffsRepository.find({ 
-                where: { deleted: false },
-                order: sort,
-                skip: (index - 1) * size, // Skip the number of items based on the page number
-                take: size,
-            });
+            const staffs: Staff[] = await this.staffsRepository.createQueryBuilder("staff")
+            .leftJoin("staff.user", "user")
+            .addSelect('user.id')
+            .addSelect('user.userType')
+            .addSelect('user.lastLogin')
+            .leftJoinAndSelect('user.role', 'role')
+            .where("staff.deleted = :deleted", { deleted: false })
+            .skip((index - 1) * size) // Skip the number of items based on the page number
+            .take(size)
+            .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
+            .getMany();
+
             if(staffs.length) {
                 const staffsCount = await this.staffsRepository.count({ where: { deleted: false } })
                 const totalPagesCount = Math.ceil(staffsCount / size);
@@ -91,6 +97,7 @@ export class StaffsService {
                 throw new NoContentException();
             }
         } catch (err: any) {
+            console.log(err)
             if (err instanceof HttpException) {
                 throw err;
             } else {
