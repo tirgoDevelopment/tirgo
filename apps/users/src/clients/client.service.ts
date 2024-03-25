@@ -46,7 +46,7 @@ export class ClientsService {
       }
       const clientPhoneNumbers = createClientDto.phoneNumbers.map(phoneNumber => {
         const clientPhoneNumber = new ClientPhoneNumber();
-        clientPhoneNumber.phoneNumber = phoneNumber;
+        clientPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
         clientPhoneNumber.client = client; 
         return clientPhoneNumber;
       });

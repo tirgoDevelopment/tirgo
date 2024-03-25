@@ -5,7 +5,7 @@ import { Agent, BadRequestException, BpmResponse, ClientMerchant, ClientMerchant
 import { TransactionDto } from './transaction.dto';
 import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import * as dateFns from 'date-fns'
-import { TransactionTypes } from '@app/shared-modules';
+import { DriverMerchant, DriverMerchantUser, TransactionTypes } from '@app/shared-modules';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class TransactionService {
       const transaction: Transaction = new Transaction();
       const currency = await this.currenciesRepository.findOneOrFail({ where: { id: transactionDto.currencyId } });
       
-      if(user.userType == UserTypes.ClientMerchantUser) {
+      if(user.userType == UserTypes.ClientMerchantUser || user.userType == UserTypes.DriverMerchantUser) {
         if(!transactionDto.merchantId || isNaN(transactionDto.merchantId)) {
           throw new BadRequestException(ResponseStauses.MerchantIdIsRequired);
         }
@@ -128,6 +128,86 @@ export class TransactionService {
       .leftJoin(ClientMerchant, 'cm', 'cm.id = cmu.merchant_id')
       .where(`t.is_merchant = true AND cmu.user_id = ${userId}`)
       .andWhere(`(r.name = :superAdminName AND t.merchant_id = cm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
+      .getCount();
+
+      const totalRecords = await totalRecordsQuery;
+      const totalPages = Math.ceil(totalRecords / size);
+      if (transactions) {
+        return new BpmResponse(true, { content: transactions, totalPAgesCount: totalPages, pageIndex: index, pageSize: size }, []);
+      } else {
+        throw new NoContentException();
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err.name instanceof HttpException) {
+        throw err;
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getDriverMerchantTransactionById(sortBy: string, sortType: string, pageSize: string, pageIndex: string, userId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
+    const size = +pageSize || 10; // Number of items per page
+    const index = +pageIndex || 1
+    if (!userId && isNaN(userId)) {
+      throw new BadRequestException(ResponseStauses.IdIsRequired);
+    }
+     try {
+      const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
+      .select([
+          't.id as id',
+          't.amount as amount',
+          't.rejected as rejected',
+          't.verified as verified',
+          't.transaction_type AS "transctionType"',
+          'u.user_type AS "userType"',
+          't.comment as comment',
+          't.created_at AS "createdAt"',
+          'dmu.username AS "createdBy"',
+          'c.name AS "currencyName"'
+      ])
+      .leftJoin(User, 'u', 'u.id = t.created_by')
+      .leftJoin(Currency, 'c', 'c.id = t.currency_id')
+      .leftJoin(Role, 'r', 'r.id = u.role_id')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`t.is_merchant = true AND dmu.user_id = ${userId}`)
+      // Add condition for transactionType if provided
+      if (transactionType) {
+        queryBuilder.andWhere('t.transaction_type = :transactionType', { transactionType });
+        console.log(transactionType)
+      }
+        if (fromDate && toDate) {
+          queryBuilder.andWhere('t.created_at BETWEEN :fromDate AND :toDate', {
+            fromDate: fromDate,
+            toDate: toDate
+          });
+        } else if (fromDate) {
+          queryBuilder.andWhere('t.created_at >= :fromDate', { fromDate: fromDate });
+        } else if (toDate) {
+          queryBuilder.andWhere('t.created_at <= :toDate', { toDate: toDate });
+        }
+
+      if (sortBy && sortType) { // Replace orderByCondition with your condition
+
+        queryBuilder.orderBy(`${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+      } else {
+        queryBuilder.orderBy(`id`, 'DESC');
+      }
+      queryBuilder.andWhere(`(r.name = :superAdminName AND t.merchant_id = dm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
+      queryBuilder.offset((index - 1) * size) // Skip the number of items based on the page number
+      queryBuilder.limit(size); // Limit the number of items per page
+     
+      const transactions = await queryBuilder.getRawMany();
+
+      const totalRecordsQuery = this.transactionsRepository.createQueryBuilder('t')
+      .leftJoin(User, 'u', 'u.id = t.created_by')
+      .leftJoin(Role, 'r', 'r.id = u.role_id')
+      .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
+      .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
+      .where(`t.is_merchant = true AND dmu.user_id = ${userId}`)
+      .andWhere(`(r.name = :superAdminName AND t.merchant_id = dm.id) OR (r.name != :superAdminName AND t.created_by = ${userId})`, { superAdminName: 'Super admin' })
       .getCount();
 
       const totalRecords = await totalRecordsQuery;
@@ -312,9 +392,9 @@ export class TransactionService {
     const topupTransactions: Transaction[] = await this.transactionsRepository.query(`
         SELECT
         SUM(CASE WHEN t.transaction_type = '${TransactionTypes.TopUp}' AND verified = true THEN t.amount ELSE 0 END) -
-        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' AND verified = true THEN t.amount ELSE 0 END) -
-        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS activeBalance,
-        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS frozenBalance,
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' AND verified = true THEN t.amount ELSE 0 END) as "activeTransactionBalance",
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS "activeSecureBalance",
+        SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS "frozenBalance",
         c.name as currencyName
         FROM
             transaction t
@@ -476,66 +556,3 @@ if (err instanceof HttpException) {
   }
 
 }
-
-  // async getMerchantTransactionById(merchantId: number, transactionType: string, fromDate: string, toDate: string): Promise<BpmResponse> {
-  //   if (!merchantId && isNaN(merchantId)) {
-  //     throw new BadRequestException(ResponseStauses.IdIsRequired);
-  //   }
-  //   try {
-  //     const transaction: Transaction = await this.transactionsRepository.query(`
-  //     SELECT
-  //          t.id,
-  //          t.amount,
-  //          t.transaction_type AS "transctionType",
-  //          u.user_type AS "userType",
-  //          t.comment,
-  //          t.created_at AS "createdAt",
-  //          cmu.username AS "createdBy",
-  //          c.name as "currencyName"
-  //     FROM
-  //         transaction t
-  //     LEFT JOIN
-  //         "user" AS u ON u.id = t.created_by
-  //     LEFT JOIN
-  //         "currency" AS c ON c.id = t.currency_id
-  //     LEFT JOIN
-  //         "role" r ON r.id = u.role_id
-  //     LEFT JOIN
-  //         client_merchant_user cmu ON cmu.user_id = u.id
-  //     LEFT JOIN
-  //         client_merchant cm ON cm.id = cmu.merchant_id
-  //     WHERE
-  //         t.is_merchant = true
-  //         AND (
-  //             (r.name = 'Super admin' AND t.merchant_id = cm.id)
-  //         OR (r.name != 'Super admin' AND t.created_by = u.id)
-  //     );
-  
-
-  //       `)
-
-  //     // const transaction: Transaction = await this.transactionsRepository.findOneOrFail({ where: { id, deleted: false } });
-  //     if (transaction) {
-  //       return new BpmResponse(true, transaction, []);
-  //     } else {
-  //       throw new NoContentException();
-  //     }
-  //   } catch (err: any) {
-  //     console.log(err)
-  //     if (err.name instanceof HttpException) {
-  //       throw err;
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-  //     }
-  //   }
-  // }
-
-
-
-  // SELECT 
-  // COALESCE ((SELECT SUM(amount) FROM transaction WHERE verified = true AND merchant_id = ${id} AND transaction_type = '${TransactionTypes.TopUp}'), 0) -
-  // COALESCE((SELECT SUM(amount) FROM transaction WHERE verified = true AND merchant_id = ${id} AND transaction_type = '${TransactionTypes.Withdraw}'), 0) - 
-  // COALESCE((SELECT SUM(amount) + SUM(tax_amount) + SUM(additional_amount) FROM transaction WHERE rejected = false AND merchant_id = ${id} AND transaction_type = '${TransactionTypes.SecureTransaction}') ,0) AS activeBalance,
-  // COALESCE((SELECT SUM(amount) + SUM(tax_amount) + SUM(additional_amount) FROM transaction WHERE verified = false AND rejected = false AND merchant_id = ${id} AND transaction_type = '${TransactionTypes.SecureTransaction}'),0) AS frozenBalance
-  // FROM transaction
-  // LIMIT 1;

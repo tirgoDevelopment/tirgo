@@ -223,5 +223,5 @@ export interface iBankAccount {
 
 export class AppendDriverMerchantDto {
   @ApiProperty({ required: true })
-  driverId: number;
+  phoneNumber: number;
 }
