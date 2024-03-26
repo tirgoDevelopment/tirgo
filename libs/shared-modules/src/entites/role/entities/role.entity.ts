@@ -13,8 +13,7 @@ export class Role {
   @Column({ nullable: true })
   description: string;
 
-  @OneToOne(() => Permission, { cascade: true })
-  @JoinColumn({ name: 'permission_id' })
+  @OneToOne(() => Permission, (permission) => permission.role)
   permission: Permission;
 
   @OneToMany(() => User, user => user.role)

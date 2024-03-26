@@ -75,7 +75,7 @@ export class Permission {
   @Column({ nullable: false, default: false, name: 'agent_page' })
   agentPage: boolean;
 
-  @OneToOne(() => Role, (role) => role.permission)
+  @OneToOne(() => Role, (role) => role.permission, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'role_id' })
   role: Role;
 
