@@ -73,10 +73,13 @@ export class StaffsService {
             const index = +pageIndex || 1
             const sort: any = {};
             if(sortBy && sortType) {
-              sort[sortBy] = sortType; 
+                // Sort by the specified column and type
+                sort[`staff.${sortBy}`] = sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'; 
             } else {
-              sort['id'] = 'DESC'
+                // Default sorting by 'id' column in descending order
+                sort['staff.id'] = 'DESC';
             }
+    
             const staffs: Staff[] = await this.staffsRepository.createQueryBuilder("staff")
             .leftJoin("staff.user", "user")
             .addSelect('user.id')
@@ -86,7 +89,7 @@ export class StaffsService {
             .where("staff.deleted = :deleted", { deleted: false })
             .skip((index - 1) * size) // Skip the number of items based on the page number
             .take(size)
-            .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
+            .orderBy(sort)
             .getMany();
 
             if(staffs.length) {
