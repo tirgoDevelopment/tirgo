@@ -28,7 +28,8 @@ export class AuthGuard implements CanActivate {
         ||request.url.includes('register') ||
         request.url.includes('phone-verify') ||
         request.url.includes('verify-code') ||
-        request.url.includes('send-code') ) {
+        request.url.includes('send-code') ||
+        request.url == '/api/v2/references/currencies/all' ) {
              return true
          }  
         if (
