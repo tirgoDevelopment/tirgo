@@ -24,7 +24,11 @@ export class AuthGuard implements CanActivate {
         if (request.url.startsWith('/api/v2/users/sse/events')) {
             token = request.query.token
         }
-        if (request.url == '/api/v2/users/login') {
+        if (request.url == '/api/v2/users/login'
+        ||request.url.includes('register') ||
+        request.url.includes('phone-verify') ||
+        request.url.includes('verify-code') ||
+        request.url.includes('send-code') ) {
              return true
          }  
         if (
