@@ -50,6 +50,17 @@ export class RolesService {
             permission.driverMerchantPage = createRoleDto.permission?.driverMerchantPage;
             permission.driverVerification = createRoleDto.permission?.driverVerification;
             permission.agentPage = createRoleDto.permission?.agentPage;
+            permission.dashboardPage = createRoleDto?.permission?.dashboardPage; 
+            permission.archivedPage = createRoleDto?.permission?.archivedPage;
+            permission.orderPage = createRoleDto?.permission?.orderPage;
+            permission.referencesPage = createRoleDto?.permission?.referencesPage;
+            permission.activePage = createRoleDto?.permission?.activePage;
+            permission.adminAgentPage = createRoleDto?.permission?.adminAgentPage;
+            permission.attachDriverAgent = createRoleDto?.permission?.attachDriverAgent;
+            permission.addBalanceAgent = createRoleDto?.permission?.addBalanceAgent;
+            permission.seeSubscriptionTransactionAgent = createRoleDto?.permission?.seeSubscriptionTransactionAgent;
+            permission.seePaymentTransactionAdmin = createRoleDto?.permission?.seePaymentTransactionAdmin;
+            permission.seeServiceTransactionAdmin = createRoleDto?.permission?.seeServiceTransactionAdmin;
 
             // Save permission
             await queryRunner.manager.save(Permission, permission);
@@ -120,6 +131,17 @@ export class RolesService {
             existingPermission.driverMerchantPage = updateRoleDto.permission?.driverMerchantPage;
             existingPermission.driverVerification = updateRoleDto.permission?.driverVerification;
             existingPermission.agentPage = updateRoleDto.permission?.agentPage;
+            existingPermission.dashboardPage = updateRoleDto?.permission?.dashboardPage; 
+            existingPermission.archivedPage = updateRoleDto?.permission?.archivedPage;
+            existingPermission.orderPage = updateRoleDto?.permission?.orderPage;
+            existingPermission.referencesPage = updateRoleDto?.permission?.referencesPage;
+            existingPermission.activePage = updateRoleDto?.permission?.activePage;
+            existingPermission.adminAgentPage = updateRoleDto?.permission?.adminAgentPage;
+            existingPermission.attachDriverAgent = updateRoleDto?.permission?.attachDriverAgent;
+            existingPermission.addBalanceAgent = updateRoleDto?.permission?.addBalanceAgent;
+            existingPermission.seeSubscriptionTransactionAgent = updateRoleDto?.permission?.seeSubscriptionTransactionAgent;
+            existingPermission.seePaymentTransactionAdmin = updateRoleDto?.permission?.seePaymentTransactionAdmin;
+            existingPermission.seeServiceTransactionAdmin = updateRoleDto?.permission?.seeServiceTransactionAdmin;
 
             // Save updated permission
             await queryRunner.manager.save(Permission, existingPermission);

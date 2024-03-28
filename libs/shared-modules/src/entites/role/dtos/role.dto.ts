@@ -117,6 +117,62 @@ export class PermissionDto {
   @IsNotEmpty()
   @ApiProperty({ required: true })
   agentPage: boolean;
+
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  dashboardPage : boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  archivedPage: boolean;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  orderPage: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  referencesPage: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  activePage: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  adminAgentPage: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  attachDriverAgent: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  addBalanceAgent: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  seeSubscriptionTransactionAgent: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  seePaymentTransactionAdmin: boolean;
+  
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  seeServiceTransactionAdmin: boolean;
 }
 
 export class RoleDto {
