@@ -54,7 +54,11 @@ export class ClientsService {
         client.phoneNumbers = clientPhoneNumbers;
 
         if(passportFile) {
-        await this.awsService.uploadFile('client', passportFile);
+        const res = await this.awsService.uploadFile('client', passportFile);
+        if(!res) {
+            await queryRunner.rollbackTransaction();
+            throw new InternalErrorException(ResponseStauses.InternalServerError);
+        }
         client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
       }
       await this.clientsRepository.save(client);

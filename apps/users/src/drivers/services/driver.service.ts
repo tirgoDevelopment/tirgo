@@ -30,7 +30,6 @@ export class DriversService {
 
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
-      console.log(user, user.userType == UserTypes.DriverMerchantUser)
       if(user && user.userType == UserTypes.DriverMerchantUser) {
         const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
@@ -55,7 +54,11 @@ export class DriversService {
         }
 
         // Upload files to AWS
-      await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+      const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+      if(res.includes(false)) {
+        await queryRunner.rollbackTransaction();
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
 
       }
       if(typeof createDriverDto.phoneNumbers == 'string') {
