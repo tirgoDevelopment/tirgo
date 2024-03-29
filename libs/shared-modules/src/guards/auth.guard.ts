@@ -25,8 +25,13 @@ export class AuthGuard implements CanActivate {
             token = request.query.token
         }
 
+        if(request.url.includes('login')) {
+            return true
+        }
+
         if (
            ( request.url.includes('register') ||
+           request.url.includes('login') ||
             request.url.includes('phone-verify') ||
             request.url.includes('verify-code') ||
             request.url.includes('send-code') ||
