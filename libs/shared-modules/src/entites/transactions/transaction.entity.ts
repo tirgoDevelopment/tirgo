@@ -3,6 +3,7 @@ import { User } from '../users/user.entity';
 import { Currency } from '../references/entities/currency.entity';
 import { Driver } from '../driver/entities/driver.entity';
 import { Agent } from '../agents/entites/agent.entity';
+import { DriverMerchant } from '../driver-merchant/entites/driver-merchant.entity';
 
 @Entity()
 export class Transaction {
@@ -62,6 +63,10 @@ export class Transaction {
   @ManyToOne(() => Agent, (agent) => agent.transactions)
   @JoinColumn({ name: 'agent_id' })
   agent: Agent;
+
+  @ManyToOne(() => DriverMerchant, (driverMerchant) => driverMerchant.transactions)
+  @JoinColumn({ name: 'driver_merchant_id' })
+  driverMerchant: DriverMerchant;
 
   @ManyToOne(() => User, (user) => user.createdTransactions)
   @JoinColumn({ name: 'created_by' })

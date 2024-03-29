@@ -1,11 +1,11 @@
 import { Injectable, Logger, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Agent, BadRequestException, BpmResponse, ClientMerchant, ClientMerchantUser, Currency, InternalErrorException, NoContentException, ResponseStauses, Role, Transaction, User, UserTypes, UsersRoleNames } from '..';
+import { DataSource, Repository } from 'typeorm';
+import { Subscription, Agent, BadRequestException, NotFoundException, BpmResponse, ClientMerchant, ClientMerchantUser, Currency, InternalErrorException, NoContentException, ResponseStauses, Role, Transaction, User, UserTypes, UsersRoleNames } from '..';
 import { TransactionDto } from './transaction.dto';
 import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import * as dateFns from 'date-fns'
-import { DriverMerchant, DriverMerchantUser, TransactionTypes } from '@app/shared-modules';
+import { Driver, DriverMerchant, DriverMerchantUser, TransactionTypes } from '@app/shared-modules';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -18,7 +18,10 @@ export class TransactionService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Currency) private readonly currenciesRepository: Repository<Currency>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
-    private rmqService: RabbitMQSenderService
+    @InjectRepository(Subscription) private readonly subscriptionsRepository: Repository<Subscription>,
+    @InjectRepository(Agent) private readonly driversRepository: Repository<Driver>,
+    private rmqService: RabbitMQSenderService,
+    private dataSource: DataSource
   ) { }
 
 
@@ -553,6 +556,57 @@ if (err instanceof HttpException) {
         t.merchant_id = ${id} AND t.currency_id = '${currencyId}'
   `);
     return transactions[0]
+  }
+
+  async addSubscriptionToDriver(driverId: number, subscriptionId: number, user: User): Promise<BpmResponse> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+
+      if(!driverId || isNaN(driverId)) {
+        throw new BadRequestException(ResponseStauses.DriverIdIsRequired);
+      }
+      if(!subscriptionId || isNaN(subscriptionId)) {
+        throw new BadRequestException(ResponseStauses.SubscriptionIsRequired)
+      }
+
+      const subscription: Subscription = await this.subscriptionsRepository.findOneOrFail({ where: { active: true, id: subscriptionId }, relations: ['currency'] });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { blocked: false, id: driverId } });
+
+      driver.subscribedAt = new Date();
+      driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
+      driver.subscription = subscription;
+      await queryRunner.manager.save(Driver, driver);
+
+      const transaction = {
+        createdBy: user,
+        currency: subscription.currency,
+        userType: user.userType,
+        amount: subscription.price,
+        transactionType: TransactionTypes.DriverSubscriptionPayment,
+        driver: driver, 
+        driverMerchant: user,
+        verified: true
+      };
+      await queryRunner.manager.save(Transaction, transaction);
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null)
+    } catch(err: any) {
+      await queryRunner.rollbackTransaction();
+      console.error(err);
+      if (err.name == 'EntityNotFoundError') {
+        if (err.message.includes('Agent')) {
+          throw new NotFoundException(ResponseStauses.AgentNotFound)
+        }
+      } else if (err instanceof HttpException) {
+        throw err;
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
   }
 
 }
