@@ -24,23 +24,13 @@ export class AuthGuard implements CanActivate {
         if (request.url.startsWith('/api/v2/users/sse/events')) {
             token = request.query.token
         }
-        if (request.url == '/api/v2/users/login'
-        ||request.url.includes('register') ||
-        request.url.includes('phone-verify') ||
-        request.url.includes('verify-code') ||
-        request.url.includes('send-code') ||
-        request.url == '/api/v2/references/currencies/all' ) {
-             return true
-         }  
+
         if (
            ( request.url.includes('register') ||
             request.url.includes('phone-verify') ||
             request.url.includes('verify-code') ||
             request.url.includes('send-code') ||
-            request.url == '/api/v2/users/login' ||
-            request.url == '/api/v2/users/client-merchants/client-merchant-by' ||
-            request.url == '/api/v2/users/driver-merchants/driver-merchant-by' ||
-            request.url == '/api/v2/references/currencies/all') && !token
+            request.url == '/api/v2/users/login') && !token
             ) {
                 console.log('kirdi', token)
             return true
@@ -50,14 +40,11 @@ export class AuthGuard implements CanActivate {
         }
         try { 
             const payload = await this.customJwtService.verifyTokenAndGetPayload(token);
-            if (payload.merchantId && !payload.verified 
-                && !request.url.startsWith('/api/v2/users/driver-merchants/driver-merchant-by') 
-                && !request.url.startsWith('/api/v2/users/client-merchants/client-merchant-by')) {
-                throw new BadRequestException(ResponseStauses.AccessDenied);
-            } else if(payload.merchantId && !payload.verified 
-                && request.url.includes('/driver-merchant-by') 
-                && request.url.includes('/client-merchant-by')) {
+            if(payload.merchantId && !payload.verified 
+                && (request.url.includes('/driver-merchant-by') || request.url.includes('/client-merchant-by') || request.url.includes('register') || request.url == '/api/v2/references/currencies/all')) {
                     return true
+            } else if(payload.merchantId && !payload.verified ) {
+                throw new BadRequestException(ResponseStauses.AccessDenied);
             }
             if (payload && !isNaN(payload.userId)) {
                 const user = await this.customJwtService.findUserById(payload.userId, payload.userType);
