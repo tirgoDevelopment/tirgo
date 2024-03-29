@@ -30,6 +30,7 @@ export class DriversService {
 
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
+      console.log(user, user.userType == UserTypes.DriverMerchantUser)
       if(user && user.userType == UserTypes.DriverMerchantUser) {
         const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
@@ -483,6 +484,10 @@ export class DriversService {
       .leftJoin('d.phoneNumbers', 'phoneNumber')
       .addSelect('phoneNumber.phoneNumber')
       .addSelect('phoneNumber.id')
+      .leftJoin('d.user', 'user')
+      .addSelect('user.lastLogin')
+      .addSelect('user.id')
+      .addSelect('user.userType')
       .leftJoin(User, 'u', 'u.id = d.created_by')
       .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
       .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
