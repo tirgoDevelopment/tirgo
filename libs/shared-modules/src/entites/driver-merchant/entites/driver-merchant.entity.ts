@@ -4,6 +4,7 @@ import { Order } from '../../orders/entities/order.entity';
 import { DriverMerchantUser } from './driver-merchant-user.entity';
 import { User } from '../../users/user.entity';
 import { Driver } from '../../driver/entities/driver.entity';
+import { Transaction } from '../../transactions/transaction.entity';
 
 @Entity()
 export class DriverMerchant {
@@ -138,6 +139,9 @@ export class DriverMerchant {
 
   @OneToMany(() => Driver, driverMerchantUser => driverMerchantUser.driverMerchant)
   drivers: Driver[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.agent)
+  transactions: Transaction[];
 
   @OneToOne(() => User, (user) => user.driverMerchant, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

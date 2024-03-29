@@ -120,4 +120,15 @@ async rejectTransaction(@Query('id') id: number, @Req() req: Request) {
   return this.transactionsService.rejectTransaction(id, req['user']);
 }
 
+@ApiOperation({ summary: 'Driver merchant add subscription to driver' })
+@Post('driver-merchant/add-subscription-driver') 
+@UsePipes(ValidationPipe)
+async addSubscriptionToDriver(
+    @Body('driverId') driverId: number,
+    @Body('subscriptionId') subscriptionId: number,
+    @Req() req: Request
+) {
+    return this.transactionsService.addSubscriptionToDriver(driverId, subscriptionId, req['user'])
+}
+
 }
