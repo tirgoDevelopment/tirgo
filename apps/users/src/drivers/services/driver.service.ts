@@ -140,6 +140,8 @@ export class DriversService {
         .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
         .leftJoinAndSelect('driver.driverTransports', 'transports')
         .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
+        .leftJoinAndSelect('transports.transportKinds', 'transportKinds')
+        .leftJoinAndSelect('transports.cargoLoadMethods', 'cargoLoadMethods')
         .leftJoinAndSelect('driver.agent', 'agent')
         .leftJoinAndSelect('driver.subscription', 'subscription')
         .leftJoin('driver.orderOffers', 'orderOffers')
@@ -217,6 +219,7 @@ export class DriversService {
         const driver = await this.driversRepository
             .createQueryBuilder('driver')
             .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
+            .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
             .leftJoinAndSelect('driver.driverTransports', 'transports')
             .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
             .leftJoinAndSelect('driver.agent', 'agent')
