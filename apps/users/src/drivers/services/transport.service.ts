@@ -59,11 +59,9 @@ export class TransportsService {
       if (transportDto.stateNumber) {
         transport.stateNumber = transportDto.stateNumber;
       }
-      console.log(transportDto.isAdr)
       if (transportDto.isAdr) {
-        transport.isAdr = transportDto.isAdr;
+        transport.isAdr = transportDto.isAdr.toString() == 'true';
       }
-      console.log(transport.isAdr)
       if (transportDto.refrigeratorFrom) {
         transport.refrigeratorFrom = transportDto.refrigeratorFrom;
       }
