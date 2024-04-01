@@ -26,10 +26,10 @@ export class LoginService {
             let user;
             if (userType == UserTypes.ClientMerchantUser) {
 
-                user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user', 'user.role', 'user.role.permission'] });
+                user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user'] });
             } else if (userType == UserTypes.DriverMerchantUser) {
 
-                user = await this.driverMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['driverMerchant', 'user', 'user.role', 'user.role.permission'] });
+                user = await this.driverMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['driverMerchant', 'user'] });
 
             } else if (userType == UserTypes.Client) {
 
@@ -85,9 +85,9 @@ export class LoginService {
                 if (err.message.includes('Could not find any entity of type "ClientMerchantUser') || err.message.includes('Could not find any entity of type "DriverMerchantUser')) {
                     let merchant: any;
                     if (err.message.includes('Could not find any entity of type "DriverMerchantUser')) {
-                        merchant = (await this.driverMerchantsRepository.find({ where: { email: username }, relations: ['user', 'user.role', 'user.role.permission'] }))[0];
+                        merchant = (await this.driverMerchantsRepository.find({ where: { email: username }, relations: ['user'] }))[0];
                     } else if (err.message.includes('Could not find any entity of type "ClientMerchantUser')) {
-                        merchant = (await this.clientMerchantsRepository.find({ where: { email: username }, relations: ['user', 'user.role', 'user.role.permission'] }))[0];
+                        merchant = (await this.clientMerchantsRepository.find({ where: { email: username }, relations: ['user'] }))[0];
                     }
                     if (merchant) {
                         const isPasswordValid: boolean = await bcrypt.compare(password, merchant.user.password);
