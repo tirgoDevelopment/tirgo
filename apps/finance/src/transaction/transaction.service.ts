@@ -1,8 +1,8 @@
 import { Injectable, Logger, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Subscription, Agent, BadRequestException, NotFoundException, BpmResponse, ClientMerchant, ClientMerchantUser, Currency, InternalErrorException, NoContentException, ResponseStauses, Role, Transaction, User, UserTypes, UsersRoleNames } from '..';
-import { TransactionDto } from './transaction.dto';
+import { DriversSubscriptionDto, TransactionDto } from './transaction.dto';
 import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import * as dateFns from 'date-fns'
 import { Driver, DriverMerchant, DriverMerchantUser, TransactionTypes } from '@app/shared-modules';
@@ -558,38 +558,36 @@ if (err instanceof HttpException) {
     return transactions[0]
   }
 
-  async addSubscriptionToDriver(driverId: number, subscriptionId: number, user: User): Promise<BpmResponse> {
+  async addSubscriptionToDriver(dto: DriversSubscriptionDto ,user: User): Promise<BpmResponse> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     try {
       await queryRunner.startTransaction();
-
-      if(!driverId || isNaN(driverId)) {
-        throw new BadRequestException(ResponseStauses.DriverIdIsRequired);
-      }
-      if(!subscriptionId || isNaN(subscriptionId)) {
-        throw new BadRequestException(ResponseStauses.SubscriptionIsRequired)
-      }
+      const subscriptionId = dto.subscriptionId
+      const driversIds = dto.driversIds;
 
       const subscription: Subscription = await this.subscriptionsRepository.findOneOrFail({ where: { active: true, id: subscriptionId }, relations: ['currency'] });
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { blocked: false, id: driverId } });
+      const drivers: Driver[] = await this.driversRepository.find({ where: { blocked: false, id: In(driversIds) } });
 
-      driver.subscribedAt = new Date();
-      driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
-      driver.subscription = subscription;
-      await queryRunner.manager.save(Driver, driver);
+      for(let driver of drivers) {
+        driver.subscribedAt = new Date();
+        driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
+        driver.subscription = subscription;
+        await queryRunner.manager.save(Driver, driver);
+     
+        const transaction = {
+          createdBy: user,
+          currency: subscription.currency,
+          userType: user.userType,
+          amount: subscription.price,
+          transactionType: TransactionTypes.DriverSubscriptionPayment,
+          driver: driver, 
+          driverMerchant: user,
+          verified: true
+        };
+        await queryRunner.manager.save(Transaction, transaction);
+      }
 
-      const transaction = {
-        createdBy: user,
-        currency: subscription.currency,
-        userType: user.userType,
-        amount: subscription.price,
-        transactionType: TransactionTypes.DriverSubscriptionPayment,
-        driver: driver, 
-        driverMerchant: user,
-        verified: true
-      };
-      await queryRunner.manager.save(Transaction, transaction);
       await queryRunner.commitTransaction();
       return new BpmResponse(true, null)
     } catch(err: any) {

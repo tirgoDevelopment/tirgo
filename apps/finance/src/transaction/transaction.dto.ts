@@ -49,3 +49,10 @@ export class TransactionDto {
   id?: number;
 
 }
+
+export class DriversSubscriptionDto {
+  @IsNotEmpty()
+  driversIds: number[];
+  @IsNotEmpty()
+  subscriptionId: number;
+}
