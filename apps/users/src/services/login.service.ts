@@ -25,7 +25,7 @@ export class LoginService {
         try {
             let user;
             if (userType == UserTypes.ClientMerchantUser) {
-
+ 
                 user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user'] });
             } else if (userType == UserTypes.DriverMerchantUser) {
 
