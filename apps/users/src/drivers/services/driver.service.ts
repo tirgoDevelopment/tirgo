@@ -21,9 +21,9 @@ export class DriversService {
     
     const queryRunner = this.driversRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      await queryRunner.startTransaction();
       if (!(/[a-zA-Z]/.test(createDriverDto.password) && /\d/.test(createDriverDto.password))) {
         throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
       }
