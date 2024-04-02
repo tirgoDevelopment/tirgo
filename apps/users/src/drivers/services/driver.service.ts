@@ -56,8 +56,8 @@ export class DriversService {
         // Upload files to AWS
       const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
       if(res.includes(false)) {
-        await queryRunner.rollbackTransaction();
-        throw new InternalErrorException(ResponseStauses.InternalServerError);
+        // await queryRunner.rollbackTransaction();
+        throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
       }
 
       }
