@@ -194,7 +194,9 @@ export class DriversService {
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
-      if (err.name == 'EntityNotFoundError') {
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
@@ -237,7 +239,9 @@ export class DriversService {
       }
     } catch (err: any) {
       console.log(err)
-      if (err.name == 'EntityNotFoundError') {
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
@@ -253,7 +257,7 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       if(!sortBy) {
-        sortBy = 'id';
+        sortBy = 'order.id';
       } 
       if(!sortType) {
         sortType = 'DESC'
@@ -293,8 +297,9 @@ export class DriversService {
         .orderBy(sortBy, sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC')
         .getMany();
 
-         const merchantsCount = await this.ordersRepository.createQueryBuilder('o')
+         const merchantsCount = await this.ordersRepository.createQueryBuilder('order')
         .leftJoinAndSelect("order.driverOffers", "driverOffer")
+        .leftJoinAndSelect("order.cargoStatus", "cargoStatus")
         .where("order.deleted = :deleted", { deleted: false })
         .andWhere("driverOffer.driver.id = :driverId", { driverId: driverId })
         .andWhere("driverOffer.accepted = :accepted", { accepted: true })
@@ -311,7 +316,9 @@ export class DriversService {
       return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)
-      if (err.name == 'EntityNotFoundError') { 
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') { 
         throw new NoContentException();
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
