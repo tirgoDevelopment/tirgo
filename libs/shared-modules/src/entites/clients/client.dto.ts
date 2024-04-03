@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ClientDto {
@@ -30,6 +30,8 @@ export class ClientDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(16)
   password?: string;
   id?: number;
 

@@ -16,6 +16,9 @@ export class StaffsService {
 
     async createStaff(createStaffDto: CreateStaffDto): Promise<BpmResponse> {
         try {   
+            if (!(/[a-zA-Z]/.test(createStaffDto.password) && /\d/.test(createStaffDto.password))) {
+                throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
+              }
             const passwordHash = await this.sundriesService.generateHashPassword(createStaffDto.password);
             const role: Role = await this.rolesRepository.findOneOrFail({ where: { id: createStaffDto.roleId } });
             const user: User =  await this.usersRepository.save({ userType: UserTypes.Staff, password: passwordHash, role: role });

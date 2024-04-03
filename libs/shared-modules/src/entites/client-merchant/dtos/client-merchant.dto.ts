@@ -1,5 +1,5 @@
 
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateClientMerchantDto {
@@ -26,6 +26,8 @@ export class CreateClientMerchantDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(16)
   password: string;
 
 }
@@ -129,6 +131,8 @@ export class ClientMerchantDto {
   responsbilePersonPhoneNumber?: string;
   
   @ApiProperty({ required: false })
+  @MinLength(8)
+  @MaxLength(16)
   password: string;
   
   @ApiProperty({ required: false })
