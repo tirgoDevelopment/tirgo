@@ -13,8 +13,8 @@ export class DriverDto {
   lastName: string;
 
   @ApiProperty({ required: true })
-  @MinLength(6)
-  @MaxLength(6)
+  @MinLength(8)
+  @MaxLength(16)
   @IsNotEmpty()
   password: string;
 

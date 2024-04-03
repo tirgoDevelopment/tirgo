@@ -22,6 +22,11 @@ export class ClientMerchantsService {
 
   async createClientMerchant(createClientMerchantDto: CreateClientMerchantDto) {
     try {
+
+      if (!(/[a-zA-Z]/.test(createClientMerchantDto.password) && /\d/.test(createClientMerchantDto.password))) {
+        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
+      }
+
       const passwordHash = await this.sundriesService.generateHashPassword(createClientMerchantDto.password);
       const clientMerchant: ClientMerchant = await this.clientMerchantsRepository.create();
       clientMerchant.user = await this.usersRepository.save({ userType: UserTypes.ClientMerchant, password: passwordHash });

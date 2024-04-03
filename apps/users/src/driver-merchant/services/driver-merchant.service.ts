@@ -27,6 +27,10 @@ export class DriverMerchantsService {
     try {
       await queryRunner.startTransaction();
 
+      if (!(/[a-zA-Z]/.test(createDriverMerchantDto.password) && /\d/.test(createDriverMerchantDto.password))) {
+        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
+      }
+
       const passwordHash = await this.sundriesService.generateHashPassword(createDriverMerchantDto.password);
       const driverMerchant: DriverMerchant = new DriverMerchant();
       driverMerchant.user = await queryRunner.manager.save(User, { userType: UserTypes.DriverMerchant, password: passwordHash });

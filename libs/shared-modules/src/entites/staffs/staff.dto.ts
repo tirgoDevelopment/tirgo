@@ -25,6 +25,8 @@ export class CreateStaffDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
+  @MinLength(8)
+  @MaxLength(16)
   password: string;
 }
 
