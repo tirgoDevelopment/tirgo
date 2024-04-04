@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, ConsoleLogger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import { Agent, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserTypes } from '../..';
@@ -69,7 +69,7 @@ export class DriversService {
       }
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
@@ -112,7 +112,7 @@ export class DriversService {
 
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = driver;
         return driverPhoneNumber;
       });
@@ -230,7 +230,7 @@ export class DriversService {
             .addSelect('user.id')
             .addSelect('user.userType')
             .addSelect('user.lastLogin')
-            .where('phoneNumber.phoneNumber = :phone', { phone })
+            .where('phoneNumber.phoneNumber = :phone', { phone: phone.toString().replaceAll('+', '').trim() })
             .getOneOrFail();
 
         return new BpmResponse(true, driver, null);
@@ -250,7 +250,7 @@ export class DriversService {
 }
 
   async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: number,
-     isSubscribed: boolean, status: string, isVerified: boolean,
+     isSubscribed: boolean, status: string, isVerified: string,
      createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
       const size = +pageSize || 10; // Number of items per page
@@ -267,7 +267,7 @@ export class DriversService {
       filter.id = +driverId;
     } 
     if(phoneNumber) {
-      filter.phoneNumbers = { name: phoneNumber }
+      filter.phoneNumbers = { phoneNumber: phoneNumber.toString().replaceAll('+', '').trim() }
     }
     if(firstName) {
       filter.firstName = { id: firstName }
@@ -275,11 +275,13 @@ export class DriversService {
     if(transportKindId) {
       filter.driverTransports = { transportKinds: { id: transportKindId } }
     }
-    if(isVerified == true || isVerified == false) {
-      filter.verified = isVerified;
+    if(isVerified == 'true') {
+      filter.verified = true;
+    } 
+    if(isVerified == 'false') {
+      filter.verified = false;
     }
     if((isSubscribed)) {
-      console.log(isSubscribed)
       filter.subscription = Not(IsNull());
       filter.subscribedAt = LessThanOrEqual(new Date());
       filter.subscribedTill = MoreThanOrEqual(new Date());
@@ -287,7 +289,6 @@ export class DriversService {
     if(isSubscribed == false) {
       filter.subscription = IsNull();
     }
-    console.log(filter)
     if (createdAtFrom && createdAtTo) {
       filter.createdAt = Between(
         dateFns.parseISO(createdAtFrom),

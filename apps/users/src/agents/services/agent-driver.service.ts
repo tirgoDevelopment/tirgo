@@ -66,7 +66,7 @@ export class AgentDriversService {
       // Create driver phone numbers
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber;
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = resDriver; // Use the saved driver instance
         return driverPhoneNumber;
       });
@@ -156,7 +156,7 @@ export class AgentDriversService {
       // Create driver phone numbers
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber;
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = resDriver; // Use the saved driver instance
         return driverPhoneNumber;
       });

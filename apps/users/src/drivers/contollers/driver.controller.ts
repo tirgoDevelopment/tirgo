@@ -69,7 +69,7 @@ export class DriversController {
     @Query('transportKindId') transportKindId: number,
     @Query('isSubscribed') isSubscribed: boolean,
     @Query('status') status: string,
-    @Query('isVerified') isVerified: boolean,
+    @Query('isVerified') isVerified: string,
     @Query('createdAtFrom') createdAtFrom: string,
     @Query('createdAtTo') createdAtTo: string,
     @Query('lastLoginFrom') lastLoginFrom: string,

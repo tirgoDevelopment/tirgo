@@ -35,7 +35,7 @@ export class DriverMerchantsService {
       const driverMerchant: DriverMerchant = new DriverMerchant();
       driverMerchant.user = await queryRunner.manager.save(User, { userType: UserTypes.DriverMerchant, password: passwordHash });
       driverMerchant.email = createDriverMerchantDto.email;
-      driverMerchant.phoneNumber = createDriverMerchantDto.phoneNumber;
+      driverMerchant.phoneNumber = createDriverMerchantDto.phoneNumber.toString().replaceAll('+', '').trim();
       driverMerchant.companyName = createDriverMerchantDto.companyName;
       driverMerchant.companyType = createDriverMerchantDto.companyType;
 
@@ -143,7 +143,7 @@ export class DriverMerchantsService {
     try {
       const driverMerchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: updateDriverMerchantDto.id } });
       driverMerchant.email = updateDriverMerchantDto.email || driverMerchant.email;
-      driverMerchant.phoneNumber = updateDriverMerchantDto.phoneNumber || driverMerchant.phoneNumber;
+      driverMerchant.phoneNumber = updateDriverMerchantDto.phoneNumber.toString().replaceAll('+', '').trim() || driverMerchant.phoneNumber;
       driverMerchant.companyName = updateDriverMerchantDto.companyName || driverMerchant.companyName;
       driverMerchant.companyType = updateDriverMerchantDto.companyType || driverMerchant.companyType;
 
@@ -217,7 +217,7 @@ export class DriverMerchantsService {
       driverMerchantUser.driverMerchant = merchant;
       driverMerchantUser.fullName = createUserDto.fullName;
       driverMerchantUser.username = createUserDto.username;
-      driverMerchantUser.phoneNumber = createUserDto.phoneNumber;
+      driverMerchantUser.phoneNumber = createUserDto.phoneNumber.toString().replaceAll('+', '').trim();
 
       const newMerchantUser = await this.driverMerchantUsersRepository.save(driverMerchantUser);
       await queryRunner.commitTransaction();
@@ -425,7 +425,7 @@ export class DriverMerchantsService {
 
   async appendDriverToMerchant(dto: AppendDriverMerchantDto, user: User): Promise<BpmResponse> {
     try {
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: dto.phoneNumber } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { phoneNumbers: { phoneNumber: dto.phoneNumber.toString().replaceAll('+', '').trim() } } });
       if (driver.driverMerchant) {
         throw new BadRequestException(ResponseStauses.AlreadyAppended);
       }

@@ -31,7 +31,7 @@ export class AgentsService {
       agent.mfo = createAgentDto.mfo;
       agent.oked = createAgentDto.oked;
       agent.inn = createAgentDto.inn;
-      agent.phoneNumber = createAgentDto.phoneNumber;
+      agent.phoneNumber = createAgentDto.phoneNumber.toString().replaceAll('+', '').trim();
       agent.createdBy = user;
       if (files) {
         const fileUploads = []
@@ -106,7 +106,7 @@ export class AgentsService {
       agent.mfo = createAgentDto.mfo;
       agent.oked = createAgentDto.oked;
       agent.inn = createAgentDto.inn;
-      agent.phoneNumber = createAgentDto.phoneNumber;
+      agent.phoneNumber = createAgentDto.phoneNumber.toString().replaceAll('+', '').trim();
 
       if (files && files.length) {
         const fileUploads = []

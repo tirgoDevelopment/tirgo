@@ -31,7 +31,7 @@ export class ClientMerchantsService {
       const clientMerchant: ClientMerchant = await this.clientMerchantsRepository.create();
       clientMerchant.user = await this.usersRepository.save({ userType: UserTypes.ClientMerchant, password: passwordHash });
       clientMerchant.email = createClientMerchantDto.email;
-      clientMerchant.phoneNumber = createClientMerchantDto.phoneNumber;
+      clientMerchant.phoneNumber = createClientMerchantDto.phoneNumber.toString().replaceAll('+', '').trim();
       clientMerchant.companyName = createClientMerchantDto.companyName;
       clientMerchant.companyType = createClientMerchantDto.companyType;
 
@@ -173,7 +173,7 @@ export class ClientMerchantsService {
       // merchant.passportFilePath = updateMerchantDto.passportFilePath || merchant.passportFilePath;
       // merchant.logoFilePath = updateMerchantDto.logoFilePath || merchant.logoFilePath;
 
-      merchant.phoneNumber = updateMerchantDto.phoneNumber || merchant.phoneNumber;
+      merchant.phoneNumber = updateMerchantDto.phoneNumber.toString().replaceAll('+', '').trim() || merchant.phoneNumber;
       merchant.companyName = updateMerchantDto.companyName || merchant.companyName;
       merchant.responsiblePersonLastName = updateMerchantDto.responsiblePersonLastName || merchant.responsiblePersonLastName;
       merchant.responsiblePersonFistName = updateMerchantDto.responsiblePersonFistName || merchant.responsiblePersonFistName;

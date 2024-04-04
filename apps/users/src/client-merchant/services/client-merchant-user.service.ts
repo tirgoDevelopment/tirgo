@@ -33,7 +33,7 @@ export class ClientMerchantUsersService {
         clientMerchantUser.clientMerchant = merchant;
         clientMerchantUser.fullName = createUserDto.fullName;
         clientMerchantUser.username = createUserDto.username;
-        clientMerchantUser.phoneNumber = createUserDto.phoneNumber;
+        clientMerchantUser.phoneNumber = createUserDto.phoneNumber.toString().replaceAll('+', '').trim();
   
         const newMerchantUser = await this.clientMerchantUsersRepository.save(clientMerchantUser);
         await queryRunner.commitTransaction();
