@@ -46,7 +46,7 @@ export class ClientsService {
       }
       const clientPhoneNumbers = createClientDto.phoneNumbers.map(phoneNumber => {
         const clientPhoneNumber = new ClientPhoneNumber();
-        clientPhoneNumber.phoneNumber = phoneNumber.toString().replace('+', '');
+        clientPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
         clientPhoneNumber.client = client; 
         return clientPhoneNumber;
       });
@@ -160,7 +160,7 @@ export class ClientsService {
       filter.firstName = firstName;
     }
     if(phoneNumber) {
-      filter.phoneNumbers = { phoneNumber: '+' + phoneNumber }
+      filter.phoneNumbers = { phoneNumber: phoneNumber.toString().replaceAll('+', '') }
     }
     if (createdFrom && createdAtTo) {
       filter.createdAt = Between(

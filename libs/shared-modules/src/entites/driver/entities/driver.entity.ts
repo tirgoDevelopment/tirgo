@@ -58,7 +58,7 @@ export class Driver {
   @Column({ nullable: true, name: 'block_reason' })
   blockReason: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   verified: boolean;
 
   @Column({ default: false })
