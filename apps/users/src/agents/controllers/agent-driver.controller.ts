@@ -15,11 +15,11 @@ export class AgentDriversController {
     @Post('add-driver') 
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
-        { name: 'driverLicenseFilePath', maxCount: 1 },
-        { name: 'passportFilePath', maxCount: 1 }
+        { name: 'driverLicense', maxCount: 1 },
+        { name: 'passport', maxCount: 1 }
     ]))
     async createDriver(
-        @UploadedFiles() files: { passportFilePath?: any[], driverLicenseFilePath?: any[] }, 
+        @UploadedFiles() files: { passport?: any[], driverLicense?: any[] }, 
         @Body() data: DriverDto,
         @Req() req: Request
     ) {

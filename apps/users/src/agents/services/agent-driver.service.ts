@@ -48,13 +48,13 @@ export class AgentDriversService {
 
       if (files) {
         const fileUploads = []
-        if (files.passportFilePath && files.passportFilePath[0]) {
-          driver.passportFilePath = files.passportFilePath[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.passportFilePath[0])
+        if (files.passport && files.passport[0]) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          fileUploads.push(files.passport[0])
         }
-        if (files.driverLicenseFilePath && files.driverLicenseFilePath[0]) {
-          driver.driverLicenseFilePath = files.driverLicenseFilePath[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.driverLicenseFilePath[0])
+        if (files.driverLicense && files.driverLicense[0]) {
+          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
+          fileUploads.push(files.driverLicense[0])
         }
         // Upload files to AWS
         await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
@@ -138,13 +138,13 @@ export class AgentDriversService {
 
       if (files) {
         const fileUploads = []
-        if (files.passportFilePath && files.passportFilePath[0]) {
-          driver.passportFilePath = files.passportFilePath[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.passportFilePath[0])
+        if (files.passport && files.passport[0]) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          fileUploads.push(files.passport[0])
         }
-        if (files.driverLicenseFilePath && files.driverLicenseFilePath[0]) {
-          driver.driverLicenseFilePath = files.driverLicenseFilePath[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.driverLicenseFilePath[0])
+        if (files.driverLicense && files.driverLicense[0]) {
+          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
+          fileUploads.push(files.driverLicense[0])
         }
         // Upload files to AWS
         await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
