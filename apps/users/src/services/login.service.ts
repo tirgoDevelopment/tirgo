@@ -58,7 +58,7 @@ export class LoginService {
                 user = await this.staffsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
             } else if (userType == UserTypes.Agent) {
                 user = await this.agentsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
-            } else {
+            } else { 
                 throw new NotFoundException(ResponseStauses.UserNotFound)
             }
             const isPasswordValid: boolean = await bcrypt.compare(password, user.user.password);
