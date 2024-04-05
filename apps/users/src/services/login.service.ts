@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, BpmResponse, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
+import { Agent, BadRequestException, BpmResponse, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
 import { LoginDto } from '../auth.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -16,6 +16,7 @@ export class LoginService {
         @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
         @InjectRepository(Staff) private readonly staffsRepository: Repository<Staff>,
         @InjectRepository(User) private readonly usersRepository: Repository<User>,
+        @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
         private customJwtService: CustomJwtService,
         private smsService: SmsService
     ) { }
@@ -56,7 +57,7 @@ export class LoginService {
             } else if (userType == UserTypes.Staff) {
                 user = await this.staffsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
             } else if (userType == UserTypes.Agent) {
-
+                user = this.agentsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
             } else {
                 throw new NotFoundException(ResponseStauses.UserNotFound)
             }
