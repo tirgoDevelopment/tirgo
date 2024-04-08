@@ -64,12 +64,20 @@ export class AgentDriversService {
       const resDriver = await await queryRunner.manager.save(Driver, driver);
 
       // Create driver phone numbers
+      if(typeof createDriverDto.phoneNumbers == 'string') {
+        createDriverDto.phoneNumbers = JSON.parse(createDriverDto.phoneNumbers)
+      }
+      if(!(createDriverDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        driverPhoneNumber.driver = resDriver; // Use the saved driver instance
+        driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
+      driver.phoneNumbers = driverPhoneNumbers;
+
 
       // Save driver phone numbers
       await queryRunner.manager.save(DriverPhoneNumber, driverPhoneNumbers);
@@ -153,13 +161,20 @@ export class AgentDriversService {
       // Save the driver without phone numbers first
       const resDriver = await await queryRunner.manager.save(Driver, driver);
 
-      // Create driver phone numbers
+      if(typeof updateDriverDto.phoneNumbers == 'string') {
+        updateDriverDto.phoneNumbers = JSON.parse(updateDriverDto.phoneNumbers)
+      }
+      if(!(updateDriverDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        driverPhoneNumber.driver = resDriver; // Use the saved driver instance
+        driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
+      driver.phoneNumbers = driverPhoneNumbers;
+
 
       // Save driver phone numbers
       await queryRunner.manager.save(DriverPhoneNumber, driverPhoneNumbers);
