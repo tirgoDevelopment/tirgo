@@ -73,7 +73,7 @@ export class AgentDriversService {
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        driverPhoneNumber.driver = driver; 
+        driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
       driver.phoneNumbers = driverPhoneNumbers;
@@ -170,7 +170,7 @@ export class AgentDriversService {
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        driverPhoneNumber.driver = driver; 
+        driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
       driver.phoneNumbers = driverPhoneNumbers;
