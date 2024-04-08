@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { BpmResponse, InternalErrorException, NotFoundException, ResponseStauses, Role, SundryService, User, UserTypes, Agent, AgentDto, BadRequestException, AgentBankAccount, AwsService, NoContentException } from '../..';
 import * as dateFns from 'date-fns'
+import { UsersRoleNames } from '@app/shared-modules';
 
 @Injectable()
 export class AgentsService {
@@ -10,6 +11,7 @@ export class AgentsService {
   constructor(
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Role) private readonly rolesRepository: Repository<Role>,
     @InjectRepository(AgentBankAccount) private readonly bankAccountRepository: Repository<AgentBankAccount>,
     private sundriesService: SundryService,
     private awsService: AwsService
@@ -18,7 +20,8 @@ export class AgentsService {
   async createAgent(files: any, createAgentDto: any, user: User): Promise<BpmResponse> {
     try {
       const passwordHash = await this.sundriesService.generateHashPassword(createAgentDto.password);
-      const user: User = await this.usersRepository.save({ userType: UserTypes.Agent, password: passwordHash });
+      const role = await this.rolesRepository.findOneOrFail({ where: { name: UsersRoleNames.Agent } });
+      const user: User = await this.usersRepository.save({ userType: UserTypes.Agent, password: passwordHash, role });
       const agent: Agent = new Agent();
       agent.user = user;
       agent.companyName = createAgentDto.companyName;
