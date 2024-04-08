@@ -168,7 +168,8 @@ export enum UserTypes {
 }
 
 export enum UsersRoleNames {
-  SuperAdmin = 'Super admin'
+  SuperAdmin = 'Super admin',
+  Agent = 'Agent',
 }
 
 export class BpmResponse {
