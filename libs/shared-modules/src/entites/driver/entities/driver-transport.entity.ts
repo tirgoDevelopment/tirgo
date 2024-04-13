@@ -24,6 +24,9 @@ export class DriverTransport {
   @Column({ nullable: true, name: 'is_adr' })
   isAdr?: boolean;
 
+  @Column({ nullable: true, name: 'is_high_cube' })
+  isHighCube?: boolean;
+
   @Column({ nullable: true, name: 'refrigerator_from' })
   refrigeratorFrom: number;
 
