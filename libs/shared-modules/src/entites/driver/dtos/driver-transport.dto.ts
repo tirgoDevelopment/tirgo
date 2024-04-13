@@ -49,6 +49,9 @@ export class DriverTransportDto {
   isHook: boolean;
 
   @ApiProperty({ required: false })
+  isHighCube: boolean;
+
+  @ApiProperty({ required: false })
   isAdr: boolean;
 
   @ApiProperty({ required: false })

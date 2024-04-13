@@ -62,6 +62,9 @@ export class TransportsService {
       if (transportDto.isAdr) {
         transport.isAdr = transportDto.isAdr.toString() == 'true';
       }
+      if (transportDto.isHighCube) {
+        transport.isHighCube = transportDto.isHighCube.toString() == 'true';
+      }
       if (transportDto.refrigeratorFrom) {
         transport.refrigeratorFrom = transportDto.refrigeratorFrom;
       }
@@ -276,6 +279,9 @@ export class TransportsService {
       }
       if (transportDto.isAdr) {
         transport.isAdr = transportDto.isAdr;
+      }
+      if (transportDto.isHighCube) {
+        transport.isHighCube = transportDto.isHighCube.toString() == 'true';
       }
       if (transportDto.refrigeratorFrom && transportDto.refrigeratorFrom != null) {
         transport.refrigeratorFrom = transportDto.refrigeratorFrom;
