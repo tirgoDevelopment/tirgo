@@ -304,20 +304,20 @@ export class ClientsService {
       }
 
       if(transportTypeId) {
-        filter.transportType = { id: transportTypeId }
+        filter.transportTypes = { id: transportTypeId }
       }
       if(orderId) {
         filter.id = orderId;
       }
       if(transportKindId) {
-        filter.transportKind = { id: transportKindId }
+        filter.transportKinds = { id: transportKindId }
       }
       if(statusId) {
         const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {
-          filter.cargoStatus = { id: statusId };
+          filter.cargoStatus = { code: status.code };
         }
       }
       if(loadingLocation) {
