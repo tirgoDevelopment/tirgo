@@ -146,6 +146,9 @@ export class Order {
   @Column({ nullable: true, name: 'is_hook' })
   isHook: boolean;
 
+  @Column({ nullable: true, name: 'is_high_cube' })
+  isHighCube: boolean;
+
   @Column({ nullable: true, name: 'cistern_volume' })
   cisternVolume: number;
 

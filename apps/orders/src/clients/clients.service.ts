@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver, LocationPlace } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
+import { create } from 'domain';
 
 @Injectable()
 export class ClientsService {
@@ -85,6 +86,9 @@ export class ClientsService {
       if(createOrderDto.additionalDeliveryLocation) { 
         order.additionalDeliveryLocation = await this.locationsRepository.save({ name: createOrderDto.additionalDeliveryLocation.name, latitude: createOrderDto.additionalDeliveryLocation.latitude, longitude: createOrderDto.additionalDeliveryLocation.longitude });;
       }
+      if(createOrderDto.isHighCube) {
+        order.isHighCube = createOrderDto.isHighCube;
+      }
       order.isAdr = createOrderDto.isAdr;
       order.isCarnetTir = createOrderDto.isCarnetTir;
       order.isGlonas = createOrderDto.isGlonas;
@@ -156,7 +160,9 @@ export class ClientsService {
       if(updateOrderDto.additionalDeliveryLocation) { 
         order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, longitude: updateOrderDto.additionalDeliveryLocation.longitude });;
       }
-
+      if(updateOrderDto.isHighCube) {
+        order.isHighCube = updateOrderDto.isHighCube;
+      }
       order.isAdr = updateOrderDto.isAdr || order.isAdr;
       order.isCarnetTir = updateOrderDto.isCarnetTir || order.isCarnetTir;
       order.isGlonas = updateOrderDto.isGlonas || order.isGlonas;

@@ -135,6 +135,9 @@ export class OrderDto {
   isHook: boolean;
 
   @ApiProperty({ required: false })
+  isHighCube: boolean;
+
+  @ApiProperty({ required: false })
   cisternVolume: number;
 
   @ApiProperty({ required: false })

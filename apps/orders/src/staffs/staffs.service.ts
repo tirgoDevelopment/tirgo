@@ -55,6 +55,9 @@ export class StaffsService {
       }
       if(createOrderDto.transportKindIds) {
         order.transportKinds = await this.transportKindsRepository.find({ where: { id: In(createOrderDto.transportKindIds) } });
+      } 
+      if(createOrderDto.isHighCube) {
+        order.isHighCube = createOrderDto.isHighCube;
       }
   
       const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
