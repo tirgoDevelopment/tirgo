@@ -77,6 +77,12 @@ export class DriverTransportDto {
 
   @ApiProperty({ required: false })
   passportFilePath:string;
+
+  @ApiProperty({ required: false })
+  cisternVolume: number;
+
+  @ApiProperty({ required: false })
+  containerVolume: number;
 }
 
 export class DriverTransportVerificationDto {
@@ -160,4 +166,9 @@ export class DriverTransportVerificationDto {
   @ApiProperty({ required: false })
   passportFilePath:string;
 
+  @ApiProperty({ required: false })
+  cisternVolume: number;
+
+  @ApiProperty({ required: false })
+  containerVolume: number;
 }

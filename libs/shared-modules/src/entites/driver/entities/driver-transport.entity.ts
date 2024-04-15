@@ -66,6 +66,12 @@ export class DriverTransport {
   @Column({ nullable: true, name: 'goods_transportation_license_card_file_path' })
   goodsTransportationLicenseCardFilePath?: string;
 
+  @Column({ nullable: true, name: 'cistern_volume' })
+  cisternVolume: number;
+
+  @Column({ nullable: true, name: 'container_volume' })
+  containerVolume: number;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
 

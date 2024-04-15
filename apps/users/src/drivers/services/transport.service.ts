@@ -47,6 +47,12 @@ export class TransportsService {
       const cargoTypes: CargoType[] = await this.cargoTypesRepository.find({ where: { id: In(JSON.parse(transportDto.cargoTypeIds)) } });
       transport.cargoTypes = cargoTypes;
       }
+      if(transportDto.cisternVolume) {
+        transport.cisternVolume = transportDto.cisternVolume;
+      }
+      if(transportDto.containerVolume) {
+        transport.containerVolume = transportDto.containerVolume;
+      }
 
       transport.driver = driver;
 
@@ -295,6 +301,13 @@ export class TransportsService {
       if (transportDto.isHook && transportDto.isHook != null) {
         transport.isHook = transportDto.isHook;
       }
+      if(transportDto.cisternVolume) {
+        transport.cisternVolume = transportDto.cisternVolume;
+      }
+      if(transportDto.containerVolume) {
+        transport.containerVolume = transportDto.containerVolume;
+      }
+
       if (files) {
         const uploads: any = [];
         if (files.techPassportFrontFilePath) {
