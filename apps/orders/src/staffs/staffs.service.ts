@@ -319,7 +319,8 @@ export class StaffsService {
         relations: [
           'loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
         'additionalLoadingLocation',
-        'additionalDeliveryLocation', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+        'additionalDeliveryLocation', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 
+        'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds', 'client', 'driver'] });
         if(orders.length) {
         const ordersCount = await this.ordersRepository.count({ where: filter });
         const totalPagesCount = Math.ceil(ordersCount / size);
