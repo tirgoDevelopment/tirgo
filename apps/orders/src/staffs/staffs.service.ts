@@ -314,7 +314,7 @@ export class StaffsService {
       }
       if(merchantOrder) [
         filter.isClientMerchant = merchantOrder
-      ]
+      ] 
 
       const orders = await this.ordersRepository.find({ 
         order: sort, 
