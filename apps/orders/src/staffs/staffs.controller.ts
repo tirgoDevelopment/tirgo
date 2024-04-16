@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query, Req } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
-import { OrderDto } from '..';
+import { AppendOrderDto, OrderDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Staffs orders')
@@ -43,7 +43,7 @@ export class StaffsController {
 
   @ApiOperation({ summary: 'Staff cancel order' })
   @Post('cancel-order')
-  async cancelOrder(@Query('id') id: number, @Req() req: Request) {
+  async cancelOrder(@Body('id') id: number, @Req() req: Request) {
     return this.staffsService.cancelOrder(id, req['user']);
   }
 
@@ -51,5 +51,11 @@ export class StaffsController {
   @Put('update-order')
   async updateOrder(@Body() updateOrderDto: OrderDto) {
     return this.staffsService.updateOrder(updateOrderDto);
+  }
+
+  @ApiOperation({ summary: 'Staff append order to driver' })
+  @Post('append-order')
+  async appendOrder(@Body() appendOrderDto: AppendOrderDto, @Req() req: Request) {
+    return this.staffsService.appendOrderoDriver(appendOrderDto, req['user']);
   }
 }

@@ -25,6 +25,8 @@ export class RabbitMQConsumerService implements OnModuleInit {
     await this.channel.assertQueue('acceptOfferToClient');
     await this.channel.assertQueue('orderOfferToDriver');
     await this.channel.assertQueue('acceptOfferToDriver');
+    await this.channel.assertQueue('appendOrderToDriver');
+    await this.channel.assertQueue('appendOrderToDriverClient');
 
     //finance
     await this.channel.assertQueue('transactionVerified');
@@ -37,6 +39,8 @@ export class RabbitMQConsumerService implements OnModuleInit {
     this.channel.consume('acceptOfferToClient', this.handleAcceptOfferToClientMessage.bind(this), { noAck: true });
     this.channel.consume('orderOfferToDriver', this.handleOrderOfferToDriverMessage.bind(this), { noAck: true });
     this.channel.consume('acceptOfferToDriver', this.handleAcceptOfferToDriverMessage.bind(this), { noAck: true });
+    this.channel.consume('appendOrderToDriver', this.handleAppendOrderToDriverMessage.bind(this), { noAck: true });
+    this.channel.consume('appendOrderToDriverClient', this.handleAppendOrderToClientMessage.bind(this), { noAck: true });
 
      // Consume finance messages from 'message' queue
     this.channel.consume('transactionVerified', this.handleVerifiedTransactionMessage.bind(this), { noAck: true });
@@ -92,6 +96,32 @@ export class RabbitMQConsumerService implements OnModuleInit {
         console.log(`Received clientAcceptOffer message: ${JSON.stringify(data)}`);
       } catch (error) {
         console.error('Error parsing clientAcceptOffer message:', error);
+      }
+    }
+  }
+
+  private async handleAppendOrderToDriverMessage(msg: amqp.ConsumeMessage | null) {
+    if (msg) {
+      const body = JSON.parse(msg.content.toString());
+      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'appendOrderToDriver', orderId: body.orderId} )
+      try {
+        const data = body;
+        console.log(`Received appendOrderToDriver message: ${JSON.stringify(data)}`);
+      } catch (error) {
+        console.error('Error parsing appendOrderToDriver message:', error);
+      }
+    }
+  }
+
+  private async handleAppendOrderToClientMessage(msg: amqp.ConsumeMessage | null) {
+    if (msg) {
+      const body = JSON.parse(msg.content.toString());
+      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'appendOrderToDriverClient', orderId: body.orderId} )
+      try {
+        const data = body;
+        console.log(`Received appendOrderToDriverClient message: ${JSON.stringify(data)}`);
+      } catch (error) {
+        console.error('Error parsing appendOrderToDriverClient message:', error);
       }
     }
   }

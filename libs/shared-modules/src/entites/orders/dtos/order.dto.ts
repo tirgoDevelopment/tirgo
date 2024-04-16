@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateNested } from "class-validator";
+import { IS_UUID, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateNested, isUUID } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 class LocationDto {
@@ -166,4 +166,27 @@ export class OrderDto {
 
   @ApiProperty({ required: false })
   cargoPackageId?: string;
+}
+
+export class AppendOrderDto {
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  orderId: number;
+
+  @ApiProperty({ required: true })
+  @IsUUID()
+  @IsNotEmpty()
+  currencyId: string;
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  driverId: number;
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
 }
