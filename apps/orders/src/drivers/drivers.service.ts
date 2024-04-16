@@ -72,10 +72,10 @@ export class DriversService {
         }
       }
       if (loadingLocation) {
-        filter.loadingLocation = loadingLocation
+        filter.loadingLocation = { name: loadingLocation }
       }
       if (deliveryLocation) {
-        filter.deliveryLocation = deliveryLocation
+        filter.deliveryLocation = { name: deliveryLocation }
       }
       if (createdAt) {
         filter.createdAt = createdAt
@@ -138,10 +138,10 @@ export class DriversService {
         filter.transportKind = { id: transportKindId }
       }
       if (loadingLocation) {
-        filter.loadingLocation = loadingLocation
+        filter.loadingLocation = { name: loadingLocation }
       }
       if (deliveryLocation) {
-        filter.deliveryLocation = deliveryLocation
+        filter.deliveryLocation = { name: deliveryLocation }
       }
       if (createdAt) {
         filter.createdAt = createdAt
