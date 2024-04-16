@@ -252,7 +252,7 @@ export class StaffsService {
       const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, 
         relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
         'additionalLoadingLocation',
-        'additionalDeliveryLocation', 'clientMerchant', 'client', 'driverOffers', 'driverOffer.driver', 'driverOffer.driver.phoneNumbers', 'additionalClient', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+        'additionalDeliveryLocation', 'clientMerchant', 'client', 'driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'additionalClient', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
@@ -314,7 +314,7 @@ export class StaffsService {
       }
       if(merchantOrder) [
         filter.isClientMerchant = merchantOrder
-      ]
+      ] 
 
       const orders = await this.ordersRepository.find({ 
         order: sort, 
@@ -326,7 +326,7 @@ export class StaffsService {
         'additionalLoadingLocation',
         'additionalDeliveryLocation', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 
         'cargoType', 'cargoStatus', 
-        'driverOffers', 'driverOffer.driver', 'driverOffer.driver.phoneNumbers', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds', 'client', 'driver'] });
+        'driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds', 'client', 'driver'] });
         if(orders.length) {
         const ordersCount = await this.ordersRepository.count({ where: filter });
         const totalPagesCount = Math.ceil(ordersCount / size);
