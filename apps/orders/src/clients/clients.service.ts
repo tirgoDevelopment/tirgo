@@ -321,10 +321,10 @@ export class ClientsService {
         }
       }
       if(loadingLocation) {
-        filter.loadingLocation = loadingLocation
+        filter.loadingLocation = { name: loadingLocation }
       }
       if(deliveryLocation) {
-        filter.deliveryLocation = deliveryLocation
+        filter.deliveryLocation = { name: deliveryLocation }
       }
       if(createdAt) {
         filter.createdAt = createdAt
