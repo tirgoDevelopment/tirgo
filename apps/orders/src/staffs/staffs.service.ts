@@ -1,6 +1,6 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, OrderOffer, Driver } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
@@ -21,7 +21,8 @@ export class StaffsService {
     @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
     @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
-    private rmqService: RabbitMQSenderService
+    private rmqService: RabbitMQSenderService,
+    private dataSource: DataSource
   ) { }
 
   async createOrder(createOrderDto: OrderDto, user: User): Promise<BpmResponse> {
@@ -371,8 +372,10 @@ export class StaffsService {
   }
 
   async appendOrderoDriver(appendOrderDto: AppendOrderDto, user: User): Promise<BpmResponse> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
     try {
-
+      await queryRunner.startTransaction();
       const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: appendOrderDto.driverId }, accepted: true } });
       if (isDriverBusy) {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
@@ -401,16 +404,18 @@ export class StaffsService {
       offer.driver = driver;
       offer.currency = currency;
 
-      await this.orderOffersRepository.save(offer);
+      await queryRunner.manager.save(OrderOffer, offer);
 
       order.cargoStatus = cargoStatus;
-      await this.ordersRepository.save(order);
+      await queryRunner.manager.save(Order, order);
 
       await this.rmqService.sendAdminAppendOrderToClient({ userId: order.client?.id, orderId: offer.order.id });
-      await this.rmqService.sendAdminAppendOrderToDriver({ userId: driver.user?.id, orderId: offer.order.id })
+      await this.rmqService.sendAdminAppendOrderToDriver({ userId: driver.user?.id, orderId: offer.order.id });
+      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
+      await queryRunner.rollbackTransaction();
       if (err instanceof HttpException) {
         throw err
       } else if (err.name == 'EntityNotFoundError') {
@@ -418,6 +423,8 @@ export class StaffsService {
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
       }
+    } finally {
+      await queryRunner.release();
     }
   }
 }
