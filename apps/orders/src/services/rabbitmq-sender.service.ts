@@ -46,10 +46,10 @@ export class RabbitMQSenderService implements OnModuleInit {
   }
 
   async sendAdminAppendOrderToDriver(body: { userId: number, orderId: number }) {
-    await this.channel.sendToQueue('appendOrderToDriver', body)
+    await this.channel.sendToQueue('appendOrderToDriver', Buffer.from(JSON.stringify(body)))
   }
 
   async sendAdminAppendOrderToClient(body: { userId: number, orderId: number }) {
-    await this.channel.sendToQueue('appendOrderToDriverClient', body)
+    await this.channel.sendToQueue('appendOrderToDriverClient', Buffer.from(JSON.stringify(body)))
   }
 }
