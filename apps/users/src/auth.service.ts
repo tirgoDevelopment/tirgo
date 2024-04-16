@@ -48,7 +48,7 @@ export class AuthService {
         .orWhere(`(agent.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.Agent}')`)
         .orWhere(`(staff.deleted = true AND user.user_type = '${ userType ? userType : UserTypes.Staff}')`);
         if(id) {
-          queryRunner.andWhere(`id = ${id}`)
+          queryRunner.andWhere(`user.id = ${id}`)
         }
         const users = await queryRunner.getMany();
 
