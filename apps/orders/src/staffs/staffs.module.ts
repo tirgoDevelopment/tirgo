@@ -3,6 +3,7 @@ import { CargoLoadMethod, CargoPackage, CargoStatus, CargoType, Client, ClientMe
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StaffsController } from './staffs.controller';
 import { StaffsService } from './staffs.service';
+import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { StaffsService } from './staffs.service';
     StaffsController
   ],
   providers: [
-    StaffsService
+    StaffsService,
+    RabbitMQSenderService
   ],
 })
 export class StaffsModule { }

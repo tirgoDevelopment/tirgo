@@ -1,7 +1,8 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, OrderOffer, Driver } from '..';
+import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
 export class StaffsService {
@@ -18,6 +19,9 @@ export class StaffsService {
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     @InjectRepository(CargoStatus) private readonly cargoStatusesRepository: Repository<CargoStatus>,
     @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
+    @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
+    @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+    private rmqService: RabbitMQSenderService
   ) { }
 
   async createOrder(createOrderDto: OrderDto, user: User): Promise<BpmResponse> {
@@ -359,6 +363,57 @@ export class StaffsService {
       }
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async appendOrderoDriver(appendOrderDto: AppendOrderDto, user: User): Promise<BpmResponse> {
+    try {
+
+      const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: appendOrderDto.driverId }, accepted: true } });
+      if (isDriverBusy) {
+        throw new BadRequestException(ResponseStauses.DriverHasOrder)
+      }
+  
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: appendOrderDto.driverId }, relations: ['user'] });
+
+      if(driver.deleted) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      if(driver.blocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
+      } 
+
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: appendOrderDto.orderId }, relations: ['client'] });
+      const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: appendOrderDto.currencyId } });
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Accepted } });
+
+      const offer = new OrderOffer();
+
+      offer.amount = appendOrderDto.amount;
+      offer.accepted = true;
+      offer.createdBy = user;
+      offer.order = order;
+      offer.driver = driver;
+      offer.currency = currency;
+
+      await this.orderOffersRepository.save(offer);
+
+      order.cargoStatus = cargoStatus;
+      await this.ordersRepository.save(order);
+
+      await this.rmqService.sendAdminAppendOrderToClient({ userId: order.client?.id, orderId: offer.order.id });
+      await this.rmqService.sendAdminAppendOrderToDriver({ userId: driver.user?.id, orderId: offer.order.id })
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
         throw new BadRequestException(ResponseStauses.NotFound);
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);

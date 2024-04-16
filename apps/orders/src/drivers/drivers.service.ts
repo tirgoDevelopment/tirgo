@@ -381,7 +381,7 @@ export class DriversService {
       const createOfferDto: OrderOffer = new OrderOffer();
 
       const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } });
-      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offerDto.orderId }, relations: ['createdBy'] });
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offerDto.orderId }, relations: ['client'] });
       const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: offerDto.curencyId } });
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: offerDto.driverId } });
 
@@ -399,7 +399,7 @@ export class DriversService {
 
       // then create new offfer
       const res = await this.orderOffersRepository.save(createOfferDto);
-      await this.rmqService.sendOrderOfferMessageToClient({ userId: order.createdBy?.id, orderId: order.id })
+      await this.rmqService.sendOrderOfferMessageToClient({ userId: order.client?.id, orderId: order.id })
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
@@ -417,7 +417,7 @@ export class DriversService {
     try {
 
       const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
-      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['createdBy'] })
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['client'] })
       const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Accepted } });
 
       const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: offer.driver?.id }, accepted: true } });
@@ -452,7 +452,7 @@ export class DriversService {
       order.cargoStatus = cargoStatus;
       await this.ordersRepository.save(order);
 
-      await this.rmqService.sendAcceptOfferMessageToClient({ userId: order.createdBy?.id, orderId: offer.order.id })
+      await this.rmqService.sendAcceptOfferMessageToClient({ userId: order.client?.id, orderId: offer.order.id })
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
