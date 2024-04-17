@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { AwsService, Role, Staff, SundryService, User } from "..";
+import { AwsService, Driver, DriverMerchant, Role, Staff, SundryService, User } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { StaffsController } from "./staffs.controller";
 import { StaffsService } from "./staffs.service";
@@ -7,7 +7,7 @@ import { StaffsService } from "./staffs.service";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ Staff, User, Role ]),
+        TypeOrmModule.forFeature([ Staff, User, Role, Driver, DriverMerchant ]),
       ],
       controllers: [
         StaffsController
@@ -18,7 +18,7 @@ import { StaffsService } from "./staffs.service";
         StaffsService
       ],
       exports: [
-        TypeOrmModule.forFeature([ Staff, User, Role ]),
+        TypeOrmModule.forFeature([ Staff, User, Role, Driver, DriverMerchant ]),
       ]
 })
 export class StaffsModule {
