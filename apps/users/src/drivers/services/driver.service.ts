@@ -312,7 +312,7 @@ export class DriversService {
     }
       const drivers = await this.driversRepository.find({ 
         where: filter, 
-        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription', 'driverTransports.transportTypes'],
+        relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription', 'driverTransports.transportTypes', 'driverMerchant'],
         order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 

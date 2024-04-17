@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Get, Query, Delete, UsePipes, ValidationPipe, Put, Req, Patch } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CreateStaffDto } from '..';
+import { CreateStaffDto,AppendDriversToTmsDto } from '..';
 import { UpdateStaffDto } from '@app/shared-modules/entites/staffs/staff.dto';
 
 @ApiTags('Staff users')
@@ -58,4 +58,10 @@ export class StaffsController {
     return this.staffsService.blockStaff(id, blockDto.blockReason, req['user']);
   }
 
+  @ApiOperation({ summary: 'Append drivers to tms' })
+  @Post('append-drivers-tms')
+  @UsePipes(ValidationPipe)
+  async appendDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Req() req: Request) {
+    return this.staffsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
+  }
 }

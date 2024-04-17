@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, IsUUID, Matches, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsNumber, IsString, IsUUID, Matches, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateStaffDto {
@@ -53,4 +53,15 @@ export class UpdateStaffDto {
   @IsNotEmpty()
   phone: string;
 
+}
+
+export class AppendDriversToTmsDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  driverIds: number[];
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  driverMerchantId: number;
 }

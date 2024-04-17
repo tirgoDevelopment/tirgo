@@ -22,7 +22,7 @@ export { Subscription } from "./entites/references/entities/subscription.entity"
 export { Role } from "./entites/role/entities/role.entity";
 export { Permission } from "./entites/role/entities/permission.entity";
 export { Staff } from "./entites/staffs/staff.entity";
-export { CreateStaffDto } from "./entites/staffs/staff.dto";
+export { CreateStaffDto,AppendDriversToTmsDto } from "./entites/staffs/staff.dto";
 export { Transaction } from "./entites/transactions/transaction.entity";
 export { User } from "./entites/users/user.entity";
 export { Client } from "./entites/clients/client.entity";

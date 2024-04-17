@@ -549,7 +549,7 @@ export class DriverMerchantsService {
 
 
       const merchants: DriverMerchant[] = await this.driverMerchantsRepository.find({
-        where: filter, relations: ['bankAccounts', 'bankAccounts.currency'], order: sort,
+        where: filter, relations: ['bankAccounts', 'bankAccounts.currency', 'drivers'], order: sort,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
       });

@@ -16,6 +16,7 @@ export {
   CreateDriverMerchantUserDto,
   UpdateDriverMerchantUserDto,
   CreateStaffDto,
+  AppendDriversToTmsDto,
   AccountDto,
   AgentDto
 } from "@app/shared-modules";
