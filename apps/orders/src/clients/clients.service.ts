@@ -555,7 +555,7 @@ export class ClientsService {
       createOfferDto.createdBy = user;
 
       //reject other offers
-      await this.orderOffersRepository.update({order: { id: order.id, driver: { id: driver.id } }}, { rejected: true })
+      await this.orderOffersRepository.update({order: { id: order.id }, driver: { id: driver.id }}, { rejected: true })
 
       //then create new offer
       await this.orderOffersRepository.save(createOfferDto);
