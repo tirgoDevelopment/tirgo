@@ -69,12 +69,12 @@ export class AgentsController {
     @Query('pageIndex') pageIndex: string,
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
-    @Query('merchantId') id: number,
-    @Query('companyName') companyName: string,
+    @Query('agentId') agentId: number,
+    @Query('username') username: string,
     @Query('createdAtFrom') createdAtFrom: string,
     @Query('createdAtTo') createdAtTo: string,
   ) {
-    return this.staffsService.getAgents(id, pageSize, pageIndex, sortBy, sortType, companyName, createdAtFrom, createdAtTo)
+    return this.staffsService.getAgents(agentId, pageSize, pageIndex, sortBy, sortType, username, createdAtFrom, createdAtTo)
   }
   
   @ApiOperation({ summary: 'Get agent by id' })

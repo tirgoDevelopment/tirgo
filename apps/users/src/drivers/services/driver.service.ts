@@ -745,12 +745,32 @@ export class DriversService {
     }
   }
 
-  async getDriverByAgentId(id: number): Promise<BpmResponse> {
+  async getDriverByAgentId(agentId: number, driverId: number, firstName: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
-      if (!id || isNaN(id)) {
+      if (!agentId || isNaN(agentId)) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const drivers: Driver[] = await this.driversRepository.find({ where: { agent: { id }, blocked: false, deleted: false }, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
+      let filter: any = { agent: { id: agentId }, blocked: false, deleted: false };
+
+      if(driverId) {
+        filter.id = +driverId;
+      } 
+      if(firstName) {
+        filter.firstName = firstName;
+      }
+      if (createdAtFrom && createdAtTo) {
+        filter.createdAt = Between(
+          dateFns.parseISO(createdAtFrom),
+          dateFns.parseISO(createdAtTo)
+        );
+      } else if (createdAtFrom) {
+        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdAtFrom));
+      } else if (createdAtTo) {
+        filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
+      }
+
+
+      const drivers: Driver[] = await this.driversRepository.find({ where: filter, relations: ['phoneNumbers', 'driverTransports', 'agent', 'subscription'] });
       if (!drivers.length) {
         throw new NoContentException();
       } else {

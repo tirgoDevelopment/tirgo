@@ -46,8 +46,14 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Get driver by agent id' })
   @Get('by-agent')
-  async getDriverByAgent(@Query('agentId') id: number) {
-    return this.driversService.getDriverByAgentId(id);
+  async getDriverByAgent(
+    @Query('agentId') agentId: number,
+    @Query('driverId') driverId: number,
+    @Query('firstName') firstName: string,
+    @Query('createdAtFrom') createdAtFrom: string,
+    @Query('createdAtTo') createdAtTo: string,
+  ) {
+    return this.driversService.getDriverByAgentId(agentId, driverId, firstName, createdAtFrom, createdAtTo);
   }
 
   @ApiOperation({ summary: 'Get driver by merchant id' })
