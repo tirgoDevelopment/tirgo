@@ -11,7 +11,7 @@ import {
   Patch
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { DriversSubscriptionDto, TransactionDto } from './transaction.dto';
+import { AddClientMerchantBalanceDto, DriversSubscriptionDto, TransactionDto } from './transaction.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Transactions')
@@ -28,6 +28,13 @@ constructor(
 @UsePipes(ValidationPipe)
 async createTransaction(@Body() transactionDto: TransactionDto, @Req() req: Request) {
     return this.transactionsService.createTransaction(transactionDto, req['user']?.id)
+}
+
+@ApiOperation({ summary: 'Create transaction' })
+@Post('add-client-merchant-balance')
+@UsePipes(ValidationPipe)
+async addClientMerchantBalance(@Body() transactionDto: AddClientMerchantBalanceDto, @Req() req: Request) {
+    return this.transactionsService.addClientMerchantBalance(transactionDto, req['user']?.id)
 }
 
 @ApiOperation({ summary: 'Get merchant transactions' })
