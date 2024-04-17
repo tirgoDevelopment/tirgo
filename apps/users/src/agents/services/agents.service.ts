@@ -159,7 +159,7 @@ export class AgentsService {
     }
   }
 
-  async getAgents(id: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, companyName: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getAgents(agentId: number, pageSize: string, pageIndex: string, sortBy: string, sortType: string, username: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
     try {
       const filter: any = { deleted: false };
       const size = +pageSize || 10; // Number of items per page
@@ -170,11 +170,11 @@ export class AgentsService {
       } else {
         sort['id'] = 'DESC'
       }
-      if(id) {
-        filter.id = +id;
+      if(agentId) {
+        filter.id = +agentId;
       } 
-      if(companyName) {
-        filter.companyName = companyName;
+      if(username) {
+        filter.username = username;
       }
       if (createdAtFrom && createdAtTo) {
         filter.createdAt = Between(
