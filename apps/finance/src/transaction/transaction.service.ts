@@ -2,7 +2,7 @@ import { Injectable, Logger, HttpException, UnauthorizedException } from '@nestj
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { Subscription, Agent, BadRequestException, NotFoundException, BpmResponse, ClientMerchant, ClientMerchantUser, Currency, InternalErrorException, NoContentException, ResponseStauses, Role, Transaction, User, UserTypes, UsersRoleNames } from '..';
-import { DriversSubscriptionDto, TransactionDto } from './transaction.dto';
+import { AddClientMerchantBalanceDto, DriversSubscriptionDto, TransactionDto } from './transaction.dto';
 import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import * as dateFns from 'date-fns'
 import { Driver, DriverMerchant, DriverMerchantUser, TransactionTypes } from '@app/shared-modules';
@@ -51,6 +51,45 @@ export class TransactionService {
       transaction.amount = transactionDto.amount;
       transaction.transactionType = transactionDto.transactionType;
       transaction.comment = transactionDto.comment;
+
+      const savedTransaction = await this.transactionsRepository.save(transaction);
+      if (savedTransaction) {
+        return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+      } else {
+        throw new InternalErrorException(ResponseStauses.CreateDataFailed)
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.messgae)
+      }
+    }
+  }
+
+  async addClientMerchantBalance(transactionDto: AddClientMerchantBalanceDto, userId: number): Promise<BpmResponse> {
+    try {
+      const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } })
+      const transaction: Transaction = new Transaction();
+      const currency = await this.currenciesRepository.findOneOrFail({ where: { id: transactionDto.currencyId } });
+      if(user.userType !== UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      if(!transactionDto.merchantId || isNaN(transactionDto.merchantId)) {
+        throw new BadRequestException(ResponseStauses.MerchantIdIsRequired);
+      }
+      transaction.isMerchant = true;
+      transaction.merchantId = transactionDto.merchantId;
+      transaction.createdBy = user;
+      transaction.currency = currency;
+      transaction.userType = user.userType;
+      transaction.amount = transactionDto.amount;
+      transaction.transactionType = transactionDto.transactionType;
+      transaction.comment = transactionDto.comment;
+      transaction.verified = true;
 
       const savedTransaction = await this.transactionsRepository.save(transaction);
       if (savedTransaction) {

@@ -56,3 +56,32 @@ export class DriversSubscriptionDto {
   @IsNotEmpty()
   subscriptionId: number;
 }
+
+export class AddClientMerchantBalanceDto {
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(TransactionTypes)
+  @ApiProperty({ required: true })
+  transactionType: TransactionTypes;
+
+  @ApiProperty({ required: false })
+  comment: string;
+
+  @IsUUID()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  currencyId: string;
+
+  @ApiProperty({ required: false })
+  merchantId: number;
+
+  @ApiProperty({ required: false })
+  id?: number;
+
+}
