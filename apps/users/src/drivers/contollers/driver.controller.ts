@@ -44,10 +44,16 @@ export class DriversController {
     return this.driversService.getDriverByPhone(phone);
   }
 
-  @ApiOperation({ summary: 'Get driver by id' })
-  @Get('driver-by-driver-merchant')
-  async getDriverByTms(@Query('merchantId') id: number) {
-    return this.driversService.getDriverByDriverMerchant(id);
+  @ApiOperation({ summary: 'Get drivers by merchant id' })
+  @Get('drivers-by-driver-merchant')
+  async getDriverByTms(
+    @Query('merchantId') id: number,
+    @Query('pageSize') pageSize: string,
+    @Query('pageIndex') pageIndex: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string
+    ) {
+    return this.driversService.getDriverByDriverMerchant(id, sortBy, sortType, pageSize, pageIndex);
   }
 
   @ApiOperation({ summary: 'Get driver by agent id' })
