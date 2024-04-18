@@ -250,15 +250,16 @@ export class DriversService {
     }
 }
 
-async getDriverByDriverMerchant(id: number): Promise<BpmResponse> {
+async getDriverByDriverMerchant(id: number, sortBy: string, sortType: string, pageSize: string, pageIndex: string): Promise<BpmResponse> {
   // Parameter validation
   if (!id) {
       return new BpmResponse(false, null, [ResponseStauses.IdIsRequired]);
   }
-
+  const size = +pageSize || 10; // Number of items per page
+  const index = +pageIndex || 1
   try {
       // Query to retrieve driver by phone number
-      const driver = await this.driversRepository
+      const queryBuilder = await this.driversRepository
           .createQueryBuilder('driver')
           .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
           .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
@@ -272,10 +273,28 @@ async getDriverByDriverMerchant(id: number): Promise<BpmResponse> {
           .addSelect('user.id')
           .addSelect('user.userType')
           .addSelect('user.lastLogin')
-          .where('driverMerchant.id = :id', { id })
-          .getOneOrFail();
+          .where('driverMerchant.id = :id', { id });
 
-      return new BpmResponse(true, driver, null);
+          if (sortBy && sortType) { // Replace orderByCondition with your condition
+            queryBuilder.orderBy(`${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+          } else {
+            queryBuilder.orderBy(`id`, 'DESC');
+          }
+          queryBuilder.offset((index - 1) * size) // Skip the number of items based on the page number
+          queryBuilder.limit(size); // Limit the number of items per page
+
+          const drivers = await queryBuilder.getMany();
+
+      
+          const totalCount = await this.driversRepository
+          .createQueryBuilder('driver')
+          .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
+          .where('driverMerchant.id = :id', { id })
+          .getCount();
+
+          const totalPages = Math.ceil(totalCount / size);
+
+      return new BpmResponse(true, { content: drivers, totalPAgesCount: totalPages, pageIndex: index, pageSize: size }, null);
   } catch (err: any) {
       console.error(err);
 
