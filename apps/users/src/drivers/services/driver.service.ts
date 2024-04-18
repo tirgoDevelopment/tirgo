@@ -276,9 +276,9 @@ async getDriverByDriverMerchant(id: number, sortBy: string, sortType: string, pa
           .where('driverMerchant.id = :id', { id });
 
           if (sortBy && sortType) { // Replace orderByCondition with your condition
-            queryBuilder.orderBy(`${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
+            queryBuilder.orderBy(`driver.${sortBy}`, `${sortType?.toString().toUpperCase() == 'ASC' ? 'ASC' : 'DESC'}`);
           } else {
-            queryBuilder.orderBy(`id`, 'DESC');
+            queryBuilder.orderBy(`driver.id`, 'DESC');
           }
           queryBuilder.offset((index - 1) * size) // Skip the number of items based on the page number
           queryBuilder.limit(size); // Limit the number of items per page
