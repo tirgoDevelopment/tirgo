@@ -138,6 +138,7 @@ export class DriversService {
       const driver = await this.driversRepository
         .createQueryBuilder('driver')
         .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
+        .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
         .leftJoinAndSelect('driver.driverTransports', 'transports')
         .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
         .leftJoinAndSelect('transports.transportKinds', 'transportKinds')
@@ -247,6 +248,47 @@ export class DriversService {
             throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
         }
     }
+}
+
+async getDriverByDriverMerchant(id: number): Promise<BpmResponse> {
+  // Parameter validation
+  if (!id) {
+      return new BpmResponse(false, null, [ResponseStauses.IdIsRequired]);
+  }
+
+  try {
+      // Query to retrieve driver by phone number
+      const driver = await this.driversRepository
+          .createQueryBuilder('driver')
+          .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
+          .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
+          .leftJoinAndSelect('driver.driverTransports', 'transports')
+          .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
+          .leftJoinAndSelect('driver.agent', 'agent')
+          .leftJoinAndSelect('driver.subscription', 'subscription')
+          .leftJoin('driver.orderOffers', 'orderOffers')
+          .leftJoinAndSelect('orderOffers.order', 'order')
+          .leftJoin('driver.user', 'user')
+          .addSelect('user.id')
+          .addSelect('user.userType')
+          .addSelect('user.lastLogin')
+          .where('driverMerchant.id = :id', { id })
+          .getOneOrFail();
+
+      return new BpmResponse(true, driver, null);
+  } catch (err: any) {
+      console.error(err);
+
+      if (err.name === 'EntityNotFoundError') {
+          // Driver not found
+          throw new NoContentException();
+      } else if (err instanceof HttpException) {
+          throw err;
+      } else {
+          // Other errors (handle accordingly)
+          throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+  }
 }
 
   async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: number,

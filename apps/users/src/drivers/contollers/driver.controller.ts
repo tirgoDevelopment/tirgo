@@ -44,6 +44,12 @@ export class DriversController {
     return this.driversService.getDriverByPhone(phone);
   }
 
+  @ApiOperation({ summary: 'Get driver by id' })
+  @Get('driver-by-driver-merchant')
+  async getDriverByTms(@Query('merchantId') id: number) {
+    return this.driversService.getDriverByDriverMerchant(id);
+  }
+
   @ApiOperation({ summary: 'Get driver by agent id' })
   @Get('by-agent')
   async getDriverByAgent(
