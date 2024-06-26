@@ -38,6 +38,12 @@ export class Driver {
   @Column({ type: 'bigint', default: 0, name: 'login_verification_code_expire_time' })
   loginVerificationCodeExpireTime: number;
 
+  @Column({ type: 'timestamp', nullable: true, name: 'subscribed_at' })
+  subscribedAt: Date; 
+
+  @Column({ type: 'timestamp', nullable: true, name: 'subscribed_till' })
+  subscribedTill: Date; 
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
 
@@ -61,8 +67,22 @@ export class Driver {
   @Column({ default: false })
   verified: boolean;
 
+  @Column({ name: 'verified_at', nullable: true })
+  verifiedAt: Date;  
+
+  @ManyToOne(() => User, (user) => user.verifiedDrivers) 
+  @JoinColumn({ name: 'verified_by' })
+  verifiedBy: User;
+
   @Column({ default: false })
   deleted: boolean;
+
+  @ManyToOne(() => User, (user) => user.deletedDrivers) 
+  @JoinColumn({ name: 'deleted_by' })
+  deletedBy: User;
+
+  @Column({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;  
 
   @OneToMany(() => DriverTransport, driverTransport => driverTransport.driver)
   driverTransports: DriverTransport[];
@@ -83,12 +103,6 @@ export class Driver {
   @ManyToOne(() => Subscription, (subscription) => subscription.driver, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'subscription_id' })
   subscription: Subscription;
-
-  @Column({ type: 'timestamp', nullable: true, name: 'subscribed_at' })
-  subscribedAt: Date; 
-
-  @Column({ type: 'timestamp', nullable: true, name: 'subscribed_till' })
-  subscribedTill: Date; 
 
   @OneToOne(() => User, (user) => user.driver, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

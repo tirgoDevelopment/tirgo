@@ -100,6 +100,9 @@ export class User {
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.verifiedBy)
     verifiedClientMerchants: ClientMerchant[];
 
+    @OneToMany(() => Driver, (driver) => driver.verifiedBy)
+    verifiedDrivers: Driver[];
+
     // relations belongs to blocked by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.blockedBy)
     blockedDriverMerchants: DriverMerchant[];
@@ -118,4 +121,8 @@ export class User {
 
     @OneToMany(() => Agent, (agent) => agent.blockedBy)
     blockedStaffs: Agent[];
+
+    // relations belongs to deleted by user
+    @OneToMany(() => Driver, (driver) => driver.deletedBy)
+    deletedDrivers: Driver[];
 }

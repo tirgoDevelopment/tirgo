@@ -22,9 +22,6 @@ export class Transaction {
   @Column({ nullable: false, name: 'transaction_type' })
   transactionType: string;
 
-  @Column({ nullable: false, name: 'user_type' })
-  userType: string;
-  
   @Column({ nullable: true })
   comment: string;
   
@@ -33,6 +30,15 @@ export class Transaction {
   
   @Column({ default: false })
   rejected: boolean;
+
+  @Column({ default: false })
+  verified: boolean;
+
+  @Column({ default: false })
+  deleted: boolean;
+
+  @Column({ default: false })
+  canceled: boolean;
   
   @Column({ default: false, name: 'is_merchant' })
   isMerchant: boolean;
@@ -42,15 +48,6 @@ export class Transaction {
 
   @Column({ default: false, name: 'is_agent' })
   isAgent: boolean;
-
-  @Column({ default: false })
-  verified: boolean;
-  
-  @Column({ default: false })
-  deleted: boolean;
-
-  @Column({ default: false })
-  canceled: boolean;
   
   @ManyToOne(() => Currency, (currency) => currency.transactions)
   @JoinColumn({ name: 'currency_id' })

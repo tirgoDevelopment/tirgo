@@ -5,6 +5,8 @@ import { DriversController } from "./contollers/driver.controller";
 import { DriversService } from "./services/driver.service";
 import { TransportsService } from "./services/transport.service";
 import { DriverTransportsController } from "./contollers/transport.controller";
+import { DriversRepository } from "./repositories/drivers.repository";
+import { DataSource } from "typeorm";
 
 
 @Module({
@@ -19,9 +21,11 @@ import { DriverTransportsController } from "./contollers/transport.controller";
         SundryService,
         AwsService,
         DriversService,
-        TransportsService
+        TransportsService,
+        DriversRepository
       ],
       exports: [
+        DriversRepository,
         TypeOrmModule.forFeature([ Driver, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, OrderOffer ]),
       ]
 })

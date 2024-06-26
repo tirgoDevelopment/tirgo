@@ -167,6 +167,14 @@ export enum UserTypes {
   Agent = 'agent'
 }
 
+export enum UserStates {
+  Active = 'active',
+  Blocked = 'blocked',
+  Deleted = 'deleted',
+  Verified = 'verified',
+  Unverified = 'unverified'
+}
+
 export enum UsersRoleNames {
   SuperAdmin = 'Super admin',
   Agent = 'Agent',

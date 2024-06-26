@@ -33,7 +33,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get driver by id' })
-  @Get('driver-by')
+  @Get('driver-by-id')
   async getDriver(@Query('id') id: number, @Query('userId') userId: number) {
     return this.driversService.getDriverById(id, userId);
   }
@@ -42,36 +42,6 @@ export class DriversController {
   @Get('driver-by-phone')
   async getDriverByPhone(@Query('phone') phone: number) {
     return this.driversService.getDriverByPhone(phone);
-  }
-
-  @ApiOperation({ summary: 'Get drivers by merchant id' })
-  @Get('drivers-by-driver-merchant')
-  async getDriverByTms(
-    @Query('merchantId') id: number,
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string
-    ) {
-    return this.driversService.getDriverByDriverMerchant(id, sortBy, sortType, pageSize, pageIndex);
-  }
-
-  @ApiOperation({ summary: 'Get driver by agent id' })
-  @Get('by-agent')
-  async getDriverByAgent(
-    @Query('agentId') agentId: number,
-    @Query('driverId') driverId: number,
-    @Query('firstName') firstName: string,
-    @Query('createdAtFrom') createdAtFrom: string,
-    @Query('createdAtTo') createdAtTo: string,
-  ) {
-    return this.driversService.getDriverByAgentId(agentId, driverId, firstName, createdAtFrom, createdAtTo);
-  }
-
-  @ApiOperation({ summary: 'Get driver by merchant id' })
-  @Get('by-driver-merchant')
-  async getDriverByDriverMerchant(@Query('id') id: number) {
-    return this.driversService.getDriverByMerchantId(id);
   }
 
   @ApiOperation({ summary: 'Get all drivers' })
@@ -84,79 +54,54 @@ export class DriversController {
     @Query('driverId') driverId: number,
     @Query('firstName') firstName: string,
     @Query('phoneNumber') phoneNumber: string,
-    @Query('transportKindId') transportKindId: number,
+    @Query('transportKindId') transportKindId: string,
+    @Query('transportTypeId') transportTypeId: string,
     @Query('isSubscribed') isSubscribed: boolean,
     @Query('status') status: string,
+    @Query('userState') state: string,
     @Query('isVerified') isVerified: string,
     @Query('createdAtFrom') createdAtFrom: string,
     @Query('createdAtTo') createdAtTo: string,
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, isSubscribed, status, isVerified,  createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo)
+    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, transportTypeId, isSubscribed, status, state, isVerified,  createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo)
   }
 
-  @ApiOperation({ summary: 'Get all active drivers' })
-  @Get('active-drivers')
-  async getAllActiveDriver(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.driversService.getAllActiveDrivers(pageSize, pageIndex, sortBy, sortType);
-  }
-
-  @ApiOperation({ summary: 'Get all non-active drivers' })
-  @Get('non-active-drivers')
-  async getAllNonActiveDriver(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.driversService.getAllNonActiveDrivers(pageSize, pageIndex, sortBy, sortType);
-  }
-
-  @ApiOperation({ summary: 'Get all merchant archive drivers' })
-  @Get('merchant-archive-drivers')
+  @ApiOperation({ summary: 'Get all merchant drivers' })
+  @Get('merchant-drivers')
   async getMerchantDeletedDrivers(
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
     @Query('merchantId') merchantId: number,
+    @Query('userState') state: string,
   ) {
-    return this.driversService.getMerchantDeletedDrivers(pageSize, pageIndex, sortBy, sortType, merchantId);
+    return this.driversService.getMerchantDrivers(pageSize, pageIndex, sortBy, sortType, merchantId, state);
   }
 
-  @ApiOperation({ summary: 'Get all merchant active drivers' })
-  @Get('merchant-active-drivers')
-  async getMerchantActiveDrivers(
+  @ApiOperation({ summary: 'Get drivers by agent id' })
+  @Get('agent-drivers')
+  async getDriverByAgent(
+    @Query('agentId') agentId: number,
+    @Query('driverId') driverId: number,
+    @Query('firstName') firstName: string,
+    @Query('createdAtFrom') createdAtFrom: string,
+    @Query('createdAtTo') createdAtTo: string,
     @Query('pageSize') pageSize: string,
     @Query('pageIndex') pageIndex: string,
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
-    @Query('merchantId') merchantId: number,
+    @Query('userState') state: string
   ) {
-    return this.driversService.getMerchantActiveDrivers(pageSize, pageIndex, sortBy, sortType, merchantId);
-  }
-
-  @ApiOperation({ summary: 'Get all deleted drivers' })
-  @Get('deleted-drivers')
-  async getAllDeletedDriver(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.driversService.getAllDeletedDrivers(pageSize, pageIndex, sortBy, sortType);
+    return this.driversService.getDriverByAgentId(pageSize, pageIndex, sortBy, sortType, state, agentId, driverId, firstName, createdAtFrom, createdAtTo);
   }
 
   @ApiOperation({ summary: 'Delete driver' })
   @Delete()
-  async deleteDriver(@Query('id') id: number) {
-    return this.driversService.deleteDriver(id);
+  async deleteDriver(@Query('id') id: number, @Req() req: Request) {
+    return this.driversService.deleteDriver(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Block driver' })

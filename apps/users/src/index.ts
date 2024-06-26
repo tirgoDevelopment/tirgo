@@ -20,7 +20,7 @@ export {
   AccountDto,
   AgentDto
 } from "@app/shared-modules";
-export { BpmResponse, UserTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
+export { BpmResponse, UserTypes, UserStates, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
 export { AwsService, SundryService, CustomJwtService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';
 
 export {
