@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { AppendDriversToTmsDto, BadRequestException, BpmResponse, CreateStaffDto, Driver, DriverMerchant, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, Role, Staff, SundryService, User, UserTypes } from '..';
+import { Repository } from 'typeorm';
+import { BadRequestException, BpmResponse, CreateStaffDto, Driver, DriverMerchant, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, Role, Staff, SundryService, User, UserTypes } from '..';
 import { UpdateStaffDto } from '@app/shared-modules/entites/staffs/staff.dto';
 
 @Injectable()
@@ -177,34 +177,4 @@ export class StaffsService {
         }
     }
 
-    
-  async appendDriverToMerchant(dto: AppendDriversToTmsDto, user: User): Promise<BpmResponse> {
-    try {
-      if(user.userType !== UserTypes.Staff) {
-          throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-      const drivers: Driver[] = await this.driversRepository.find({ where: { id: In(dto.driverIds) }, relations: ['driverMerchant'] });
-      const isAppandedExists = drivers.some((el: any) => el.driverMerchant);
-      if(isAppandedExists) {
-        throw new BadRequestException(ResponseStauses.AlreadyAppended);
-      }
-      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: dto.driverMerchantId }, relations: ['drivers'] });
-      if(merchant.drivers?.length) {
-        merchant.drivers = [ ...merchant.drivers, ...drivers];
-      } else {
-        merchant.drivers = drivers;
-      }
-      await this.driverMerchantsRepository.save(merchant);
-      return new BpmResponse(true, null, null);
-    } catch (err: any) {
-      console.log(err)
-      if (err.name == 'EntityNotFoundError') {
-        throw new NotFoundException(ResponseStauses.UserNotFound);
-      } else if (err instanceof HttpException) {
-        throw err
-      } else {
-        throw new InternalErrorException(ResponseStauses.InternalServerError);
-      }
-    }
-  }
 }

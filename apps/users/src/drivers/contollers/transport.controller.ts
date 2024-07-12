@@ -13,7 +13,7 @@ export class DriverTransportsController {
     ) { }
 
     @ApiOperation({ summary: 'Create driver transport' })
-    @Post('transport')
+    @Post('add-transport')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
         { name: 'techPassportFrontFilePath', maxCount: 1}, 
@@ -34,7 +34,7 @@ export class DriverTransportsController {
     }
 
     @ApiOperation({ summary: 'Verify driver transport' })
-    @Post('transport/to-verification')
+    @Post('transport-verification')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
        { name: 'techPassportFrontFilePath', maxCount: 1}, 
@@ -55,7 +55,7 @@ export class DriverTransportsController {
     }
 
     @ApiOperation({ summary: 'Update driver transport' })
-    @Put('transport')
+    @Put('update-transport')
     @UsePipes(ValidationPipe)
     @UseInterceptors(FileFieldsInterceptor([
         { name: 'techPassportFrontFilePath', maxCount: 1}, 
@@ -76,7 +76,7 @@ export class DriverTransportsController {
     }
 
     @ApiOperation({ summary: 'Get driver transport by driver id' })
-    @Get('transport')
+    @Get('get-driver-transport')
     async getDriverTransprots(@Query('driverId') driverId: number, @Query('transportId') transportId: number) {
         return this.driverTransportsService.getTransportByDriverId(driverId, transportId);
     }

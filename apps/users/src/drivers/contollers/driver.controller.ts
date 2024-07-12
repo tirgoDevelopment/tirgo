@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Delete, Query, Patch, Put, Req, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { DriverDto } from '../..';
+import { AppendDriversToTmsDto, DriverDto } from '../..';
 import { DriversService } from '../services/driver.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
  
@@ -12,7 +12,7 @@ export class DriversController {
   ) { }
 
   @ApiOperation({ summary: 'Create driver' })
-  @Post('register')
+  @Post('create-driver')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'passport', maxCount: 1 },
@@ -27,7 +27,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Update driver' })
-  @Put()
+  @Put('update-driver')
   updateDriver(@Body() updateDriverDto: DriverDto) {
     return this.driversService.updateDriver(updateDriverDto)
   }
@@ -120,6 +120,13 @@ export class DriversController {
   @Post('append-driver-to-agent')
   async appendToAgent(@Body('driverId') driverId: number, @Body('agentId') agentId: number, @Req() req: Request) {
     return this.driversService.appendDriverToAgent(driverId, agentId, req['user']?.id)
+  }
+
+  @ApiOperation({ summary: 'Append drivers to tms' })
+  @Post('append-drivers-tms')
+  @UsePipes(ValidationPipe)
+  async appendDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Req() req: Request) {
+    return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
   }
 
 }
