@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
 
 @Injectable()
@@ -9,8 +9,7 @@ export class DriversService {
 
   constructor(
     @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
-    @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
-    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(DriverMerchant) private readonly driverMerchantsRepository: Repository<DriverMerchant>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
     private readonly driverRepository: DriversRepository,
@@ -20,7 +19,7 @@ export class DriversService {
 
   async createDriver(createDriverDto: DriverDto, user: User, files: { passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
     
-    const queryRunner = this.driversRepository.manager.connection.createQueryRunner();
+    const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
@@ -105,7 +104,7 @@ export class DriversService {
 
   async updateDriver(updateDriverDto: DriverDto): Promise<BpmResponse> {
     try {
-      const driver = await this.driversRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
+      const driver = await this.driverRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
       driver.firstName = updateDriverDto.firstName || driver.firstName;
       driver.lastName = updateDriverDto.lastName || driver.lastName;
       driver.email = updateDriverDto.email || driver.email;
@@ -119,7 +118,7 @@ export class DriversService {
       });
       driver.phoneNumbers = driverPhoneNumbers;
 
-      await this.driversRepository.update({ id: driver.id }, driver);
+      await this.driverRepository.update({ id: driver.id }, driver);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
     } catch (err: any) {
       console.log(err)
@@ -136,7 +135,7 @@ export class DriversService {
       return new BpmResponse(false, null, ['UserId id required']);
     }
     try {
-      const driver = await this.driversRepository
+      const driver = await this.driverRepository
         .createQueryBuilder('driver')
         .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
         .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
@@ -218,7 +217,7 @@ export class DriversService {
 
     try {
         // Query to retrieve driver by phone number
-        const driver = await this.driversRepository
+        const driver = await this.driverRepository
             .createQueryBuilder('driver')
             .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
             .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
@@ -345,7 +344,7 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const driver = await this.driversRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
+      const driver = await this.driverRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
       if (driver.deleted) {
         // Driver is already deleted
@@ -362,7 +361,7 @@ export class DriversService {
               phone.phoneNumber = '_' + phone.phoneNumber;
           });
       }
-      await this.driversRepository.save(driver);
+      await this.driverRepository.save(driver);
 
       return new BpmResponse(true, null, null);
     } catch (err: any) {
@@ -386,7 +385,7 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const driver = await this.driversRepository.findOneOrFail({ where: { id } });
+      const driver = await this.driverRepository.findOneOrFail({ where: { id } });
 
       if (driver.blocked) {
         // Driver is already blocked
@@ -398,7 +397,7 @@ export class DriversService {
       driver.blockReason = blockReason;
       driver.blockedBy = user;
 
-      await this.driversRepository.save(driver);
+      await this.driverRepository.save(driver);
 
         return new BpmResponse(true, null, null);
     } catch (err: any) {
@@ -422,7 +421,7 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const driver = await this.driversRepository.findOneOrFail({ where: { id } });
+      const driver = await this.driverRepository.findOneOrFail({ where: { id } });
 
       if (!driver.blocked) {
         // Driver is already active
@@ -434,7 +433,7 @@ export class DriversService {
       driver.blockedBy = null;
       driver.blocked = false;
 
-      await this.driversRepository.save(driver);
+      await this.driverRepository.save(driver);
 
         return new BpmResponse(true, null, null);
     } catch (err: any) {
@@ -450,6 +449,36 @@ export class DriversService {
     }
   }
 
+  async appendDriverToMerchant(dto: AppendDriversToTmsDto, user: User): Promise<BpmResponse> {
+    try {
+      if(user.userType !== UserTypes.Staff) {
+          throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      const drivers: Driver[] = await this.driverRepository.find({ where: { id: In(dto.driverIds) }, relations: ['driverMerchant'] });
+      const isAppandedExists = drivers.some((el: any) => el.driverMerchant);
+      if(isAppandedExists) {
+        throw new BadRequestException(ResponseStauses.AlreadyAppended);
+      }
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: dto.driverMerchantId }, relations: ['drivers'] });
+      if(merchant.drivers?.length) {
+        merchant.drivers = [ ...merchant.drivers, ...drivers];
+      } else {
+        merchant.drivers = drivers;
+      }
+      await this.driverMerchantsRepository.save(merchant);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
   async appendDriverToAgent(driverId: number, agentId: number, userId: number): Promise<BpmResponse> {
     try {
 
@@ -459,15 +488,15 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.AgentIdIsRequired);
       }
 
-      const isExists: boolean = await this.driversRepository.exists({ where: { id: driverId, agent: { id: agentId }, blocked: false, deleted: false } });
+      const isExists: boolean = await this.driverRepository.exists({ where: { id: driverId, agent: { id: agentId }, blocked: false, deleted: false } });
       if(isExists) {
         throw new BadRequestException(ResponseStauses.DriverAlreadyAppended)
       }
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, blocked: false, deleted: false } });
+      const driver: Driver = await this.driverRepository.findOneOrFail({ where: { id: driverId, blocked: false, deleted: false } });
       const agent: Agent = await this.agentsRepository.findOneOrFail({ where: { id: agentId, blocked: false, deleted: false } });
 
       driver.agent = agent;
-      await this.driversRepository.save(driver);
+      await this.driverRepository.save(driver);
 
       return new BpmResponse(true, null, null);
     } catch (err: any) {

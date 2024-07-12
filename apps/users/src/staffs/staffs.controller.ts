@@ -13,14 +13,14 @@ export class StaffsController {
 
 
   @ApiOperation({ summary: 'Create staff user' })
-  @Post('register')
+  @Post('create-staff')
   @UsePipes(ValidationPipe)
   createStaff(@Body() createStaffDto: CreateStaffDto) {
     return this.staffsService.createStaff(createStaffDto);
   }
 
   @ApiOperation({ summary: 'Update staff user' })
-  @Put()
+  @Put('update-staff')
   @UsePipes(ValidationPipe)
   updateStaff(@Body() updateStaffDto: UpdateStaffDto) {
     return this.staffsService.updateStaff(updateStaffDto);
@@ -39,7 +39,7 @@ export class StaffsController {
   }
 
   @ApiOperation({ summary: 'Get staff user by id' })
-  @Get('staff-by')
+  @Get('staff-by-id')
   getStaff(@Query('id') id: number) {
     return this.staffsService.getStaff(id);
   }
@@ -52,16 +52,9 @@ export class StaffsController {
   }
 
   @ApiOperation({ summary: 'Block staff user' })
-  @Patch()
+  @Patch('block-staff')
   @UsePipes(ValidationPipe)
   blockStaff(@Query('id') id: number, @Body() blockDto: { blockReason: string }, @Req() req: Request) {
     return this.staffsService.blockStaff(id, blockDto.blockReason, req['user']);
-  }
-
-  @ApiOperation({ summary: 'Append drivers to tms' })
-  @Post('append-drivers-tms')
-  @UsePipes(ValidationPipe)
-  async appendDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Req() req: Request) {
-    return this.staffsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
   }
 }
