@@ -12,7 +12,7 @@ export class ClientsController {
   ) { }
 
   @ApiOperation({ summary: 'Create client' })
-  @Post('register')
+  @Post('create-client')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'passport', maxCount: 1 },
@@ -26,7 +26,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Update client' })
-  @Put()
+  @Put('update-client')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'passport', maxCount: 1 },
@@ -39,7 +39,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client by id' })
-  @Get('client-by')
+  @Get('client-by-id')
   async getClient(@Query('id') id: number) {
     return this.clientsService.getClientById(id);
   }
@@ -51,7 +51,8 @@ export class ClientsController {
     @Query('pageIndex') pageIndex: string,
     @Query('sortBy') sortBy: string,
     @Query('sortType') sortType: string,
-    @Query('clientId') clientId: number, 
+    @Query('clientId') clientId: number,
+    @Query('state') state: string, 
     @Query('firstName') firstName: string, 
     @Query('phoneNumber') phoneNumber: string, 
     @Query('createdAtFrom') createdAtFrom: string, 
@@ -59,40 +60,7 @@ export class ClientsController {
     @Query('lastLoginFrom') lastLoginFrom: string,
     @Query('lastLoginTo') lastLoginTo: string
   ) {
-    return this.clientsService.getAllClients(pageSize, pageIndex, sortBy, sortType, clientId, firstName, phoneNumber, createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo);
-  }
-
-  @ApiOperation({ summary: 'Get all active clients' })
-  @Get('active-clients')
-  async getAllActiveClient(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.clientsService.getAllActiveClients(pageSize, pageIndex, sortBy, sortType);
-  }
-
-  @ApiOperation({ summary: 'Get all non-active clients' })
-  @Get('non-active-clients')
-  async getAllNonActiveClient(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.clientsService.getAllNonActiveClients(pageSize, pageIndex, sortBy, sortType);
-  }
-
-  @ApiOperation({ summary: 'Get all deleted clients' })
-  @Get('deleted-clients')
-  async getAllDeletedClient(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-  ) {
-    return this.clientsService.getAllDeletedClients(pageSize, pageIndex, sortBy, sortType);
+    return this.clientsService.getAllClients(pageSize, pageIndex, sortBy, sortType, state, clientId, firstName, phoneNumber, createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo);
   }
 
   @ApiOperation({ summary: 'Delete client' })

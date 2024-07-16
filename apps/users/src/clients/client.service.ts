@@ -1,26 +1,26 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
-import { AwsService, BadRequestException, BpmResponse, Client, ClientDto, ClientPhoneNumber, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, SundryService, User, UserTypes } from '..';
-import * as dateFns from 'date-fns'
+import { Repository } from 'typeorm';
+import { AwsService, BadRequestException, BpmResponse, Client, ClientDto, ClientPhoneNumber, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, SundryService, User, UserStates, UserTypes } from '..';
+import { ClientsRepository } from './repositories/client.repository';
 
 @Injectable()
 export class ClientsService {
 
   constructor(
-    @InjectRepository(Client) private readonly clientsRepository: Repository<Client>,
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private awsService: AwsService,
+    private readonly clientRepository: ClientsRepository,
     private sundriesService: SundryService
   ) { }
 
   async createClient(passportFile: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
-    const queryRunner = this.clientsRepository.manager.connection.createQueryRunner();
+    const queryRunner = this.clientRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     try {
       await queryRunner.startTransaction();
 
-      if(!(/[a-zA-Z]/.test(createClientDto.password) && /\d/.test(createClientDto.password))) {
+      if (!(/[a-zA-Z]/.test(createClientDto.password) && /\d/.test(createClientDto.password))) {
         throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
       }
 
@@ -32,36 +32,36 @@ export class ClientsService {
       client.email = createClientDto.email;
       client.citizenship = createClientDto.citizenship;
       client.additionalPhoneNumber = createClientDto.additionalPhoneNumber;
-     
 
-      if(user && user.userType == UserTypes.Staff) {
+
+      if (user && user.userType == UserTypes.Staff) {
         client.createdBy = user;
       }
 
-      if(typeof createClientDto.phoneNumbers == 'string') {
+      if (typeof createClientDto.phoneNumbers == 'string') {
         createClientDto.phoneNumbers = JSON.parse(createClientDto.phoneNumbers)
       }
-      if(!(createClientDto.phoneNumbers instanceof Array)) {
+      if (!(createClientDto.phoneNumbers instanceof Array)) {
         throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
       }
       const clientPhoneNumbers = createClientDto.phoneNumbers.map(phoneNumber => {
         const clientPhoneNumber = new ClientPhoneNumber();
         clientPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        clientPhoneNumber.client = client; 
+        clientPhoneNumber.client = client;
         return clientPhoneNumber;
       });
 
-        client.phoneNumbers = clientPhoneNumbers;
+      client.phoneNumbers = clientPhoneNumbers;
 
-        if(passportFile) {
+      if (passportFile) {
         const res = await this.awsService.uploadFile('client', passportFile);
-        if(!res) {
-            await queryRunner.rollbackTransaction();
-            throw new InternalErrorException(ResponseStauses.InternalServerError);
+        if (!res) {
+          await queryRunner.rollbackTransaction();
+          throw new InternalErrorException(ResponseStauses.InternalServerError);
         }
         client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
       }
-      await this.clientsRepository.save(client);
+      await this.clientRepository.save(client);
 
       await queryRunner.commitTransaction();
 
@@ -85,26 +85,26 @@ export class ClientsService {
 
   async updateClient(files: any, updateClientDto: ClientDto): Promise<BpmResponse> {
     try {
-      const client = await this.clientsRepository.findOneOrFail({ where: { id: updateClientDto.id } });
+      const client = await this.clientRepository.findOneOrFail({ where: { id: updateClientDto.id } });
       client.firstName = updateClientDto.firstName || client.firstName;
       client.lastName = updateClientDto.lastName || client.lastName;
       client.additionalPhoneNumber = updateClientDto.additionalPhoneNumber || client.additionalPhoneNumber;
       client.email = updateClientDto.email || client.email;
       client.citizenship = updateClientDto.citizenship || client.citizenship;
 
-      if(files && files.passport) {
+      if (files && files.passport) {
         client.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
         await this.awsService.uploadFile('client', files.passport[0]);
       }
 
-      const res = await this.clientsRepository.update({ id: client.id }, client);
+      const res = await this.clientRepository.update({ id: client.id }, client);
       if (res.affected) {
         return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
       } else {
         throw new InternalErrorException(ResponseStauses.NotModified);
       }
     } catch (err: any) {
-      if(err instanceof HttpException) {
+      if (err instanceof HttpException) {
         throw err;
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
@@ -117,187 +117,61 @@ export class ClientsService {
       return new BpmResponse(false, null, ['Id id required']);
     }
     try {
-      // const client = await this.clientsRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['phoneNumbers', 'user'] });
-      const client = await this.clientsRepository
-      .createQueryBuilder('client')
-      .leftJoinAndSelect('client.phoneNumbers', 'phoneNumber')
-      .leftJoin('client.user', 'user')
-      .addSelect('user.id')
-      .addSelect('user.userType')
-      .addSelect('user.lastLogin')
-      .where(`client.deleted = false AND client.id = ${id}`)
-      .getOneOrFail();
+      // const client = await this.clientRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['phoneNumbers', 'user'] });
+      const client = await this.clientRepository
+        .createQueryBuilder('client')
+        .leftJoinAndSelect('client.phoneNumbers', 'phoneNumber')
+        .leftJoin('client.user', 'user')
+        .addSelect('user.id')
+        .addSelect('user.userType')
+        .addSelect('user.lastLogin')
+        .where(`client.deleted = false AND client.id = ${id}`)
+        .getOneOrFail();
       if (!client) {
         throw new NotFoundException(ResponseStauses.UserNotFound);
       }
       return new BpmResponse(true, client, null);
     } catch (err: any) {
-      if(err instanceof HttpException) {
+      if (err instanceof HttpException) {
         throw err;
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
       }
     }
   }
-  
-  async getAllClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string, clientId: number, firstName: string, phoneNumber: string, createdFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
+
+  async getAllClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string, state: string, clientId: number, firstName: string, phoneNumber: string, createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
+
       const size = +pageSize || 10; // Number of items per page
       const index = +pageIndex || 1
       const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
       } else {
         sort['id'] = 'DESC'
       }
-      
-    const filter: any = { deleted: false };
 
-    if(clientId) {
-      filter.id = Number(clientId)
-    } 
-    if(firstName) {
-      filter.firstName = firstName;
-    }
-    if(phoneNumber) {
-      filter.phoneNumbers = { phoneNumber: phoneNumber.toString().replaceAll('+', '') }
-    }
-    if (createdFrom && createdAtTo) {
-      filter.createdAt = Between(
-        dateFns.parseISO(createdFrom),
-        dateFns.parseISO(createdAtTo)
-      );
-    } else if (createdFrom) {
-      filter.createdAt = MoreThanOrEqual(dateFns.parseISO(createdFrom));
-    } else if (createdAtTo) {
-      filter.createdAt = LessThanOrEqual(dateFns.parseISO(createdAtTo));
-    }
+      const filter: any = {
+        state,
+        clientId,
+        firstName,
+        phoneNumber,
+        createdAtFrom,
+        createdAtTo,
+        lastLoginFrom,
+        lastLoginTo
+      };
 
-    if (lastLoginFrom && lastLoginTo) {
-      filter.user = {lastLogin: Between(
-        dateFns.parseISO(lastLoginFrom),
-        dateFns.parseISO(lastLoginTo)
-      )};
-    } else if (lastLoginFrom) {
-      filter.user = { lastLogin: MoreThanOrEqual(dateFns.parseISO(lastLoginFrom))};
-    } else if (lastLoginTo) {
-      filter.user = { lastLogin: LessThanOrEqual(dateFns.parseISO(lastLoginTo)) };
-    }
-      const clients = await this.clientsRepository.find({ 
-        where: filter, 
-        relations: ['phoneNumbers', 'user'], 
-        order: sort,
-        skip: (index - 1) * size, // Skip the number of items based on the page number
-        take: size, 
-      });
-      if (!clients.length) {
+      const clients = await this.clientRepository.findAllClients(filter, sort, index, size)
+      if (!clients.data.length) {
         throw new NoContentException();
       }
-      const clientsCount = await this.clientsRepository.count({ where: filter })
-      const totalPagesCount = Math.ceil(clientsCount / size);
-      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
+      const totalPagesCount = Math.ceil(clients.count / size);
+      return new BpmResponse(true, { content: clients.data, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err)
-      if(err instanceof HttpException) {
-        throw err;
-      } else {
-        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-      }
-    }
-  }
-
-  async getAllActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
-    try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 1
-      const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
-      } else {
-        sort['id'] = 'DESC'
-      }
-
-      const clients = await this.clientsRepository.find({ 
-        where: { blocked: false, deleted: false }, 
-        relations: ['phoneNumbers', 'user'],
-        order: sort,
-        skip: (index - 1) * size, // Skip the number of items based on the page number
-        take: size, 
-      });
-      if (!clients.length) {
-        throw new NoContentException();
-      }
-      const clientsCount = await this.clientsRepository.count({ where: { blocked: false, deleted: false } })
-      const totalPagesCount = Math.ceil(clientsCount / size);
-      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
-    } catch (err: any) {
-      if(err instanceof HttpException) {
-        throw err;
-      } else {
-        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-      }
-    }
-  }
-
-  async getAllNonActiveClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
-    try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 1
-      const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
-      } else {
-        sort['id'] = 'DESC'
-      }
-
-      const clients = await this.clientsRepository.find({ 
-        where: { blocked: true, deleted: false }, 
-        relations: ['phoneNumbers', 'user'],
-        order: sort,
-        skip: (index - 1) * size, // Skip the number of items based on the page number
-        take: size, 
-      });
-      if (!clients.length) {
-        throw new NoContentException();
-      }
-      const clientsCount = await this.clientsRepository.count({ where: { blocked: true, deleted: false } })
-      const totalPagesCount = Math.ceil(clientsCount / size);
-      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
-    } catch (err: any) {
-      if(err instanceof HttpException) {
-        throw err;
-      } else {
-        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-      }
-    }
-  }
-
-  async getAllDeletedClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string): Promise<BpmResponse> {
-    try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 1
-      const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
-      } else {
-        sort['id'] = 'DESC'
-      }
-
-      const clients = await this.clientsRepository.find({ 
-        where: { deleted: true }, 
-        relations: ['phoneNumbers', 'user'],
-        order: sort,
-        skip: (index - 1) * size, // Skip the number of items based on the page number
-        take: size, 
-      });
-      if (!clients.length) {
-        throw new NoContentException();
-      }
-      const clientsCount = await this.clientsRepository.count({ where: { deleted: false } })
-      const totalPagesCount = Math.ceil(clientsCount / size);
-      return new BpmResponse(true, { content: clients, totalPagesCount, pageIndex: index, pageSize: size }, null);
-    } catch (err: any) {
-      if(err instanceof HttpException) {
+      if (err instanceof HttpException) {
         throw err;
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
@@ -307,49 +181,49 @@ export class ClientsService {
 
   async deleteClient(id: number): Promise<BpmResponse> {
     try {
-        if (!id) {
-            return new BpmResponse(false, null, ['Id is required']);
-        }
-        const client = await this.clientsRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
+      if (!id) {
+        return new BpmResponse(false, null, ['Id is required']);
+      }
+      const client = await this.clientRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
-        if (client.deleted) {
-            // Client is already deleted
-            throw new BadRequestException(ResponseStauses.AlreadyDeleted);
-        }
+      if (client.deleted) {
+        // Client is already deleted
+        throw new BadRequestException(ResponseStauses.AlreadyDeleted);
+      }
 
-        client.deleted = true;
+      client.deleted = true;
 
-        // Update phoneNumbers by adding underscores
-        if (client.phoneNumbers) {
-            client.phoneNumbers.forEach(phone => {
-                phone.phoneNumber = '_' + phone.phoneNumber;
-            });
-        }
+      // Update phoneNumbers by adding underscores
+      if (client.phoneNumbers) {
+        client.phoneNumbers.forEach(phone => {
+          phone.phoneNumber = '_' + phone.phoneNumber;
+        });
+      }
 
-        await this.clientsRepository.save(client);
+      await this.clientRepository.save(client);
 
-        return new BpmResponse(true, null, null);
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
-        if (err.name == 'EntityNotFoundError') {
-            // Client not found
-            throw new NoContentException();
-        } else if (err instanceof HttpException) {
-            throw err
-        } else {
-            // Other error (handle accordingly)
-            throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-        }
+      if (err.name == 'EntityNotFoundError') {
+        // Client not found
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
     }
-}
+  }
 
   async restoreClient(id: number): Promise<BpmResponse> {
     try {
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
-      const client = await this.clientsRepository.findOneOrFail({ where: { id } });
+      const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
-      const updateResult = await this.clientsRepository.update({ id: client.id }, { deleted: false });
+      const updateResult = await this.clientRepository.update({ id: client.id }, { deleted: false });
 
       if (updateResult.affected > 0) {
         // Update was successful
@@ -362,24 +236,24 @@ export class ClientsService {
       if (err.name == 'EntityNotFoundError') {
         // Client not found
         throw new NoContentException();
-      } else if(err instanceof HttpException) {
+      } else if (err instanceof HttpException) {
         throw err
       } else {
         // Other error (handle accordingly)
-       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
       }
     }
   }
 
   async blockClient(id: number, blockReason: string, user: User): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Staff) {
+      if (user.userType !== UserTypes.Staff) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
-      const client = await this.clientsRepository.findOneOrFail({ where: { id } });
+      const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
       if (client.blocked) {
         // Client is already blocked
@@ -391,30 +265,30 @@ export class ClientsService {
       client.blockedAt = new Date();
       client.blockedBy = user;
 
-      await this.clientsRepository.save(client);
+      await this.clientRepository.save(client);
       return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Client not found
         throw new NoContentException();
-      } else if(err instanceof HttpException) {
+      } else if (err instanceof HttpException) {
         throw err
       } else {
         // Other error (handle accordingly)
-       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
       }
     }
   }
 
   async activateClient(id: number, user: User): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Staff) {
+      if (user.userType !== UserTypes.Staff) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
       if (!id) {
         return new BpmResponse(false, null, ['Id is required']);
       }
-      const client = await this.clientsRepository.findOneOrFail({ where: { id } });
+      const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
       if (!client.blocked) {
         // Client is already unblocked
@@ -426,18 +300,18 @@ export class ClientsService {
       client.blockedAt = null;
       client.blockedBy = null;
 
-      await this.clientsRepository.save(client);
+      await this.clientRepository.save(client);
 
-        return new BpmResponse(true, null, null);
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Client not found
         throw new NoContentException();
-      } else if(err instanceof HttpException) {
+      } else if (err instanceof HttpException) {
         throw err
       } else {
         // Other error (handle accordingly)
-       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
       }
     }
   }
