@@ -3,6 +3,7 @@ import { AwsService, Client, SundryService, User } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ClientsController } from "./client.controller";
 import { ClientsService } from "./client.service";
+import { ClientsRepository } from "./repositories/client.repository";
 
 
 @Module({
@@ -15,10 +16,12 @@ import { ClientsService } from "./client.service";
       providers: [
         SundryService,
         AwsService,
-        ClientsService
+        ClientsService,
+        ClientsRepository
       ],
       exports: [
         ClientsService,
+        ClientsRepository,
         TypeOrmModule.forFeature([ Client, User ]),
       ]
 })
