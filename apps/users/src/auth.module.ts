@@ -18,6 +18,7 @@ import { RabbitMQSenderService } from './services/rabbitmq-sender.service';
 import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
 import { SseModule } from './sse/sse.module';
 import { CustomSwaggerModule } from '@app/shared-modules';
+import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { CustomSwaggerModule } from '@app/shared-modules';
     LoginService,
     SmsService,
     RabbitMQSenderService,
-    RabbitMQConsumerService
+    RabbitMQConsumerService,
+    ChatGateway
   ],
 })
 export class UsersModule {

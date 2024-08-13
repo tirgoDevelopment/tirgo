@@ -101,6 +101,13 @@ export class DriverMerchant {
   @Column({ default: false })
   deleted?: boolean;
 
+  @Column({ name: "deleted_at", nullable: true })
+  deletedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.deletedDriverMerchants)
+  @JoinColumn({ name: 'deleted_by' })
+  deletedBy: User;
+
   @Column({ name: "verified_at", nullable: true })
   verifiedAt?: Date;
 

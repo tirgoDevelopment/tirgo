@@ -2,6 +2,8 @@ import {
     Client,
     UserFile,
     Driver, DriverPhoneNumber, CargoTypeGroup,
+    DriverService,
+    DriverServiceDto,
     CargoStatus,
     Currency,
     Subscription,
@@ -27,5 +29,7 @@ export { CargoStatusDto, CargoPackageDto, CargoTypeGroupDto, CargoTypeDto, Curre
 export {
     CargoType, CargoTypeGroup, OrderOffer,
     Currency, Subscription, Role, Permission, RoleDto,
+    DriverService,
+    DriverServiceDto,
     Agent, AgentBankAccount, TransportType, TransportKind, CargoStatus, User, SubscriptionPayment, CargoPackage, CargoLoadMethod, UserFile, AuthModule,
 };

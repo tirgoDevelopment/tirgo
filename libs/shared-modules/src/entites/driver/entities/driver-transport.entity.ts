@@ -102,11 +102,11 @@ export class DriverTransport {
   @ManyToMany(() => CargoLoadMethod)
   @JoinTable()
   cargoLoadMethods: CargoLoadMethod[];
-
+  
   @ManyToOne(() => Driver, driver => driver.driverTransports)
   @JoinColumn({ name: 'driver_id' })
   driver?: Driver;
-
+  
   @OneToOne(() => TransportVerification, { cascade: true })
   @JoinColumn({ name: 'transport_verification_id' })
   transportVerification: TransportVerification;
