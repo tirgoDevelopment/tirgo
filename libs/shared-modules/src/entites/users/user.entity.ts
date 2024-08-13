@@ -125,4 +125,13 @@ export class User {
     // relations belongs to deleted by user
     @OneToMany(() => Driver, (driver) => driver.deletedBy)
     deletedDrivers: Driver[];
+
+    @OneToMany(() => Client, (client) => client.deletedBy)
+    deletedClients: Client[];
+
+    @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.deletedBy)
+    deletedDriverMerchants: DriverMerchant[];
+
+    @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.deletedBy)
+    deletedClientMerchants: ClientMerchant[];
 }

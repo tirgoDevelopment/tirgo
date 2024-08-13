@@ -35,6 +35,10 @@ export class Client {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
+  @ManyToOne(() => User, (user) => user.createdClients) 
+  @JoinColumn({ name: 'created_by' })
+  createdBy: User;
+
   @Column({ default: false })
   blocked: boolean;
 
@@ -48,12 +52,15 @@ export class Client {
   @JoinColumn({ name: 'blocked_by' })
   blockedBy: User;
 
-  @ManyToOne(() => User, (user) => user.createdClients) 
-  @JoinColumn({ name: 'created_by' })
-  createdBy: User;
-
   @Column({ default: false })
   deleted: boolean;
+
+  @Column({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.deletedClients) 
+  @JoinColumn({ name: 'deleted_by' })
+  deletedBy: User;
 
   @OneToMany(() => Order, order => order.client)
   orders: Order[];

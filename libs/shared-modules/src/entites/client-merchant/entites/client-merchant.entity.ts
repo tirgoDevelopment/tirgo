@@ -60,7 +60,7 @@ export class ClientMerchant {
   @Column({ nullable: true, name: 'supervisor_first_name' })
   supervisorFirstName?: string;
 
-  @Column({ nullable: true, name: 'speervisor_last_name' })
+  @Column({ nullable: true, name: 'supervisor_last_name' })
   supervisorLastName?: string;
 
   @Column({ nullable: true, name: 'egal_address' })
@@ -122,6 +122,13 @@ export class ClientMerchant {
 
   @Column({ default: false })
   deleted?: boolean;
+
+  @Column({ name: "deleted_at", nullable: true })
+  deletedAt?: Date;
+
+  @ManyToOne(() => User, (user) => user.deletedClientMerchants)
+  @JoinColumn({ name: 'deleted_by' })
+  deletedBy: User;
 
   @OneToMany(() => ClientMerchantUser, clientMerchantUser => clientMerchantUser.clientMerchant)
   users: ClientMerchantUser[];
