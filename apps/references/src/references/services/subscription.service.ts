@@ -101,7 +101,7 @@ export class SubscriptionsService {
 
   async getAllSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: false }, relations: ['currency'] });
+      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: false }, relations: ['currency'], order: { id: 'DESC' } });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -117,7 +117,7 @@ export class SubscriptionsService {
 
   async getAllActiveSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { active: true, deleted: false }, relations: ['currency']  });
+      const subscriptions = await this.subscriptionRepository.find({ where: { active: true, deleted: false }, relations: ['currency'], order: { id: 'DESC' }  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -133,7 +133,7 @@ export class SubscriptionsService {
 
   async getAllNonActiveSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { active: false, deleted: false }, relations: ['currency']  });
+      const subscriptions = await this.subscriptionRepository.find({ where: { active: false, deleted: false }, relations: ['currency'], order: { id: 'DESC' }  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
@@ -149,7 +149,7 @@ export class SubscriptionsService {
 
   async getAllDeletedSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true }, relations: ['currency']  });
+      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true }, relations: ['currency'], order: { id: 'DESC' }  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }
