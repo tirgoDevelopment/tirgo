@@ -63,7 +63,7 @@ export class CargoPackagesService {
 
     async getAllCargoPackages(): Promise<BpmResponse> {
         try {
-            const cargoPackages = await this.cargoPackagesRepository.find({ where: { deleted: false } });
+            const cargoPackages = await this.cargoPackagesRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
             if (!cargoPackages.length) {
                 throw new NoContentException();
             }

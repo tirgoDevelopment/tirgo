@@ -73,7 +73,7 @@ export class CurrenciesService {
 
     async getAllCurrencies(): Promise<BpmResponse> {
         try {
-            const currencys = await this.currencysRepository.find({ where: { deleted: false } });
+            const currencys = await this.currencysRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
             if (!currencys.length) {
                 throw new NoContentException();
             }

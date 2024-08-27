@@ -197,7 +197,7 @@ export class RolesService {
 
     async getAllPermissions(): Promise<BpmResponse> {
         try {
-            const permissions = await this.permissionsRepository.find({ where: { deleted: false } });
+            const permissions = await this.permissionsRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
             if (!permissions.length) {
                 throw new NoContentException();
             }

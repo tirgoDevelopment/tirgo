@@ -77,7 +77,7 @@ export class CargoTypesService {
 
     async getAllCargoTypes(): Promise<BpmResponse> {
         try {
-            const cargoTypes = await this.cargoTypesRepository.find({ where: { deleted: false }, relations: ['group'] });
+            const cargoTypes = await this.cargoTypesRepository.find({ where: { deleted: false }, relations: ['group'], order: { id: 'DESC' } });
             if (!cargoTypes.length) {
                 throw new NoContentException();
             }
