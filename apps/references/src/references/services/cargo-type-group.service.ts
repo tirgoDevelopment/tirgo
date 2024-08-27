@@ -27,7 +27,7 @@ export class CargoTypeGroupsService {
     async updateCargoTypeGroup(updateCargoTypeGroupDto: CargoTypeGroupDto): Promise<BpmResponse> {
 
         try {
-            const cargoTypeGroup: CargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id: updateCargoTypeGroupDto.id } })
+            const cargoTypeGroup: CargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id: updateCargoTypeGroupDto.id }, order: { id: 'DESC' } });
             cargoTypeGroup.name = updateCargoTypeGroupDto.name;
             cargoTypeGroup.codeTNVED = updateCargoTypeGroupDto.codeTNVED;
 
@@ -75,7 +75,9 @@ export class CargoTypeGroupsService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const cargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.cargoTypeGroupsRepository.softDelete(id);
+            cargoTypeGroup.deleted = true;
+
+            await this.cargoTypeGroupsRepository.save(cargoTypeGroup);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {
