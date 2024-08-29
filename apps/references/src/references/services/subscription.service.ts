@@ -149,7 +149,7 @@ export class SubscriptionsService {
 
   async getAllDeletedSubscriptions(): Promise<BpmResponse> {
     try {
-      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true }, relations: ['currency'], order: { id: 'DESC' }  });
+      const subscriptions = await this.subscriptionRepository.find({ where: { deleted: true }, relations: ['currency'], order: { createdAt: 'DESC' }  });
       if (!subscriptions.length) {
         throw new NoContentException();
       }

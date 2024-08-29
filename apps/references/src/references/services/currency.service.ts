@@ -39,7 +39,7 @@ export class CurrenciesService {
             currency.name = updateCurrencyDto.name;
             currency.code = updateCurrencyDto.code;
 
-            await this.currencysRepository.update({ id: currency.id }, currency);
+            await this.currencysRepository.save(currency);
 
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
         } catch (err: any) {
@@ -73,7 +73,7 @@ export class CurrenciesService {
 
     async getAllCurrencies(): Promise<BpmResponse> {
         try {
-            const currencys = await this.currencysRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
+            const currencys = await this.currencysRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
             if (!currencys.length) {
                 throw new NoContentException();
             }

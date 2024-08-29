@@ -71,7 +71,7 @@ export class DriverServicesService {
 
     async getAllDriverServices(): Promise<BpmResponse> {
         try {
-            const driverSevices = await this.driverServicesRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
+            const driverSevices = await this.driverServicesRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
             if (!driverSevices.length) {
                 throw new NoContentException();
             }
