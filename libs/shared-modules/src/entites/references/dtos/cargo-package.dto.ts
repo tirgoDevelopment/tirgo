@@ -8,7 +8,4 @@ export class CargoPackageDto {
   @IsNotEmpty()
   name: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  code: number;
 }
