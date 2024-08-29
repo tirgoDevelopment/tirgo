@@ -78,6 +78,7 @@ export class TransportTypesService {
             await this.transportTypesRepository.softDelete(id);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
+            console.log(err)
             if (err.name == 'EntityNotFoundError') {
                 // Client not found
                 throw new NoContentException();

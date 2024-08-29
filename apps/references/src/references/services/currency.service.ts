@@ -89,7 +89,8 @@ export class CurrenciesService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const currency = await this.currencysRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.currencysRepository.softDelete(id);
+            currency.deleted = true;
+            await this.currencysRepository.save(currency);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {
