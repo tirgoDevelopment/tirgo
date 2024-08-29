@@ -75,7 +75,8 @@ export class TransportTypesService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const transportType = await this.transportTypesRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.transportTypesRepository.softDelete(id);
+            transportType.deleted = true;
+            await this.transportTypesRepository.save(transportType);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             console.log(err)
