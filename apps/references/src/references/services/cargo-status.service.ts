@@ -67,7 +67,7 @@ export class CargoStatusesService {
 
     async getAllCargoStatuses(): Promise<BpmResponse> {
         try {
-            const cargoStatuss = await this.cargoStatusesRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
+            const cargoStatuss = await this.cargoStatusesRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
             if (!cargoStatuss.length) {
                 throw new NoContentException();
             }

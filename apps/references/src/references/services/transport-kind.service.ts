@@ -59,7 +59,7 @@ export class TransportKindsService {
 
     async getAllTransportKinds(): Promise<BpmResponse> {
         try {
-            const transportKinds = await this.transportKindsRepository.find({ where: { deleted: false }, relations: ['createdBy'], order: { id: 'DESC' } });
+            const transportKinds = await this.transportKindsRepository.find({ where: { deleted: false }, relations: ['createdBy'], order: { createdAt: 'DESC' } });
             if (!transportKinds.length) {
                 throw new NoContentException();
             }

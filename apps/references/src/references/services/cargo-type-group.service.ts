@@ -74,7 +74,7 @@ export class CargoTypeGroupsService {
             if (!id) {
                 return new BpmResponse(false, null, ['Id is required']);
             }
-            const cargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id, deleted: false }, order: { id: 'DESC' } });
+            const cargoTypeGroup = await this.cargoTypeGroupsRepository.findOneOrFail({ where: { id, deleted: false }, order: { createdAt: 'DESC' } });
             cargoTypeGroup.deleted = true;
 
             await this.cargoTypeGroupsRepository.save(cargoTypeGroup);

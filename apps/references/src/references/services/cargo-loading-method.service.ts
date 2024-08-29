@@ -63,7 +63,7 @@ export class CargoLoadingMethodsService {
 
     async getAllCargoLoadingMethods(): Promise<BpmResponse> {
         try {
-            const cargoLoadingMethods = await this.cargoLoadingMethodsRepository.find({ where: { deleted: false }, order: { id: 'DESC' } });
+            const cargoLoadingMethods = await this.cargoLoadingMethodsRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
             if (!cargoLoadingMethods.length) {
                 throw new NoContentException();
             }
