@@ -8,6 +8,7 @@ import {
   ValidationPipe,
   Put,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { SubscriptionsService } from '../services/subscription.service';
 import { SubscriptionDto } from '../..';
@@ -59,7 +60,7 @@ export class SubscriptionsController {
     return this.subscriptionsService.getAllDeletedSubscriptions();
   }
 
-  @Patch('delete')
+  @Delete()
   async deleteSubscription(@Query('id') id: number) {
     return this.subscriptionsService.deleteSubscription(id);
   }
