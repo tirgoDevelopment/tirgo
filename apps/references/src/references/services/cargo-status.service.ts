@@ -83,7 +83,8 @@ export class CargoStatusesService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const cargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.cargoStatusesRepository.softDelete(id);
+            cargoStatus.deleted = true;
+            await this.cargoStatusesRepository.save(cargoStatus);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {

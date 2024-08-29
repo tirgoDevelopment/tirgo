@@ -79,7 +79,8 @@ export class CargoPackagesService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const cargoPackage = await this.cargoPackagesRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.cargoPackagesRepository.softDelete(id);
+            cargoPackage.deleted = true;
+            await this.cargoPackagesRepository.save(cargoPackage);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {

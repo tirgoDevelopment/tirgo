@@ -75,7 +75,8 @@ export class TransportKindsService {
                 return new BpmResponse(false, null, ['Id is required']);
             }
             const transportKind = await this.transportKindsRepository.findOneOrFail({ where: { id, deleted: false } });
-            await this.transportKindsRepository.softDelete(id);
+            transportKind.deleted = true;
+            await this.transportKindsRepository.save(transportKind);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {

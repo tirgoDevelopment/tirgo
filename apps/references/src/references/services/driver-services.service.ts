@@ -95,16 +95,9 @@ export class DriverServicesService {
             throw new BadRequestException(ResponseStauses.IdIsRequired);
           }
           const driverService = await this.driverServicesRepository.findOneOrFail({ where: { id } });
-    
-          const updateResult = await this.driverServicesRepository.delete({ id: driverService.id });
-
-          if (updateResult.affected > 0) {
-            // Update was successful
+          driverService.deleted = true;
+          const updateResult = await this.driverServicesRepository.save(driverService);
             return new BpmResponse(true, null, null);
-          } else {
-            // Update did not affect any rows
-            throw new InternalErrorException(ResponseStauses.NotModified);
-          }
         } catch (err: any) {
           if (err instanceof EntityNotFoundError) {
             // Subscription not found
