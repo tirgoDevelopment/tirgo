@@ -51,15 +51,19 @@ export class ClientsRepository extends Repository<Client> {
         switch (filter.state) {
             case UserStates.Active:
                 queryBuilder.andWhere('c.blocked = false');
+                queryBuilder.andWhere('c.deleted = false');
                 break;
             case UserStates.Blocked:
                 queryBuilder.andWhere('c.blocked = true');
+                queryBuilder.andWhere('c.deleted = false');
                 break;
             case UserStates.Verified:
                 queryBuilder.andWhere('c.verified = true');
+                queryBuilder.andWhere('c.deleted = false');
                 break;
             case UserStates.Unverified:
                 queryBuilder.andWhere('c.verified = false');
+                queryBuilder.andWhere('c.deleted = false');
                 break;
             case UserStates.Deleted:
                 queryBuilder.andWhere('c.deleted = true');
