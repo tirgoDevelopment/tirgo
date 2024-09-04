@@ -1,6 +1,7 @@
 import { Client, Agent, AgentBankAccount, UserFile, Driver, DriverPhoneNumber, CargoTypeGroup, CargoStatus, Currency, Subscription, Role, Permission, ClientMerchant, ClientMerchantUser, ClientBankAccount, DriverMerchant, DriverMerchantUser, DriverBankAccount, OrderOffer, Account, Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber } from "@app/shared-modules";
 export {
   ClientDto,
+  UpdateClientDto,
   DriverDto,
   ClientMerchantDto,
   CreateClientMerchantDto,

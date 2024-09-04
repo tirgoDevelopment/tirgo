@@ -37,6 +37,36 @@ export class ClientDto {
 
 }
 
+export class UpdateClientDto {
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty({ required: false })
+  phoneNumbers: string[];
+  
+  @ApiProperty({ required: false })
+  additionalPhoneNumber?: string;
+
+  @ApiProperty({ required: false })
+  citizenship?: string;
+
+  @ApiProperty({ required: false })
+  pasportFilePath?: string;
+
+  @ApiProperty({ required: false })
+  email?: string;
+
+  id?: number;
+
+}
+
 export class QueryDto {
 
   @IsNotEmpty()

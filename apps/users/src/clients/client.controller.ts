@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Delete, Patch, Put, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ClientsService } from './client.service';
-import { ClientDto } from '..';
+import { ClientDto, UpdateClientDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Clients')
@@ -33,7 +33,7 @@ export class ClientsController {
   ]))
   async updateClient(
     @UploadedFiles() files: { passport?: any[] },
-    @Body() clientData: ClientDto,
+    @Body() clientData: UpdateClientDto,
   ) {
     return this.clientsService.updateClient(files, clientData)
   }
