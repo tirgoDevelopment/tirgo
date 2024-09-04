@@ -142,9 +142,10 @@ export class ClientsService {
 
   async getAllClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string, state: string, clientId: number, firstName: string, phoneNumber: string, createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
     try {
-
+      console.log({pageSize, pageIndex})
       const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 1
+      const index = +pageIndex || 0;
+      console.log({size, index})
       const sort: any = {};
       if (sortBy && sortType) {
         sort[sortBy] = sortType;
