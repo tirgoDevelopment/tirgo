@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { AwsService, Client, SundryService, User } from "..";
+import { AwsService, Client, Order, SundryService, User } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ClientsController } from "./client.controller";
 import { ClientsService } from "./client.service";
@@ -8,7 +8,7 @@ import { ClientsRepository } from "./repositories/client.repository";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ Client, User ]),
+        TypeOrmModule.forFeature([ Client, User, Order ]),
       ],
       controllers: [
         ClientsController
@@ -22,7 +22,7 @@ import { ClientsRepository } from "./repositories/client.repository";
       exports: [
         ClientsService,
         ClientsRepository,
-        TypeOrmModule.forFeature([ Client, User ]),
+        TypeOrmModule.forFeature([ Client, User, Order ]),
       ]
 })
 export class ClientsModule {

@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AwsService, BadRequestException, BpmResponse, Client, ClientDto, ClientPhoneNumber, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, SundryService, User, UserStates, UserTypes } from '..';
+import { AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, User, UserStates, UserTypes } from '..';
 import { ClientsRepository } from './repositories/client.repository';
 
 @Injectable()
@@ -9,6 +9,7 @@ export class ClientsService {
 
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     private awsService: AwsService,
     private readonly clientRepository: ClientsRepository,
     private sundriesService: SundryService
@@ -127,11 +128,26 @@ export class ClientsService {
         .addSelect('user.lastLogin')
         .where(`client.deleted = false AND client.id = ${id}`)
         .getOneOrFail();
-      if (!client) {
-        throw new NotFoundException(ResponseStauses.UserNotFound);
-      }
+
+
+        const ordersInfo = await this.ordersRepository
+        .createQueryBuilder('o')
+        .select([
+          'COUNT(o.id) AS "totalOrders"',
+          `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Completed} THEN 1 ELSE 0 END) AS "completedOrders"`,
+          `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Canceled} THEN 1 ELSE 0 END) AS "cancelledOrders"`
+        ])
+        .leftJoin('o.client', 'client')
+        .leftJoin('o.cargoStatus', 'cargoStatus')
+        .where('o.deleted = false')
+        .andWhere('client.id = :id', { id })
+        .getRawOne();
+      
+        console.log(ordersInfo)
+        client['ordersInfo'] = ordersInfo;
       return new BpmResponse(true, client, null);
     } catch (err: any) {
+      console.log(err)
       if (err instanceof HttpException) {
         throw err;
       } else {
