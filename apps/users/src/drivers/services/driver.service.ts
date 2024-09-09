@@ -177,21 +177,21 @@ export class DriversService {
       driver['completedOrdersCount'] = closdOrdersCount + completedOrdersCount;
 
 
-      const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
-        .select([
-          't.id as id',
-          't.amount as amount',
-          't.rejected as rejected',
-          't.verified as verified',
-          't.transaction_type AS "transctionType"',
-          't.user_type AS "userType"',
-          't.comment as comment',
-          't.created_at AS "createdAt"',
-          'c.name AS "currencyName"'
-        ])
-        .leftJoin(Currency, 'c', 'c.id = t.currency_id')
-        .where(`t.created_by = ${userId}`);
-      driver['transactions'] = await queryBuilder.getRawMany();
+      // const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
+      //   .select([
+      //     't.id as id',
+      //     't.amount as amount',
+      //     't.rejected as rejected',
+      //     't.verified as verified',
+      //     't.transaction_type AS "transctionType"',
+      //     't.user_type AS "userType"',
+      //     't.comment as comment',
+      //     't.created_at AS "createdAt"',
+      //     'c.name AS "currencyName"'
+      //   ])
+      //   .leftJoin(Currency, 'c', 'c.id = t.currency_id')
+      //   .where(`t.created_by = ${userId}`);
+      // driver['transactions'] = await queryBuilder.getRawMany();
       const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
       driver['isBusy'] = isDriverBusy;
       return new BpmResponse(true, driver, null);
