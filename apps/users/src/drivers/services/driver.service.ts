@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, User, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
 
 @Injectable()
@@ -102,7 +102,7 @@ export class DriversService {
     }
   }
 
-  async updateDriver(updateDriverDto: DriverDto): Promise<BpmResponse> {
+  async updateDriver(updateDriverDto: UpdateDriverDto): Promise<BpmResponse> {
     try {
       const driver = await this.driverRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
       driver.firstName = updateDriverDto.firstName || driver.firstName;
@@ -118,7 +118,7 @@ export class DriversService {
       });
       driver.phoneNumbers = driverPhoneNumbers;
 
-      await this.driverRepository.update({ id: driver.id }, driver);
+      await this.driverRepository.save(driver);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
     } catch (err: any) {
       console.log(err)

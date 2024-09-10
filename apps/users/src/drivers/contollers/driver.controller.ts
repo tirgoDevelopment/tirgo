@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Delete, Query, Patch, Put, Req, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { AppendDriversToTmsDto, DriverDto } from '../..';
+import { AppendDriversToTmsDto, DriverDto, UpdateDriverDto } from '../..';
 import { DriversService } from '../services/driver.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
  
@@ -25,10 +25,10 @@ export class DriversController {
   ) {
     return this.driversService.createDriver(driverData, req['user'], files)
   }
-
   @ApiOperation({ summary: 'Update driver' })
+  @UsePipes(ValidationPipe)
   @Put('update-driver')
-  updateDriver(@Body() updateDriverDto: DriverDto) {
+  updateDriver(@Body() updateDriverDto: UpdateDriverDto) {
     return this.driversService.updateDriver(updateDriverDto)
   }
 
