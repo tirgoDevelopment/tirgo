@@ -102,7 +102,7 @@ export class DriversService {
     }
   }
 
-  async updateDriver(updateDriverDto: UpdateDriverDto): Promise<BpmResponse> {
+  async updateDriver(updateDriverDto: UpdateDriverDto, files: any): Promise<BpmResponse> {
     try {
       const driver = await this.driverRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
       driver.firstName = updateDriverDto.firstName || driver.firstName;
@@ -117,6 +117,25 @@ export class DriversService {
         return driverPhoneNumber;
       });
       driver.phoneNumbers = driverPhoneNumbers;
+            
+      if(files) {
+        const uploads: any = [];
+        if(files.passport) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          uploads.push(files.passport[0]);
+        } 
+        if(files.driverLicense) {
+          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
+          uploads.push(files.driverLicense[0])
+        }
+
+        // Upload files to AWS
+        const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+        if(res.includes(false)) {
+          // await queryRunner.rollbackTransaction();
+          throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+        }
+      }
 
       await this.driverRepository.save(driver);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
