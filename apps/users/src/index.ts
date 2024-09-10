@@ -3,6 +3,7 @@ export {
   ClientDto,
   UpdateClientDto,
   DriverDto,
+  UpdateDriverDto,
   ClientMerchantDto,
   CreateClientMerchantDto,
   CreateInStepClientMerchantDto,

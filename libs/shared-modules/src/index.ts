@@ -31,7 +31,7 @@ export { ClientDto, UpdateClientDto } from "./entites/clients/client.dto";
 export { Driver } from "./entites/driver/entities/driver.entity";
 export { DriverService } from "./entites/driver/entities/driver-service.entity";
 export { DriverPhoneNumber } from "./entites/driver/entities/driver-phonenumber.entity";
-export { DriverDto } from "./entites/driver/dtos/driver.dto";
+export { DriverDto, UpdateDriverDto } from "./entites/driver/dtos/driver.dto";
 export { DriverServiceDto } from "./entites/driver/dtos/driver-service.dto";
 export { DriverTransport } from "./entites/driver/entities/driver-transport.entity";
 export { DriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
