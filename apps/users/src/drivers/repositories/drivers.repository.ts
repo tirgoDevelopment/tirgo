@@ -85,6 +85,9 @@ export class DriversRepository extends Repository<Driver> {
             case UserStates.Deleted:
                 queryBuilder.andWhere('d.deleted = true');
                 break;
+            case UserStates.NotDeleted:
+                queryBuilder.andWhere('d.deleted = false');
+                break;
         }
     
         // Handle isSubscribed filter

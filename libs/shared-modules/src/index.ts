@@ -174,7 +174,8 @@ export enum UserStates {
   Blocked = 'blocked',
   Deleted = 'deleted',
   Verified = 'verified',
-  Unverified = 'unverified'
+  Unverified = 'unverified',
+  NotDeleted = 'notDeleted'
 }
 
 export enum UsersRoleNames {
