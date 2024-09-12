@@ -68,6 +68,9 @@ export class ClientsRepository extends Repository<Client> {
             case UserStates.Deleted:
                 queryBuilder.andWhere('c.deleted = true');
                 break;
+            case UserStates.NotDeleted:
+                queryBuilder.andWhere('c.deleted = false');
+                break;
         }
 
           // Clone query for count
