@@ -22,4 +22,8 @@ export class SundryService {
       throw error; // Handle the error according to your application's needs
     }
   }
+
+  async generateOtpCode() {
+    return Math.floor(10000 + Math.random() * 89999);
+  }
 }

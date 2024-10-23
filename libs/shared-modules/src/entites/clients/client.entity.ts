@@ -26,11 +26,11 @@ export class Client {
   @Column({ nullable: true, name: 'passport_file_path' })
   passportFilePath?: string;
 
-  @Column({ default: 0, name: 'login_verification_code' })
-  loginVerificationCode: string;
+  @Column({ nullable: true, name: 'otp_code' })
+  otpCode: Date;
 
-  @Column({ type: 'bigint', default: 0, name: 'login_verification_code_expire_time' })
-  loginVerificationCodeExpireTime: number;
+  @Column({ type: 'bigint', nullable: true, name: 'otp_sent_datetime' })
+  otpSentDatetime: BigInt;  
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
