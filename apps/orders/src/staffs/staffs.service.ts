@@ -190,10 +190,18 @@ export class StaffsService {
       if(updateOrderDto.additionalDeliveryLocation) { 
         order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, longitude: updateOrderDto.additionalDeliveryLocation.longitude });;
       }
-      order.isAdr = updateOrderDto.isAdr || order.isAdr;
-      order.isCarnetTir = updateOrderDto.isCarnetTir || order.isCarnetTir;
-      order.isGlonas = updateOrderDto.isGlonas || order.isGlonas;
-      order.isParanom = updateOrderDto.isParanom || order.isParanom;
+      if(updateOrderDto.isAdr == false || updateOrderDto.isAdr == true) {
+        order.isAdr = updateOrderDto.isAdr;
+      }
+      if(updateOrderDto.isCarnetTir == false || updateOrderDto.isCarnetTir == true) {
+        order.isCarnetTir = updateOrderDto.isCarnetTir;
+      }
+      if(updateOrderDto.isGlonas == false || updateOrderDto.isGlonas == true) {
+        order.isGlonas = updateOrderDto.isGlonas;
+      }
+      if(updateOrderDto.isParanom == false || updateOrderDto.isParanom == true) {
+        order.isParanom = updateOrderDto.isParanom;
+      }
       order.offeredPrice = updateOrderDto.offeredPrice || order.offeredPrice;
       order.paymentMethod = updateOrderDto.paymentMethod || order.paymentMethod;
       order.inAdvancePrice = updateOrderDto.inAdvancePrice || order.inAdvancePrice;
@@ -364,7 +372,10 @@ export class StaffsService {
         throw new UnauthorizedException('permissionDenied')
       }
     } catch (err: any) {
-      if (err.name == 'EntityNotFoundError') {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
         throw new BadRequestException(ResponseStauses.NotFound);
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);

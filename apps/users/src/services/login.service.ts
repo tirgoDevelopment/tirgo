@@ -1,8 +1,8 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Agent, BadRequestException, BpmResponse, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
-import { LoginDto } from '../auth.dto';
+import { Agent, BadRequestException, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
+import { LoginDto, SendOtpDto, VerifyOtpDto } from '../auth.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -14,11 +14,13 @@ export class LoginService {
         @InjectRepository(DriverMerchant) private readonly driverMerchantsRepository: Repository<DriverMerchant>,
         @InjectRepository(DriverMerchantUser) private readonly driverMerchantUsersRepository: Repository<DriverMerchantUser>,
         @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+        @InjectRepository(Client) private readonly clientsRepository: Repository<Client>,
         @InjectRepository(Staff) private readonly staffsRepository: Repository<Staff>,
         @InjectRepository(User) private readonly usersRepository: Repository<User>,
         @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
         private customJwtService: CustomJwtService,
-        private smsService: SmsService
+        private smsService: SmsService,
+        private sundryService: SundryService
     ) { }
 
     async login(loginDto: LoginDto): Promise<BpmResponse> {
@@ -32,7 +34,7 @@ export class LoginService {
 
                 user = await this.driverMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['driverMerchant', 'user'] });
 
-            } else if (userType == UserTypes.Client) {
+            } else if (userType == UserTypes.Driver) {
 
                 user = await this.driversRepository
                     .createQueryBuilder('driver')
@@ -43,9 +45,9 @@ export class LoginService {
                     .andWhere('driver.deleted = :deleted', { deleted: false })
                     .getOneOrFail();
 
-            } else if (userType == UserTypes.Driver) {
+            } else if (userType == UserTypes.Client) {
 
-                user = await this.driversRepository
+                user = await this.clientsRepository
                     .createQueryBuilder('client')
                     .leftJoinAndSelect('client.user', 'user') // Joining the user entity
                     .leftJoinAndSelect('client.phoneNumbers', 'phoneNumber')
@@ -133,4 +135,78 @@ export class LoginService {
         }
     }
 
+    async sendOtp(sendOtp: SendOtpDto): Promise<BpmResponse> {
+        const { phoneNumber, userType } = sendOtp;
+        try {
+            let user;
+            const code = await this.sundryService.generateOtpCode();
+            switch (userType) {
+                case UserTypes.Client:
+                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
+                    break;
+                case UserTypes.Driver:
+                    user = (await this.driversRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
+                    user.otpCode = code;
+                    user.otpSentDatetime = new Date().getTime();
+                    await this.driversRepository.save(user);
+                    break;
+                default:
+                    // Handle other user types or throw an error if unexpected
+                    throw new Error('Invalid user type');
+            } 
+            const isCodeSent = await this.smsService.sendOtp(phoneNumber, code);
+            if(!isCodeSent) {
+                throw new InternalErrorException(ResponseStauses.InternalServerError)
+            }
+            if(!user) {
+                return new BpmResponse(true, { isRegistered: false, code });
+            } else {
+                return new BpmResponse(true, { isRegistered: true })
+            }
+
+        } catch (err: any) {
+            console.log(err)
+            if (err instanceof HttpException) {
+                throw err
+            } else {
+                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+            }
+        }
     }
+
+    async verifyCode(verifyCodeDto: VerifyOtpDto): Promise<BpmResponse> {
+        try {
+            const { phoneNumber, userType, code } = verifyCodeDto;
+            let user;
+            switch (userType) {
+                case UserTypes.Client:
+                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } }, relations: ['user'] }))[0];
+                    break;
+                case UserTypes.Driver:
+                    user = (await this.driversRepository.find({ where: { phoneNumbers: { phoneNumber } }, relations: ['user'] }))[0];
+                    break;
+                default:
+                    // Handle other user types or throw an error if unexpected
+                    throw new Error('Invalid user type');
+            }
+
+            const oneMinute = 60 * 1000
+            if ((new Date().getTime() - user.otpSentDatetime) > oneMinute) {
+                throw new BadRequestException(ResponseStauses.OtpExpired);
+            } else if(code !== user.otpCode) {
+                throw new BadRequestException(ResponseStauses.InvalidCode);
+            }
+
+            const payload: any = { sub: user.id, userId: user.user.id, userType };
+            const token: string = await this.customJwtService.generateToken(payload);
+            return new BpmResponse(true, { token })
+        } catch(err: any) {
+            console.log(err)
+            if (err instanceof HttpException) {
+                throw err
+            } else {
+                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+            }
+        }
+    }
+}

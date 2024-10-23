@@ -139,7 +139,7 @@ async phoneVerify(verifyPhoneDto: any) {
       } else if (phone.startsWith('+77') || phone.startsWith('77')) {
           this.smsService.sendSmsRu(phone, code)
       } else {
-          this.smsService.sendSmsGlobal(phone, code, countryCode)
+          this.smsService.sendSmsGlobal(phone, code)
       }
       bpmResponse = new BpmResponse(true, { code });
       return bpmResponse;

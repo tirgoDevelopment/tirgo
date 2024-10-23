@@ -32,17 +32,17 @@ export class Driver {
   @Column({ nullable: true, name: 'driver_license_file_path' })
   driverLicenseFilePath?: string;
 
-  @Column({ default: 0, name: 'login_verification_code' })
-  loginVerificationCode: string;
-
-  @Column({ type: 'bigint', default: 0, name: 'login_verification_code_expire_time' })
-  loginVerificationCodeExpireTime: number;
-
   @Column({ type: 'timestamp', nullable: true, name: 'subscribed_at' })
   subscribedAt: Date; 
 
   @Column({ type: 'timestamp', nullable: true, name: 'subscribed_till' })
-  subscribedTill: Date; 
+  subscribedTill: Date;
+  
+  @Column({ nullable: true, name: 'otp_code' })
+  otpCode: Date;
+
+  @Column({ type: 'bigint', nullable: true, name: 'otp_sent_datetime' })
+  otpSentDatetime: BigInt;  
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
