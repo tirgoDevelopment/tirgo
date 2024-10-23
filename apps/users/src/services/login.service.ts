@@ -146,9 +146,11 @@ export class LoginService {
                     break;
                 case UserTypes.Driver:
                     user = (await this.driversRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
-                    user.otpCode = code;
-                    user.otpSentDatetime = new Date().getTime();
-                    await this.driversRepository.save(user);
+                    if(user) {
+                        user.otpCode = code;
+                        user.otpSentDatetime = new Date().getTime();
+                        await this.driversRepository.save(user);
+                    }
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected
