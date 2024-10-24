@@ -45,7 +45,7 @@ export class Driver {
   subscribedTill: Date;
   
   @Column({ nullable: true, name: 'otp_code' })
-  otpCode: Date;
+  otpCode: number;
 
   @Column({ type: 'bigint', nullable: true, name: 'otp_sent_datetime' })
   otpSentDatetime: BigInt;  
