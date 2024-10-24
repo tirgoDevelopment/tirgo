@@ -7,6 +7,7 @@ import { TransportsService } from "./services/transport.service";
 import { DriverTransportsController } from "./contollers/transport.controller";
 import { DriversRepository } from "./repositories/drivers.repository";
 import { DataSource } from "typeorm";
+import { JwtService } from "@nestjs/jwt";
 
 
 @Module({
@@ -23,7 +24,8 @@ import { DataSource } from "typeorm";
         DriversService,
         TransportsService,
         DriversRepository,
-        CustomJwtService
+        CustomJwtService,
+        JwtService
       ],
       exports: [
         DriversRepository,
