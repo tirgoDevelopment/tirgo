@@ -17,7 +17,7 @@ export class DriversService {
     private awsService: AwsService
   ) { }
 
-  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[], passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
+  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[] }): Promise<BpmResponse> {
     
     const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
