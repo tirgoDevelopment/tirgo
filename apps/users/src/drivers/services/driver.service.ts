@@ -26,11 +26,13 @@ export class DriversService {
     try {
 
       const driver: Driver = new Driver();
-      switch (user.userType) {
-        case UserTypes.DriverMerchantUser: 
-        const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
-        driver.driverMerchant = driverMerchant;
-             break;
+      if(user) {
+        switch (user.userType) {
+          case UserTypes.DriverMerchantUser: 
+          const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
+          driver.driverMerchant = driverMerchant;
+               break;
+        }
       }
 
       driver.user = await queryRunner.manager.save(User, { userType: 'driver' });
