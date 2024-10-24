@@ -171,6 +171,12 @@ export enum UserTypes {
   Agent = 'agent'
 }
 
+export enum SendOtpTypes {
+  Telegram = 'client',
+  Whatsapp = 'whatsapp',
+  Sms = 'sms'
+}
+
 export enum UserStates {
   Active = 'active',
   Blocked = 'blocked',

@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { UserTypes } from ".";
+import { SendOtpTypes, UserTypes } from ".";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
@@ -32,6 +32,12 @@ export class SendOtpDto {
     @IsNotEmpty()
     @IsEnum(UserTypes)
     userType: string;
+
+    @ApiProperty({ required: true })
+    @IsString()
+    @IsNotEmpty()
+    @IsEnum(SendOtpTypes)
+    sendBy: string;
 }
 
 export class VerifyOtpDto {

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe, Patch } from '@nestjs/common';
 import { LoginService } from './services/login.service';
 import { AuthService } from './auth.service';
-import { LoginDto,SendOtpDto, VerifyOtpDto } from './auth.dto';
+import { LoginDto, SendOtpDto, VerifyOtpDto } from './auth.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Archive users')

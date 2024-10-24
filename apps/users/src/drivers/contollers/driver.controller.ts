@@ -15,11 +15,11 @@ export class DriversController {
   @Post('create-driver')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'passport', maxCount: 1 },
+    { name: 'profile', maxCount: 1 },
     { name: 'driverLicense', maxCount: 1 },
   ]))
   async createDriver(
-    @UploadedFiles() files: { passport?: any[], driverLicense?: any[] },
+    @UploadedFiles() files: { profile?: any[], driverLicense?: any[] },
     @Body() driverData: DriverDto,
     @Req() req: Request
   ) {

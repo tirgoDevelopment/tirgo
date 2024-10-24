@@ -17,40 +17,35 @@ export class DriversService {
     private awsService: AwsService
   ) { }
 
-  async createDriver(createDriverDto: DriverDto, user: User, files: { passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
+  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[], passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
     
     const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      if (!(/[a-zA-Z]/.test(createDriverDto.password) && /\d/.test(createDriverDto.password))) {
-        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
-      }
 
-      const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
-      if(user && user.userType == UserTypes.DriverMerchantUser) {
+      switch (user.userType) {
+        case UserTypes.DriverMerchantUser: 
         const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
         driver.driverMerchant = driverMerchant;
+             break;
       }
 
-      driver.user = await queryRunner.manager.save(User, { userType: 'driver', password: passwordHash });
+      driver.user = await queryRunner.manager.save(User, { userType: 'driver' });
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
       driver.email = createDriverDto.email;
+      driver.birthdayDate = createDriverDto.birthdayDate;
       driver.citizenship = createDriverDto.citizenship;
       driver.createdBy = user;
       
       if(files) {
         const uploads: any = [];
-        if(files.passport) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          uploads.push(files.passport[0]);
-        } 
-        if(files.driverLicense) {
-          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
-          uploads.push(files.driverLicense[0])
+        if(files.profile) {
+          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
+          uploads.push(files.profile[0]);
         }
 
         // Upload files to AWS
@@ -108,6 +103,7 @@ export class DriversService {
       driver.firstName = updateDriverDto.firstName || driver.firstName;
       driver.lastName = updateDriverDto.lastName || driver.lastName;
       driver.email = updateDriverDto.email || driver.email;
+      driver.birthdayDate = updateDriverDto.birthdayDate || driver.birthdayDate;
       driver.citizenship = updateDriverDto.citizenship || driver.citizenship;
 
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
@@ -120,9 +116,9 @@ export class DriversService {
             
       if(files) {
         const uploads: any = [];
-        if(files.passport) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          uploads.push(files.passport[0]);
+        if(files.profile) {
+          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
+          uploads.push(files.profile[0]);
         } 
         if(files.driverLicense) {
           driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
