@@ -15,17 +15,16 @@ export class DriversController {
   @Post('create-driver')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profile', maxCount: 1 },
-    { name: 'driverLicense', maxCount: 1 },
+    { name: 'profile', maxCount: 1 }
   ]))
   async createDriver(
-    @UploadedFiles() files: { profile?: any[], driverLicense?: any[] },
+    @UploadedFiles() files: { profile?: any[] },
     @Body() driverData: DriverDto,
     @Req() req: Request
   ) {
-    console.log('Driver registration', files, req.body)
     return this.driversService.createDriver(driverData, req['user'], files)
   }
+
   @ApiOperation({ summary: 'Update driver' })
   @UsePipes(ValidationPipe)
   @Put('update-driver')

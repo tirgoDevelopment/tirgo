@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
 
 @Injectable()
@@ -14,10 +14,11 @@ export class DriversService {
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
     private readonly driverRepository: DriversRepository,
     private sundriesService: SundryService,
+    private customJwtService: CustomJwtService,
     private awsService: AwsService
   ) { }
 
-  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[], passport?: any[], driverLicense?: any[] }): Promise<BpmResponse> {
+  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[] }): Promise<BpmResponse> {
     
     const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -34,8 +35,8 @@ export class DriversService {
                break;
         }
       }
-
-      driver.user = await queryRunner.manager.save(User, { userType: 'driver' });
+      const newUser = await queryRunner.manager.save(User, { userType: 'driver' });
+      driver.user = newUser;
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
       driver.email = createDriverDto.email;
@@ -79,7 +80,10 @@ export class DriversService {
       // Commit the transaction
       await queryRunner.commitTransaction();
 
-      return new BpmResponse(true, { id: newDriver.id }, [ResponseStauses.SuccessfullyCreated]);
+      const payload: any = { sub: newDriver.id, userId: newUser.id, userType: 'driver' };
+      const token: string = await this.customJwtService.generateToken(payload);
+
+      return new BpmResponse(true, { token }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
       // this.awsService.deleteFile('driver', passportFile.split(' ').join('').trim());

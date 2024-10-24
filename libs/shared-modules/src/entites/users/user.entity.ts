@@ -22,7 +22,7 @@ export class User {
     @Column({ nullable: false, name: 'user_type' })
     userType: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     password: string;
 
     @Column({ nullable: true,  type: 'timestamp', name: 'last_login' })
