@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { Agent, AwsService, CargoLoadMethod, CargoType, Client, Driver, DriverMerchant, DriverTransport, OrderOffer, SundryService, Transaction, TransportKind, TransportType, User } from "..";
+import { Agent, AwsService, CargoLoadMethod, CargoType, Client, CustomJwtService, Driver, DriverMerchant, DriverTransport, OrderOffer, SundryService, Transaction, TransportKind, TransportType, User } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriversController } from "./contollers/driver.controller";
 import { DriversService } from "./services/driver.service";
@@ -7,6 +7,7 @@ import { TransportsService } from "./services/transport.service";
 import { DriverTransportsController } from "./contollers/transport.controller";
 import { DriversRepository } from "./repositories/drivers.repository";
 import { DataSource } from "typeorm";
+import { JwtService } from "@nestjs/jwt";
 
 
 @Module({
@@ -22,7 +23,9 @@ import { DataSource } from "typeorm";
         AwsService,
         DriversService,
         TransportsService,
-        DriversRepository
+        DriversRepository,
+        CustomJwtService,
+        JwtService
       ],
       exports: [
         DriversRepository,
