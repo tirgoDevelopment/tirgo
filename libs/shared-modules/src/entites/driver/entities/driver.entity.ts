@@ -26,8 +26,14 @@ export class Driver {
   @Column({ nullable: true })
   email?: string;
 
+  @Column({ nullable: true })
+  birthdayDate?: Date;
+
   @Column({ nullable: true, name: 'passport_file_path' })
   passportFilePath?: string;
+
+  @Column({ nullable: true, name: 'profile_file_path' })
+  profileFilePath?: string;
 
   @Column({ nullable: true, name: 'driver_license_file_path' })
   driverLicenseFilePath?: string;

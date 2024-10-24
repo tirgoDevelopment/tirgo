@@ -13,17 +13,14 @@ export class DriverDto {
   lastName: string;
 
   @ApiProperty({ required: true })
-  @MinLength(8)
-  @MaxLength(16)
-  @IsNotEmpty()
-  password: string;
-
-  @ApiProperty({ required: true })
   @IsNotEmpty()
   phoneNumbers: any;
 
   @ApiProperty({ required: false })
-  additionalPhoneNumber?: string;
+  birthdayDate?: Date;
+ 
+  @ApiProperty({ required: false })
+  profilePhotoFilePath?: string;
 
   @ApiProperty({ required: false })
   citizenship?: string;
@@ -79,6 +76,12 @@ export class UpdateDriverDto {
 
   @ApiProperty({ required: false })
   email?: string;
+  
+  @ApiProperty({ required: false })
+  birthdayDate?: Date;
+ 
+  @ApiProperty({ required: false })
+  profilePhotoFilePath?: string;
 
   @ApiProperty({ required: false })
   agentId: number;
