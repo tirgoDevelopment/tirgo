@@ -23,6 +23,7 @@ export class DriversController {
     @Body() driverData: DriverDto,
     @Req() req: Request
   ) {
+    console.log('Driver registration', files, req.body)
     return this.driversService.createDriver(driverData, req['user'], files)
   }
   @ApiOperation({ summary: 'Update driver' })
