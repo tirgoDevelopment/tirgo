@@ -80,7 +80,7 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Update driver birthday date' })
   @UsePipes(ValidationPipe)
-  @Patch('update-driver-birthday-date/:id')
+  @Patch('update-driver-birthday-date')
   updateDriverBirthday(
     @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto,
     @Req() req: Request
