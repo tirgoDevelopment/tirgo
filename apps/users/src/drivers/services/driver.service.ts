@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
+import { UpdateDriverBirthDayDto, UpdateDriverPhoneDto } from '@app/shared-modules/entites/driver/dtos/driver.dto';
 
 @Injectable()
 export class DriversService {
@@ -12,6 +13,7 @@ export class DriversService {
     @InjectRepository(DriverMerchant) private readonly driverMerchantsRepository: Repository<DriverMerchant>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
+    @InjectRepository(DriverPhoneNumber) private readonly driverPhoneNumbersRepository: Repository<DriverPhoneNumber>,
     private readonly driverRepository: DriversRepository,
     private sundriesService: SundryService,
     private customJwtService: CustomJwtService,
@@ -144,6 +146,49 @@ export class DriversService {
     } catch (err: any) {
       console.log(err)
       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+    }
+  }
+
+  async updateDriverPhoneNumber(updateDriverPhoneDto: UpdateDriverPhoneDto, phoneNumberId: number, user: any): Promise<BpmResponse> {
+    try {
+      const result = await this.driverPhoneNumbersRepository.update({ id: phoneNumberId, driver: { id: user.id } }, { phoneNumber: updateDriverPhoneDto.phoneNumber })
+      if(result.affected) {
+        return new BpmResponse(true, null, null);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async updateDriverBirthday(updateDriverBirthDayDto: UpdateDriverBirthDayDto, user: any): Promise<BpmResponse> {
+    try {
+      const result = await this.driverRepository.update({id: user.id}, { birthdayDate: updateDriverBirthDayDto.birthdayDate });
+      if(result.affected) {
+        return new BpmResponse(true, null, null);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        // Client not found
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
     }
   }
 
