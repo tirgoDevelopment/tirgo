@@ -251,7 +251,10 @@ export class DriversService {
 
   async updateDriverPhoneNumber(updateDriverPhoneDto: UpdateDriverPhoneDto, phoneNumberId: number, user: any): Promise<BpmResponse> {
     try {
-      const result = await this.driverPhoneNumbersRepository.update({ id: phoneNumberId, driver: { id: user.id } }, { phoneNumber: updateDriverPhoneDto.phoneNumber })
+      if(user.userType !== UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+      const result = await this.driverPhoneNumbersRepository.update({ id: phoneNumberId, driver: { id: user.driver?.id } }, { phoneNumber: updateDriverPhoneDto.phoneNumber })
       console.log(result)
       if(result.affected) {
         return new BpmResponse(true, null, null);
@@ -273,8 +276,10 @@ export class DriversService {
 
   async addPhoneNumber(createDriverPhoneDto: UpdateDriverPhoneDto, user: any): Promise<BpmResponse> {
     try {
-
-      const driver = await this.driverRepository.findOneOrFail({where: { id: user.id }});
+      if(user.userType !== UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+      const driver = await this.driverRepository.findOneOrFail({where: { id: user.driver?.id }});
 
       const newPhoneNumber = new DriverPhoneNumber();
       newPhoneNumber.phoneNumber = createDriverPhoneDto.phoneNumber;
@@ -298,7 +303,10 @@ export class DriversService {
 
   async updateDriverBirthday(updateDriverBirthDayDto: UpdateDriverBirthDayDto, user: any): Promise<BpmResponse> {
     try {
-      const result = await this.driverRepository.update({id: user.id}, { birthdayDate: updateDriverBirthDayDto.birthdayDate });
+      if(user.userType !== UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+      const result = await this.driverRepository.update({id: user.driver?.id}, { birthdayDate: updateDriverBirthDayDto.birthdayDate });
       console.log('b result', result)
       if(result.affected) {
         return new BpmResponse(true, null, null);
