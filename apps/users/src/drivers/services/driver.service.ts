@@ -299,6 +299,7 @@ export class DriversService {
   async updateDriverBirthday(updateDriverBirthDayDto: UpdateDriverBirthDayDto, user: any): Promise<BpmResponse> {
     try {
       const result = await this.driverRepository.update({id: user.id}, { birthdayDate: updateDriverBirthDayDto.birthdayDate });
+      console.log('b result', result)
       if(result.affected) {
         return new BpmResponse(true, null, null);
       } else {
