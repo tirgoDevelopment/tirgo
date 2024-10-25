@@ -75,6 +75,7 @@ export class DriversController {
     @Body() updateDriverPhoneDto: UpdateDriverPhoneDto,
     @Req() req: Request
   ) {
+    console.log(req['user'])
     return this.driversService.updateDriverPhoneNumber(updateDriverPhoneDto, id, req['user'])
   }
 
@@ -85,6 +86,7 @@ export class DriversController {
     @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto,
     @Req() req: Request
   ) {
+    console.log(req['user'])
     return this.driversService.updateDriverBirthday(updateDriverBirthDayDto,  req['user'])
   }
 
