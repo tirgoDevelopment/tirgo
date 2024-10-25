@@ -20,7 +20,7 @@ export class DriversService {
     private awsService: AwsService
   ) { }
 
-  async createDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[] }): Promise<BpmResponse> {
+  async registerDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[] }): Promise<BpmResponse> {
     
     const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -105,6 +105,102 @@ export class DriversService {
     }
   }
 
+  async createDriver(createDriverDto: DriverDto, user: User, files: { passport?: any[], driverLicense?: any[], profile?: any[] }): Promise<BpmResponse> {
+    
+    const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+
+      if (!(/[a-zA-Z]/.test(createDriverDto.password) && /\d/.test(createDriverDto.password))) {
+        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
+      }
+      const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
+      const driver: Driver = new Driver();
+      if(user) {
+        switch (user.userType) {
+          case UserTypes.DriverMerchantUser: 
+          const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
+          driver.driverMerchant = driverMerchant;
+               break;
+        }
+      }
+      const newUser = await queryRunner.manager.save(User, { userType: 'driver', password: passwordHash });
+      driver.user = newUser;
+      driver.firstName = createDriverDto.firstName;
+      driver.lastName = createDriverDto.lastName;
+      driver.email = createDriverDto.email;
+      driver.birthdayDate = createDriverDto.birthdayDate;
+      driver.citizenship = createDriverDto.citizenship;
+      driver.createdBy = user;
+      
+      // password
+
+      if(files) {
+        const uploads: any = [];
+        if(files.passport) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          uploads.push(files.passport[0]);
+        }
+        if(files.profile) {
+          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
+          uploads.push(files.profile[0]);
+        }
+        if(files.driverLicense) {
+          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
+          uploads.push(files.driverLicense[0]);
+        }
+
+        // Upload files to AWS
+      const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+      if(res.includes(false)) {
+        // await queryRunner.rollbackTransaction();
+        throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+      }
+
+      }
+      if(typeof createDriverDto.phoneNumbers == 'string') {
+        createDriverDto.phoneNumbers = JSON.parse(createDriverDto.phoneNumbers)
+      }
+      if(!(createDriverDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
+      const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
+        const driverPhoneNumber = new DriverPhoneNumber();
+        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.driver = driver; 
+        return driverPhoneNumber;
+      });
+      driver.phoneNumbers = driverPhoneNumbers;
+
+      // Save driver and associated entities
+      const newDriver = await queryRunner.manager.save(Driver, driver);
+
+      
+      // Commit the transaction
+      await queryRunner.commitTransaction();
+
+      return new BpmResponse(true, { id: newDriver.id }, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      // this.awsService.deleteFile('driver', passportFile.split(' ').join('').trim());
+      // this.awsService.deleteFile('driver', driverLicenseFile.split(' ').join('').trim());
+
+      console.error(err);
+
+      if (err instanceof HttpException) {
+        throw err;
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async updateDriver(updateDriverDto: UpdateDriverDto, files: any): Promise<BpmResponse> {
     try {
       const driver = await this.driverRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
@@ -132,6 +228,10 @@ export class DriversService {
           driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
           uploads.push(files.driverLicense[0])
         }
+        if(files.passport) {
+          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
+          uploads.push(files.passport[0]);
+        }
 
         // Upload files to AWS
         const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
@@ -152,11 +252,37 @@ export class DriversService {
   async updateDriverPhoneNumber(updateDriverPhoneDto: UpdateDriverPhoneDto, phoneNumberId: number, user: any): Promise<BpmResponse> {
     try {
       const result = await this.driverPhoneNumbersRepository.update({ id: phoneNumberId, driver: { id: user.id } }, { phoneNumber: updateDriverPhoneDto.phoneNumber })
+      console.log(result)
       if(result.affected) {
         return new BpmResponse(true, null, null);
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
       }
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async addPhoneNumber(createDriverPhoneDto: UpdateDriverPhoneDto, user: any): Promise<BpmResponse> {
+    try {
+
+      const driver = await this.driverRepository.findOneOrFail({where: { id: user.id }});
+
+      const newPhoneNumber = new DriverPhoneNumber();
+      newPhoneNumber.phoneNumber = createDriverPhoneDto.phoneNumber;
+      newPhoneNumber.driver = driver;
+
+      const result = await this.driverPhoneNumbersRepository.save(newPhoneNumber)
+      console.log(result)
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
