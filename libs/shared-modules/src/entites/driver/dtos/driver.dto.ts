@@ -40,6 +40,9 @@ export class DriverDto {
   @ApiProperty({ required: false })
   agentId: number;
 
+  @ApiProperty({ required: false })
+  password: string;
+
 }
 
 export class UpdateDriverDto {

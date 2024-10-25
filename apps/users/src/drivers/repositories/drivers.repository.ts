@@ -20,6 +20,7 @@ export class DriversRepository extends Repository<Driver> {
             .addSelect(['driverMerchant.id', 'driverMerchant.email', 'driverMerchant.companyName'])
             .leftJoin("d.phoneNumbers", "phoneNumber")
             .addSelect('phoneNumber.phoneNumber')
+            .addSelect('phoneNumber.id')
             .leftJoin("d.createdBy", "createdBy")
             .addSelect('createdBy.id')
             .leftJoin("driverTransport.transportTypes", "transportType")

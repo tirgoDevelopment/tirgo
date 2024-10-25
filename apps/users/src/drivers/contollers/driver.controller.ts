@@ -12,18 +12,45 @@ export class DriversController {
     private driversService: DriversService
   ) { }
 
-  @ApiOperation({ summary: 'Create driver' })
-  @Post('create-driver')
+  @ApiOperation({ summary: 'Driver register' })
+  @Post('register-driver')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'profile', maxCount: 1 }
   ]))
-  async createDriver(
+  async registerDriver(
     @UploadedFiles() files: { profile?: any[] },
     @Body() driverData: DriverDto,
     @Req() req: Request
   ) {
+    return this.driversService.registerDriver(driverData, req['user'], files)
+  }
+
+  @ApiOperation({ summary: 'Create Driver' })
+  @Post('create-driver')
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'driverLicense', maxCount: 1 },
+    { name: 'passport', maxCount: 1 },
+    { name: 'profile', maxCount: 1 }
+  ]))
+  async createDriver(
+    @UploadedFiles() files: { passport?: any[], driverLicense?: any[], profile?: any[]  },
+    @Body() driverData: DriverDto,
+    @Req() req: Request
+  ) {
+    console.log('Driver registration', files, req.body)
     return this.driversService.createDriver(driverData, req['user'], files)
+  }
+
+  @ApiOperation({ summary: 'Add Driver Phone number' })
+  @Post('driver-add-phone')
+  @UsePipes(ValidationPipe)
+  reateDriver(
+    @Body() driverData: UpdateDriverPhoneDto,
+    @Req() req: Request
+  ) {
+    return this.driversService.addPhoneNumber(driverData, req['user'])
   }
 
   @ApiOperation({ summary: 'Update driver' })
@@ -42,7 +69,7 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Update driver phone' })
   @UsePipes(ValidationPipe)
-  @Patch('update-driver-phone')
+  @Patch('update-driver-phone/:id')
   updateDriverPhone(
     @Param('id') id: number,
     @Body() updateDriverPhoneDto: UpdateDriverPhoneDto,
@@ -53,7 +80,7 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Update driver birthday date' })
   @UsePipes(ValidationPipe)
-  @Patch('update-driver-birthday-date')
+  @Patch('update-driver-birthday-date/:id')
   updateDriverBirthday(
     @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto,
     @Req() req: Request
