@@ -87,3 +87,19 @@ export class UpdateDriverDto {
   agentId: number;
 
 }
+
+export class UpdateDriverPhoneDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  phoneNumber: string;
+
+}
+
+export class UpdateDriverBirthDayDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  birthdayDate: string;
+
+}

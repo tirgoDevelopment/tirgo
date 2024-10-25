@@ -1,8 +1,9 @@
-import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Delete, Query, Patch, Put, Req, } from '@nestjs/common';
+import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Delete, Query, Patch, Put, Req, Param, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AppendDriversToTmsDto, DriverDto, UpdateDriverDto } from '../..';
 import { DriversService } from '../services/driver.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { UpdateDriverBirthDayDto, UpdateDriverPhoneDto } from '@app/shared-modules/entites/driver/dtos/driver.dto';
  
 @ApiTags('Drivers')
 @Controller('drivers')
@@ -37,6 +38,27 @@ export class DriversController {
     @Body() updateDriverDto: UpdateDriverDto
     ) {
     return this.driversService.updateDriver(updateDriverDto, files)
+  }
+
+  @ApiOperation({ summary: 'Update driver phone' })
+  @UsePipes(ValidationPipe)
+  @Patch('update-driver-phone')
+  updateDriverPhone(
+    @Param('id') id: number,
+    @Body() updateDriverPhoneDto: UpdateDriverPhoneDto,
+    @Req() req: Request
+  ) {
+    return this.driversService.updateDriverPhoneNumber(updateDriverPhoneDto, id, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Update driver birthday date' })
+  @UsePipes(ValidationPipe)
+  @Patch('update-driver-birthday-date')
+  updateDriverBirthday(
+    @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto,
+    @Req() req: Request
+  ) {
+    return this.driversService.updateDriverBirthday(updateDriverBirthDayDto,  req['user'])
   }
 
   @ApiOperation({ summary: 'Get driver by id' })
