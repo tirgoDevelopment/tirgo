@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Agent, BadRequestException, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SmsService, Staff, SundryService, User, UserTypes, } from '..';
+import { Agent, BadRequestException, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SendOtpTypes, SmsService, Staff, SundryService, TelegramBotService, User, UserTypes, } from '..';
 import { LoginDto, SendOtpDto, VerifyOtpDto } from '../auth.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -20,7 +20,8 @@ export class LoginService {
         @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
         private customJwtService: CustomJwtService,
         private smsService: SmsService,
-        private sundryService: SundryService
+        private sundryService: SundryService,
+        private telegramBotService: TelegramBotService
     ) { }
 
     async login(loginDto: LoginDto): Promise<BpmResponse> {
@@ -136,7 +137,7 @@ export class LoginService {
     }
 
     async sendOtp(sendOtp: SendOtpDto): Promise<BpmResponse> {
-        const { phoneNumber, userType } = sendOtp;
+        const { phoneNumber, userType, sendBy } = sendOtp;
         try {
             let user;
             const code = await this.sundryService.generateOtpCode();
@@ -156,7 +157,15 @@ export class LoginService {
                     // Handle other user types or throw an error if unexpected
                     throw new Error('Invalid user type');
             } 
-            const isCodeSent = await this.smsService.sendOtp(phoneNumber, code);
+            let isCodeSent;
+            switch (sendBy) {
+                case SendOtpTypes.Sms:
+                    isCodeSent = await this.smsService.sendOtp(phoneNumber, code);
+                break
+                case SendOtpTypes.Telegram: 
+                    isCodeSent = await this.telegramBotService.sendOtpCode(phoneNumber, code)
+                break
+            }
             if(!isCodeSent) {
                 throw new InternalErrorException(ResponseStauses.InternalServerError)
             }

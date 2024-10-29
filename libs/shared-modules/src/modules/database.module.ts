@@ -35,6 +35,7 @@ import { Subscription } from '../entites/references/entities/subscription.entity
 import { Transaction } from '../entites/transactions/transaction.entity';
 import { Permission } from '../entites/role/entities/permission.entity';
 import { LocationPlace } from '../entites/orders/entities/location.entity';
+import { TelegramBotUser } from '../entites/bot/bot.entity';
 
 const entities = [
     TransportType,
@@ -71,7 +72,8 @@ const entities = [
     Account,
     Agent, 
     AgentBankAccount,
-    LocationPlace
+    LocationPlace,
+    TelegramBotUser
   ];
 
 @Module({
