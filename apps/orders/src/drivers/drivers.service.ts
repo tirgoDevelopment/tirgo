@@ -91,7 +91,9 @@ export class DriversService {
         take: size,
         relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
         'additionalLoadingLocation',
-        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 
+        'driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers',
+        'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
       });
 
       const merchantsCount = await this.ordersRepository.count({ where: filter });
