@@ -59,9 +59,10 @@ export { DriverBankAccount } from './entites/driver-merchant/entites/bank-accoun
 export { AwsService } from './services/aws.service';
 export { SundryService } from './services/sundry.service';
 export { CustomJwtService } from './services/jwt.service';
+export { TelegramBotService } from './services/telegram-bot.service';
 export { SmsService } from './services/sms.service';
 export { MailService } from './services/mail.service';
-
+export { TelegramBotUser } from './entites/bot/bot.entity';
 export { CargoStatusDto } from './entites/references/dtos/cargo-status.dto';
 export { CargoTypeGroupDto } from './entites/references/dtos/cargo-type-group.dto'
 export { CargoTypeDto } from './entites/references/dtos/cargo-type.dto'
@@ -172,7 +173,7 @@ export enum UserTypes {
 }
 
 export enum SendOtpTypes {
-  Telegram = 'client',
+  Telegram = 'telegram',
   Whatsapp = 'whatsapp',
   Sms = 'sms'
 }

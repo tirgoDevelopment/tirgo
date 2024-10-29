@@ -17,8 +17,9 @@ import { AgentsModule } from './agents/agents.module';
 import { RabbitMQSenderService } from './services/rabbitmq-sender.service';
 import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
 import { SseModule } from './sse/sse.module';
-import { CustomSwaggerModule } from '@app/shared-modules';
+import { CustomSwaggerModule, TelegramBotService } from '@app/shared-modules';
 import { ChatGateway } from './chat/chat.gateway';
+import { TelegramBotController } from './bot/telegram-bot.controller';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { ChatGateway } from './chat/chat.gateway';
   ],
   controllers: [
     AuthController,
-    ClientMerchantController
+    ClientMerchantController,
+    TelegramBotController
   ],
   providers: [
     AuthService,
@@ -52,7 +54,8 @@ import { ChatGateway } from './chat/chat.gateway';
     SmsService,
     RabbitMQSenderService,
     RabbitMQConsumerService,
-    ChatGateway
+    ChatGateway,
+    TelegramBotService
   ],
 })
 export class UsersModule {

@@ -5,7 +5,7 @@ import { SundryService } from '../services/sundry.service';
 import { CustomJwtService } from '../services/jwt.service';
 import { SmsService } from '../services/sms.service';
 import { MailService } from '../services/mail.service';
-
+import { TelegramBotService } from '../services/telegram-bot.service';
 @Module({
   providers: [
     SharedModulesService,
@@ -13,14 +13,16 @@ import { MailService } from '../services/mail.service';
     CustomJwtService,
     AwsService,
     SmsService,
-    MailService
+    MailService,
+    TelegramBotService
   ],
   exports: [
     SharedModulesService,
     SundryService,
     CustomJwtService,
     SmsService,
-    MailService
+    MailService,
+    TelegramBotService
   ],
 })
 export class SharedModulesModule {}

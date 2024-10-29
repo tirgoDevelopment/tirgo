@@ -5,10 +5,11 @@ import { AuthGuard } from '../guards/auth.guard';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { User } from '../entites/users/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { TelegramBotUser } from '../entites/bot/bot.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, TelegramBotUser]),
     JwtModule.register({
       secret: 'tirgO_jWt_secre1_k3y', // Replace with your actual secret key
       signOptions: { expiresIn: '24h' }, // Optional: Set expiration time
@@ -23,6 +24,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     },
   ],
   exports: [
+    TypeOrmModule.forFeature([User, TelegramBotUser]),
   ],
 })
 export class AuthModule {}
