@@ -29,9 +29,10 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'cargoLoadMethod', 'transportKinds'] });
+      const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
+      console.log(err)
       if (err.name == 'EntityNotFoundError') {
         throw new NoContentException();
       } else {
