@@ -21,8 +21,22 @@ export class OrderOffer {
   @Column({ default: false })
   canceled: boolean;
 
+  @Column({ nullable: true, name: 'cancel_reason' })
+  cancelReason: string;
+
+  @ManyToOne(() => User, (user) => user.canceledOrderOffers, { nullable: true })
+  @JoinColumn({ name: 'canceled_by' })
+  canceledBy: User;
+
   @Column({ default: false })
   rejected: boolean;
+
+  @Column({ nullable: true, name: 'reject_reason' })
+  rejectReason: string;
+
+  @ManyToOne(() => User, (user) => user.rejectedOrderOffers, { nullable: true })
+  @JoinColumn({ name: 'rejected_by' })
+  rejectedBy: User;
 
   @ManyToOne(() => User, (user) => user.createdOrderOffers, { nullable: false })
   @JoinColumn({ name: 'created_by' })

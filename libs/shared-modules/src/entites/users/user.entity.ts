@@ -83,8 +83,7 @@ export class User {
 
     @ManyToOne(() => Agent, role => role.createdBy)
     createdAgents: Agent;
-
-  
+ 
 
     // relations belongs to rejected by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)
@@ -92,6 +91,9 @@ export class User {
 
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.rejectedBy)
     rejectedClientMerchants: ClientMerchant[];
+
+    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
+    rejectedOrderOffers: OrderOffer[];
 
     // relations belongs to verified by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.verifiedBy)
@@ -134,4 +136,8 @@ export class User {
 
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.deletedBy)
     deletedClientMerchants: ClientMerchant[];
+
+    // canceltedrelations belongs to  by user
+    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
+    canceledOrderOffers: OrderOffer[];
 }
