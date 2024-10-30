@@ -1,8 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver, RejectOfferDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
+import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @Injectable()
 export class DriversService {
@@ -456,6 +457,62 @@ export class DriversService {
       await this.ordersRepository.save(order);
 
       await this.rmqService.sendAcceptOfferMessageToClient({ userId: order.client?.id, orderId: offer.order.id })
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async rejectClientOffer(offerId: number, rejectOfferDto: RejectOfferDto, user: any): Promise<BpmResponse> {
+    try {
+
+      const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['client'] })
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Canceled } });
+
+      offer.rejected = true;
+      offer.rejectReason = rejectOfferDto.rejectReason || '';
+      offer.rejectedBy = user;
+      await this.orderOffersRepository.save(offer);
+
+      order.cargoStatus = cargoStatus;
+      await this.ordersRepository.save(order);
+
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async cancelClientOffer(offerId: number, cancelOfferDto: CancelOfferDto, user: any): Promise<BpmResponse> {
+    try {
+
+      const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['client'] })
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Canceled } });
+
+      offer.canceled = true;
+      offer.cancelReason = cancelOfferDto.cancelReason || '';
+      offer.canceledBy = user;
+      await this.orderOffersRepository.save(offer);
+
+      order.cargoStatus = cargoStatus;
+      await this.ordersRepository.save(order);
+
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)

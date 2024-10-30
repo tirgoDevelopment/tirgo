@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { ClientsService } from './clients.service';
-import { OrderDto, OrderOfferDto } from '..';
+import { OrderDto, OrderOfferDto, RejectOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @ApiTags('Clients orders')
 @Controller('clients')
@@ -51,5 +52,17 @@ export class ClientsController {
   @Post('offer-price')
   async offerPrice(@Body() offerDto: OrderOfferDto, @Req() req: Request) {
     return this.clientsService.offerPriceToDriver(offerDto, req['user']?.id);
+  }
+
+  @ApiOperation({ summary: 'Client reject driver\'s offer' })
+  @Post('reject-offer')
+  async rejectOffer(@Param('id') id: number, @Body() rejectDto: RejectOfferDto, @Req() req: Request) {
+    return this.clientsService.rejectDriverOffer(id, rejectDto, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Client cancel driver\'s offer' })
+  @Post('cancel-offer')
+  async cancelOffer(@Param('id') id: number, @Body() cancelDto: CancelOfferDto, @Req() req: Request) {
+    return this.clientsService.cancelDriverOffer(id, cancelDto, req['user']);
   }
 }
