@@ -43,6 +43,19 @@ export class DriversController {
     return this.driversService.createDriver(driverData, req['user'], files)
   }
 
+  @ApiOperation({ summary: 'Update driver profile' })
+  @Patch('update-driver-profile')
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'profile', maxCount: 1 }
+  ]))
+  async updateDriverProfile(
+    @UploadedFiles() files: { passport?: any[] },
+    @Req() req: Request
+  ) {
+    return this.driversService.updateDrierProfile(files, req['user'])
+  }
+
   @ApiOperation({ summary: 'Add Driver Phone number' })
   @Post('driver-add-phone')
   @UsePipes(ValidationPipe)
