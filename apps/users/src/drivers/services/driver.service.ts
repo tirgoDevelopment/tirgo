@@ -274,6 +274,38 @@ export class DriversService {
     }
   }
 
+  async updateDrierProfile(files: any, user: any): Promise<BpmResponse> {
+    try {
+      if(user.userType !== UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+      
+      if(!files.profile || !files.profile[0]) {
+        throw new BadRequestException(ResponseStauses.FileIsRequired)
+      }
+
+      const driver = await this.driverRepository.findOneOrFail({where: { id: user.driver?.id }});
+      driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
+
+      const res = await this.awsService.uploadFile(UserTypes.Driver, files.profile[0])
+      if(!res) {
+        throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+      }
+
+      await this.driverRepository.save(driver)
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.message.includes('EntityNotFoundError')) {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
   async addPhoneNumber(createDriverPhoneDto: UpdateDriverPhoneDto, user: any): Promise<BpmResponse> {
     try {
       if(user.userType !== UserTypes.Driver) {
