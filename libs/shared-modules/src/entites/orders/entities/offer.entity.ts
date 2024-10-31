@@ -54,4 +54,6 @@ export class OrderOffer {
   @JoinColumn({ name: 'currency_id' })
   currency: Currency;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
+  createdAt: Date;
 }
