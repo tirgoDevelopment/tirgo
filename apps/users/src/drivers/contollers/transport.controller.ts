@@ -1,8 +1,8 @@
-import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Put } from '@nestjs/common';
+import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Put, Patch } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { TransportsService } from '../services/transport.service';
 import { DriverTransportDto } from '../..';
-import { DriverTransportVerificationDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
+import { ChangeStatusDriverTransportDto, DriverTransportVerificationDto, RemoveDriverTransportDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Drivers transport')
@@ -73,6 +73,20 @@ export class DriverTransportsController {
         @Body() data: any,
     ) {
         return this.driverTransportsService.updateDriverTransport(files, data)
+    }
+
+    @ApiOperation({ summary: 'Remove driver transport' })
+    @Post('remove-transport')
+    @UsePipes(ValidationPipe)
+    async removeDriverTransport(@Body() data: RemoveDriverTransportDto) {
+        return this.driverTransportsService.removeDriverTransport(data)
+    }
+
+    @ApiOperation({ summary: 'Change driver transport status' })
+    @Patch('change-transport-status')
+    @UsePipes(ValidationPipe)
+    async changeDriverTransportStatus(@Body() data: ChangeStatusDriverTransportDto) {
+        return this.driverTransportsService.changeActiveDriverTransport(data)
     }
 
     @ApiOperation({ summary: 'Get driver transport by driver id' })

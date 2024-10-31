@@ -20,7 +20,9 @@ export {
   CreateStaffDto,
   AppendDriversToTmsDto,
   AccountDto,
-  AgentDto
+  AgentDto,
+  RemoveDriverTransportDto,
+  ChangeStatusDriverTransportDto
 } from "@app/shared-modules";
 export { BpmResponse, UserTypes, UserStates, SendOtpTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
 export { AwsService, SundryService, CustomJwtService, TelegramBotService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';
