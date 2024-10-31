@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsUUID } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DriverTransportDto {
@@ -171,4 +171,35 @@ export class DriverTransportVerificationDto {
 
   @ApiProperty({ required: false })
   containerVolume: number;
+}
+
+export class RemoveDriverTransportDto {
+
+  @ApiProperty({ required: false })
+  @IsNotEmpty()
+  @IsNumber()
+  transportId?: number;
+  
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  driverId: number;
+}
+
+export class ChangeStatusDriverTransportDto {
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  transportId?: number;
+  
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  driverId: number;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  status: boolean;
 }

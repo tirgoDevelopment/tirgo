@@ -34,7 +34,7 @@ export { DriverPhoneNumber } from "./entites/driver/entities/driver-phonenumber.
 export { DriverDto, UpdateDriverDto } from "./entites/driver/dtos/driver.dto";
 export { DriverServiceDto } from "./entites/driver/dtos/driver-service.dto";
 export { DriverTransport } from "./entites/driver/entities/driver-transport.entity";
-export { DriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
+export { DriverTransportDto, RemoveDriverTransportDto, ChangeStatusDriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
 export { TransportVerification } from "./entites/driver/entities/transport-verification.entity";
 export { Config } from "./entites/config/config.entity";
 export { Order } from "./entites/orders/entities/order.entity";

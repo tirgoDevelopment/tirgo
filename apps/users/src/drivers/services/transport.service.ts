@@ -2,7 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AwsService, BadRequestException, BpmResponse, CargoLoadMethod, CargoType, Driver, DriverTransport, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, SundryService, TransportKind, TransportType, UserTypes } from '../..';
-import { DriverTransportDto, DriverTransportVerificationDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
+import { ChangeStatusDriverTransportDto, DriverTransportDto, DriverTransportVerificationDto, RemoveDriverTransportDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
 
 @Injectable()
 export class TransportsService {
@@ -347,6 +347,72 @@ export class TransportsService {
       }
 
       const res = await this.driverTransportsRepository.save(transport);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err;
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(err.message)
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async removeDriverTransport(dto: RemoveDriverTransportDto): Promise<BpmResponse> {
+    try {
+    
+      const data = await this.driverTransportsRepository.findOneOrFail({
+        where: {
+          id: dto.transportId,
+          driver: { id: dto.driverId}
+        }
+      })
+
+      data.deleted = true;
+      const res = await this.driverTransportsRepository.save(data);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err;
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(err.message)
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+  }
+
+  async changeActiveDriverTransport(dto: ChangeStatusDriverTransportDto): Promise<BpmResponse> {
+    try {
+      
+      if(dto.status) {
+        const count = await this.driverTransportsRepository.count({
+           where: { 
+            id: dto.transportId,
+            driver: { id: dto.driverId},
+            active: true
+           } 
+        })
+        if(count > 0) {
+          throw new InternalErrorException(ResponseStauses.DuplicateError, 'Driver already hase active transport');
+        }
+      }
+
+      const data = await this.driverTransportsRepository.findOneOrFail({
+        where: {
+          id: dto.transportId,
+          driver: { id: dto.driverId}
+        }
+      });
+      data.active = dto.status;
+      const res = await this.driverTransportsRepository.save(data);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
