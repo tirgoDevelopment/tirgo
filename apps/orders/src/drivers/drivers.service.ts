@@ -30,7 +30,11 @@ export class DriversService {
       if (!id) {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
-      const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['driverOffers', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+          const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, 
+            relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+            'additionalLoadingLocation',
+            'additionalDeliveryLocation', 'clientMerchant', 'client', 'driverOffers', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'additionalClient',
+             'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
