@@ -33,6 +33,7 @@ export class DriversService {
           const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false }, 
             relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
             'additionalLoadingLocation',
+            'cargoStatus',
             'additionalDeliveryLocation', 'clientMerchant', 'client', 'driverOffers', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'additionalClient',
              'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
       return new BpmResponse(true, order, null);
