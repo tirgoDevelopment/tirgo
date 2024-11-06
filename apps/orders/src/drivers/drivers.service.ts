@@ -123,6 +123,86 @@ export class DriversService {
     }
   }
 
+  async getDriverOrders(user: any, sortBy: string, sortType: string, pageIndex: string, pageSize: string, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
+    try {
+
+
+      if(!user || !user.id) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      const size = +pageSize || 10; // Number of items per page
+      const index = +pageIndex || 1
+
+      const sort: any = {};
+      if (sortBy && sortType) {
+        sort[sortBy] = sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+
+      const filter: any = { deleted: false, driver: { id: user.id } };
+      if (transportTypeId) {
+        filter.transportType = { id: transportTypeId }
+      }
+      if (orderId) {
+        filter.id = orderId;
+      }
+      if (transportKindId) {
+        filter.transportKind = { id: transportKindId }
+      }
+      if (statusId) {
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
+        if (status.code == CargoStatusCodes.Closed) {
+          filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
+        } else {
+          filter.cargoStatus = { id: statusId };
+        }
+      }
+      if (loadingLocation) {
+        filter.loadingLocation = { name: loadingLocation }
+      }
+      if (deliveryLocation) {
+        filter.deliveryLocation = { name: deliveryLocation }
+      }
+      if (createdAt) {
+        filter.createdAt = createdAt
+      }
+      if (sendDate) {
+        filter.sendDate = sendDate
+      }
+
+      const orders = await this.ordersRepository.find({
+        order: sort,
+        where: filter,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 
+        'driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers',
+        'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+      });
+
+      const merchantsCount = await this.ordersRepository.count({ where: filter });
+      const totalPagesCount = Math.ceil(merchantsCount / size);
+
+      if (orders.length) {
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size}, null);
+      } else {
+        throw new NoContentException();
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
   async getWaitingOrders(sortBy: string, sortType: string, pageIndex: string, pageSize: string, orderId: number, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
     try {
 

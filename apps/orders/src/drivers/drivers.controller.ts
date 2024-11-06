@@ -28,6 +28,26 @@ export class DriversController {
     return this.driversService.getOrders(sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
   }
 
+  @ApiOperation({ summary: 'Get all driver orders' })
+  @Get('orders')
+  async getOrders(
+    @Query('pageIndex') pageIndex: string,
+    @Query('pageSize') pageSize: string,
+    @Query('orderId') orderId: number,
+    @Query('sortBy') sortBy: string,
+    @Query('sortType') sortType: string,
+    @Query('statusId') statusId: string,
+    @Query('loadingLocation') loadingLocation: string,
+    @Query('deliveryLocation') deliveryLocation: string,
+    @Query('transportKindId') transportKindId: string,
+    @Query('transportTypeId') transportTypeId: string,
+    @Query('createdAt') createdAt: string,
+    @Query('sendDate') sendDate: string,
+    @Req() req: Request
+  ) {
+    return this.driversService.getDriverOrders(req['user'], sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
+  }
+
   @ApiOperation({ summary: 'Get all waiting orders' })
   @Get('all-waiting-orders')
   async getAllWaitginOrders(
