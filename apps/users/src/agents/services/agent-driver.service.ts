@@ -46,20 +46,6 @@ export class AgentDriversService {
       driver.citizenship = createDriverDto.citizenship;
       driver.createdBy = user;
 
-      if (files) {
-        const fileUploads = []
-        if (files.passport && files.passport[0]) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.passport[0])
-        }
-        if (files.driverLicense && files.driverLicense[0]) {
-          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.driverLicense[0])
-        }
-        // Upload files to AWS
-        await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
-      }
-
       // Save the driver without phone numbers first
       const resDriver = await await queryRunner.manager.save(Driver, driver);
 
@@ -72,7 +58,7 @@ export class AgentDriversService {
       }
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.number = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
@@ -99,8 +85,6 @@ export class AgentDriversService {
         };
         await queryRunner.manager.save(Transaction, transaction);
         driver.subscription = subscription;
-        driver.subscribedAt = new Date();
-        driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
         await await queryRunner.manager.save(Driver, driver);
       }
 
@@ -144,20 +128,6 @@ export class AgentDriversService {
       driver.email = updateDriverDto.email || driver.email;
       driver.citizenship = updateDriverDto.citizenship || driver.citizenship;
 
-      if (files) {
-        const fileUploads = []
-        if (files.passport && files.passport[0]) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.passport[0])
-        }
-        if (files.driverLicense && files.driverLicense[0]) {
-          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
-          fileUploads.push(files.driverLicense[0])
-        }
-        // Upload files to AWS
-        await Promise.all(fileUploads.map((file: any) => this.awsService.uploadFile(UserTypes.ClientMerchant, file)));
-      }
-
       // Save the driver without phone numbers first
       const resDriver = await await queryRunner.manager.save(Driver, driver);
 
@@ -169,7 +139,7 @@ export class AgentDriversService {
       }
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.number = phoneNumber.toString().replaceAll('+', '').trim();
         driverPhoneNumber.driver = resDriver; 
         return driverPhoneNumber;
       });
@@ -196,8 +166,6 @@ export class AgentDriversService {
         };
         await queryRunner.manager.save(Transaction, transaction);
         driver.subscription = subscription;
-        driver.subscribedAt = new Date();
-        driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
         await await queryRunner.manager.save(Driver, driver);
       }
 
@@ -238,10 +206,8 @@ export class AgentDriversService {
       }
 
       const subscription: Subscription = await this.subscriptionsRepository.findOneOrFail({ where: { active: true, id: subscriptionId }, relations: ['currency'] });
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { blocked: false, id: driverId } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { isBlocked: false, id: driverId } });
 
-      driver.subscribedAt = new Date();
-      driver.subscribedTill = dateFns.add(new Date(), { months: subscription.duration });
       driver.subscription = subscription;
       await queryRunner.manager.save(Driver, driver);
 

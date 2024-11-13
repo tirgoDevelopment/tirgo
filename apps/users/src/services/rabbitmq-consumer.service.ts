@@ -12,8 +12,8 @@ export class RabbitMQConsumerService implements OnModuleInit {
     ) {}
 
   async onModuleInit() {
-    // await this.init();
-    // await this.setupQueueConsumers();
+    await this.init();
+    await this.setupQueueConsumers();
   }
 
   async init() {
