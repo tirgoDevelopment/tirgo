@@ -1,9 +1,10 @@
-import { Client, Agent, AgentBankAccount, UserFile, Driver, DriverPhoneNumber, DriverDocuments, CargoTypeGroup, CargoStatus, Currency, Subscription, Role, Permission, ClientMerchant, ClientMerchantUser, ClientBankAccount, DriverMerchant, DriverMerchantUser, DriverBankAccount, OrderOffer, Account, Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber } from "@app/shared-modules";
+import { Client, Agent, AgentBankAccount, UserFile, Driver, DriverPhoneNumber, DriverDocuments, GetClientsDto, ClientDocuments, CargoTypeGroup, CargoStatus, Currency, Subscription, Role, Permission, ClientMerchant, ClientMerchantUser, ClientBankAccount, DriverMerchant, DriverMerchantUser, DriverBankAccount, OrderOffer, Account, Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber } from "@app/shared-modules";
 export {
   ClientDto,
   UpdateClientDto,
   DriverDto,
   GetDriversDto,
+  GetClientsDto,
   UpdateDriverPhoneDto, 
   UpdateDriverBirthDayDto,
   UpdateDriverDto,
@@ -58,6 +59,7 @@ export {
   ClientMerchantUser,
   DriverPhoneNumber,
   DriverDocuments,
+  ClientDocuments,
   ClientPhoneNumber,
   DriverMerchant,
   DriverBankAccount,

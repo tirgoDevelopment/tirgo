@@ -1,8 +1,9 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, User, UserStates, UserTypes } from '..';
+import { AwsS3BucketKeyNames, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, GetClientsDto, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, User, UserDocumentTypes, UserStates, UserTypes } from '..';
 import { ClientsRepository } from './repositories/client.repository';
+import { ClientDocuments } from '..';
 
 @Injectable()
 export class ClientsService {
@@ -10,12 +11,13 @@ export class ClientsService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(ClientPhoneNumber) private readonly clientPhoneNumberRepository: Repository<ClientPhoneNumber>,
     private awsService: AwsService,
     private readonly clientRepository: ClientsRepository,
     private sundriesService: SundryService
   ) { }
 
-  async createClient(passportFile: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
+  async createClient(profileFile: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
     const queryRunner = this.clientRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     try {
@@ -30,9 +32,6 @@ export class ClientsService {
       client.user = await this.usersRepository.save({ userType: UserTypes.Client, password: passwordHash });
       client.firstName = createClientDto.firstName; 0
       client.lastName = createClientDto.lastName;
-      client.email = createClientDto.email;
-      client.citizenship = createClientDto.citizenship;
-      client.additionalPhoneNumber = createClientDto.additionalPhoneNumber;
 
 
       if (user && user.userType == UserTypes.Staff) {
@@ -45,22 +44,33 @@ export class ClientsService {
       if (!(createClientDto.phoneNumbers instanceof Array)) {
         throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
       }
-      const clientPhoneNumbers = createClientDto.phoneNumbers.map(phoneNumber => {
+      const clientPhoneNumbers = createClientDto.phoneNumbers.map(phone => {
         const clientPhoneNumber = new ClientPhoneNumber();
-        clientPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        clientPhoneNumber.client = client;
+        clientPhoneNumber.number = phone.number.toString().replaceAll('+', '').trim();
+        clientPhoneNumber.code = phone.code;
+        clientPhoneNumber.isMain = phone.isMain;
+        clientPhoneNumber.client = client; 
         return clientPhoneNumber;
       });
-
       client.phoneNumbers = clientPhoneNumbers;
 
-      if (passportFile) {
-        const res = await this.awsService.uploadFile('client', passportFile);
-        if (!res) {
-          await queryRunner.rollbackTransaction();
-          throw new InternalErrorException(ResponseStauses.InternalServerError);
+      if(profileFile) {
+        const profileDoc = new ClientDocuments();
+        profileDoc.clientId = client.id;
+        profileDoc.name = profileFile.originalname.split(' ').join('').trim();
+        profileDoc.bucket = 'clients';
+        profileDoc.mimeType = profileFile.mimetype;
+        profileDoc.size = profileFile.size;
+        profileDoc.docType = UserDocumentTypes.Profile;
+        profileDoc.fileHash = profileFile.filename.split(' ').join('').trim();
+        profileDoc.description = profileFile.description;
+        client.profileFile = profileDoc;
+        await queryRunner.manager.save(ClientDocuments, profileDoc);
+
+        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.ClientsProfiles, profileDoc);
+        if(!res) {
+          throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
         }
-        client.passportFilePath = passportFile.originalname.split(' ').join('').trim();
       }
       await this.clientRepository.save(client);
 
@@ -70,7 +80,7 @@ export class ClientsService {
     } catch (err: any) {
       console.log(err)
       await queryRunner.rollbackTransaction();
-      this.awsService.deleteFile('client', passportFile.originalname.split(' ').join('').trim())
+      this.awsService.deleteFile(AwsS3BucketKeyNames.ClientsProfiles, profileFile.originalname.split(' ').join('').trim())
 
       if (err instanceof HttpException) {
         throw err
@@ -84,20 +94,35 @@ export class ClientsService {
     }
   }
 
-  async updateClient(files: any, updateClientDto: ClientDto): Promise<BpmResponse> {
+  async updateClient(profileFile: any, updateClientDto: ClientDto): Promise<BpmResponse> {
+    const queryRunner = this.clientRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
     try {
+      await queryRunner.startTransaction();
       const client = await this.clientRepository.findOneOrFail({ where: { id: updateClientDto.id } });
       client.firstName = updateClientDto.firstName || client.firstName;
       client.lastName = updateClientDto.lastName || client.lastName;
-      client.additionalPhoneNumber = updateClientDto.additionalPhoneNumber || client.additionalPhoneNumber;
-      client.email = updateClientDto.email || client.email;
-      client.citizenship = updateClientDto.citizenship || client.citizenship;
 
-      if (files && files.passport) {
-        client.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-        await this.awsService.uploadFile('client', files.passport[0]);
+      if(profileFile) {
+        const profileDoc = new ClientDocuments();
+        profileDoc.clientId = client.id;
+        profileDoc.name = profileFile.originalname.split(' ').join('').trim();
+        profileDoc.bucket = 'clients';
+        profileDoc.mimeType = profileFile.mimetype;
+        profileDoc.size = profileFile.size;
+        profileDoc.docType = UserDocumentTypes.Profile;
+        profileDoc.fileHash = profileFile.filename.split(' ').join('').trim();
+        profileDoc.description = profileFile.description;
+        client.profileFile = profileDoc;
+        await queryRunner.manager.save(ClientDocuments, profileDoc);
+
+        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.ClientsProfiles, profileDoc);
+        if(!res) {
+          throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+        }
       }
 
+      await queryRunner.commitTransaction();
       const res = await this.clientRepository.update({ id: client.id }, client);
       if (res.affected) {
         return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
@@ -110,13 +135,78 @@ export class ClientsService {
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
       }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateClientProfile(files: any, clientId: number): Promise<BpmResponse> {
+    try {
+
+      if(!files.profile || !files.profile[0]) {
+        throw new BadRequestException(ResponseStauses.FileIsRequired)
+      }
+      const client = await this.clientRepository.findOneOrFail({where: { id: clientId }});
+
+      const profile = files.profile[0];
+      const profileDoc = new ClientDocuments();
+      profileDoc.clientId = client.id;
+      profileDoc.name = profile.originalname.split(' ').join('').trim();
+      profileDoc.bucket = 'clients';
+      profileDoc.mimeType = profile.mimetype;
+      profileDoc.size = profile.size;
+      profileDoc.docType = UserDocumentTypes.Profile;
+      profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+      profileDoc.description = profile.description;
+      client.profileFile = profileDoc;
+        
+      const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.ClientsProfiles, profile);
+      if(!res) {
+        throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+      }
+
+      await this.clientRepository.save(client)
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.message.includes('EntityNotFoundError')) {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async addPhoneNumber(createDriverPhoneDto: any, clientId: number, user: any): Promise<BpmResponse> {
+    try {
+      const client = await this.clientRepository.findOneOrFail({where: { id: clientId }});
+
+      const newPhoneNumber = new ClientPhoneNumber();
+      newPhoneNumber.number = createDriverPhoneDto.number;
+      newPhoneNumber.code = createDriverPhoneDto.code;
+      newPhoneNumber.client = client;
+      newPhoneNumber.createdBy = user.id;
+
+      const result = await this.clientPhoneNumberRepository.save(newPhoneNumber)
+      console.log(result)
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
     }
   }
 
   async getClientById(id: number): Promise<BpmResponse> {
-    if (!id) {
-      return new BpmResponse(false, null, ['Id id required']);
-    }
     try {
       // const client = await this.clientRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['phoneNumbers', 'user'] });
       const client = await this.clientRepository
@@ -156,28 +246,26 @@ export class ClientsService {
     }
   }
 
-  async getAllClients(pageSize: string, pageIndex: string, sortBy: string, sortType: string, state: string, clientId: number, firstName: string, phoneNumber: string, createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
+  async getAllClients(query: GetClientsDto): Promise<BpmResponse> {
     try {
-      console.log({pageSize, pageIndex})
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 0;
-      console.log({size, index})
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 0;
       const sort: any = {};
-      if (sortBy && sortType) {
-        sort[sortBy] = sortType;
+      if (query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType;
       } else {
         sort['id'] = 'DESC'
       }
 
       const filter: any = {
-        state,
-        clientId,
-        firstName,
-        phoneNumber,
-        createdAtFrom,
-        createdAtTo,
-        lastLoginFrom,
-        lastLoginTo
+        state: query.state,
+        clientId: query.clientId,
+        firstName: query.firstName,
+        phoneNumber: query.phoneNumber,
+        createdAtFrom: query.createdAtFrom,
+        createdAtTo: query.createdAtTo,
+        lastLoginFrom: query.lastLoginFrom,
+        lastLoginTo: query.lastLoginTo
       };
 
       const clients = await this.clientRepository.findAllClients(filter, sort, index, size)
@@ -196,26 +284,24 @@ export class ClientsService {
     }
   }
 
-  async deleteClient(id: number): Promise<BpmResponse> {
+  async deleteClient(id: number, user: any): Promise<BpmResponse> {
     try {
-      if (!id) {
-        return new BpmResponse(false, null, ['Id is required']);
-      }
       const client = await this.clientRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
-      if (client.deleted) {
+      if (client.isDeleted) {
         // Client is already deleted
         throw new BadRequestException(ResponseStauses.AlreadyDeleted);
       }
 
-      client.deleted = true;
+      client.isDeleted = true;
+      client.deletedAt = new Date();
+      client.deletedBy = user;
 
-      // Update phoneNumbers by adding underscores
-      if (client.phoneNumbers) {
-        client.phoneNumbers.forEach(phone => {
-          phone.phoneNumber = '_' + phone.phoneNumber;
-        });
-      }
+    await Promise.all(client.phoneNumbers.map(async (phoneNumber) => {
+      phoneNumber.isDeleted = true;
+      phoneNumber.deletedAt = new Date();
+      await this.clientPhoneNumberRepository.save(phoneNumber);  
+    }))
 
       await this.clientRepository.save(client);
 
@@ -235,20 +321,14 @@ export class ClientsService {
 
   async restoreClient(id: number): Promise<BpmResponse> {
     try {
-      if (!id) {
-        return new BpmResponse(false, null, ['Id is required']);
-      }
       const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
-      const updateResult = await this.clientRepository.update({ id: client.id }, { deleted: false });
+      client.isDeleted = false;
+      client.deletedAt = null;
+      client.deletedBy = null;  
 
-      if (updateResult.affected > 0) {
-        // Update was successful
-        return new BpmResponse(true, null, null);
-      } else {
-        // Update did not affect any rows
-        throw new InternalErrorException(ResponseStauses.NotModified);
-      }
+      await this.clientRepository.save(client);
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Client not found
@@ -264,21 +344,10 @@ export class ClientsService {
 
   async blockClient(id: number, blockReason: string, user: User): Promise<BpmResponse> {
     try {
-      if (user.userType !== UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-      if (!id) {
-        return new BpmResponse(false, null, ['Id is required']);
-      }
       const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
-      if (client.blocked) {
-        // Client is already blocked
-        throw new BadRequestException(ResponseStauses.AlreadyBlocked);
-      }
-
       client.blockReason = blockReason;
-      client.blocked = true;
+      client.isBlocked = true;
       client.blockedAt = new Date();
       client.blockedBy = user;
 
@@ -299,20 +368,14 @@ export class ClientsService {
 
   async activateClient(id: number, user: User): Promise<BpmResponse> {
     try {
-      if (user.userType !== UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-      if (!id) {
-        return new BpmResponse(false, null, ['Id is required']);
-      }
       const client = await this.clientRepository.findOneOrFail({ where: { id } });
 
-      if (!client.blocked) {
+      if (!client.isBlocked) {
         // Client is already unblocked
         throw new BadRequestException(ResponseStauses.AlreadyActive);
       }
 
-      client.blocked = false;
+      client.isBlocked = false;
       client.blockReason = null;
       client.blockedAt = null;
       client.blockedBy = null;

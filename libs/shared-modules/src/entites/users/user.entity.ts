@@ -16,6 +16,7 @@ import { UserFile } from '../files/file.entity';
 import { Agent } from '../agents/entites/agent.entity';
 import { OrderOffer } from '../orders/entities/offer.entity';
 import { DriverDocuments } from '../driver/entities/driver-documents.entity';
+import { ClientPhoneNumber } from '../clients/client-phonenumber.entity';
 
 @Entity()
 export class User {
@@ -89,6 +90,9 @@ export class User {
 
     @OneToMany(() => Client, (client) => client.createdBy)
     createdClients: Client[];
+
+    @OneToMany(() => ClientPhoneNumber, (clientPhoneNumber) => clientPhoneNumber.createdBy)
+    createdClientPhoneNumbers: ClientPhoneNumber[];
 
     @ManyToOne(() => Agent, role => role.createdBy)
     createdAgents: Agent;

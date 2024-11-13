@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGene
 import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/user.entity';
 import { ClientPhoneNumber } from './client-phonenumber.entity';
+import { ClientDocuments } from './clients-documents.entity';
 
 @Entity()
 export class Client {
@@ -14,23 +15,9 @@ export class Client {
   @Column({ nullable: false, name: 'last_name' })
   lastName: string;
 
-  @Column({ nullable: true, unique: true, name: 'additional_phone_number' })
-  additionalPhoneNumber: string;
-
-  @Column({ nullable: true })
-  citizenship?: string;
-
-  @Column({ nullable: true })
-  email?: string;
-
-  @Column({ nullable: true, name: 'passport_file_path' })
-  passportFilePath?: string;
-
-  @Column({ nullable: true, name: 'otp_code' })
-  otpCode: number;
-
-  @Column({ type: 'bigint', nullable: true, name: 'otp_sent_datetime' })
-  otpSentDatetime: BigInt;  
+  @OneToOne(() => ClientDocuments, (document) => document.clientId  , { cascade: true, onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'profile_file_id' })
+  profileFile?: ClientDocuments;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
@@ -40,7 +27,7 @@ export class Client {
   createdBy: User;
 
   @Column({ default: false })
-  blocked: boolean;
+  isBlocked: boolean;
 
   @Column({ name: 'blocked_at', nullable: true })
   blockedAt: Date;
@@ -53,7 +40,7 @@ export class Client {
   blockedBy: User;
 
   @Column({ default: false })
-  deleted: boolean;
+  isDeleted: boolean;
 
   @Column({ name: 'deleted_at', nullable: true })
   deletedAt: Date;
