@@ -8,51 +8,54 @@ export class DriverTransportDto {
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  name: string;
+  brand: string;
 
   @ApiProperty({ required: false })
-  transportKindIds: any;
+  @IsNotEmpty()
+  transportKindId: string;
+
+  @ApiProperty({ required: false })
+  @IsNotEmpty()
+  transportTypeId: string;
 
   @ApiProperty({ required: false })
   loadCapacity: string;
 
   @ApiProperty({ required: false })
-  transportTypeIds: any;
+  cargoLoadMethodIds: any;
 
   @ApiProperty({ required: false })
-  loadingMethodIds: any;
+  capacity: string;
 
   @ApiProperty({ required: false })
-  cargoTypeIds: any;
+  volume:number;
 
   @ApiProperty({ required: false })
-  driverId: number;
+  cubature:number;
 
   @ApiProperty({ required: false })
-  cubicCapacity:number;
+  heightCubature: string;
 
   @ApiProperty({ required: false })
+  transportNumber:string; 
 
   @ApiProperty({ required: false })
-  stateNumber:string; 
+  isRefrigerator: number;
 
   @ApiProperty({ required: false })
-  refrigeratorFrom: number;
+  refrigeratorFromCount: number;
 
   @ApiProperty({ required: false })
-  refrigeratorTo: number;
-
-  @ApiProperty({ required: false })
-  refrigeratorCount: number;
+  refrigeratorToCount: number;
 
   @ApiProperty({ required: false })
   isHook: boolean;
 
   @ApiProperty({ required: false })
-  isHighCube: boolean;
+  isAdr: boolean;
 
   @ApiProperty({ required: false })
-  isAdr: boolean;
+  isMain: boolean;
 
   @ApiProperty({ required: false })
   techPassportFrontFilePath:string; 
@@ -77,12 +80,6 @@ export class DriverTransportDto {
 
   @ApiProperty({ required: false })
   passportFilePath:string;
-
-  @ApiProperty({ required: false })
-  cisternVolume: number;
-
-  @ApiProperty({ required: false })
-  containerVolume: number;
 }
 
 export class DriverTransportVerificationDto {

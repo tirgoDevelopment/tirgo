@@ -30,8 +30,9 @@ export { ClientPhoneNumber } from "./entites/clients/client-phonenumber.entity";
 export { ClientDto, UpdateClientDto } from "./entites/clients/client.dto";
 export { Driver } from "./entites/driver/entities/driver.entity";
 export { DriverService } from "./entites/driver/entities/driver-service.entity";
-export { DriverPhoneNumber } from "./entites/driver/entities/driver-phonenumber.entity";
-export { DriverDto, UpdateDriverDto } from "./entites/driver/dtos/driver.dto";
+export { DriverPhoneNumber } from "./entites/driver/entities/driver-phone-number.entity";
+export { DriverDocuments } from "./entites/driver/entities/driver-documents.entity";
+export { DriverDto, UpdateDriverDto, GetDriversDto, UpdateDriverPhoneDto, UpdateDriverBirthDayDto } from "./entites/driver/dtos/driver.dto";
 export { DriverServiceDto } from "./entites/driver/dtos/driver-service.dto";
 export { DriverTransport } from "./entites/driver/entities/driver-transport.entity";
 export { DriverTransportDto, RemoveDriverTransportDto, ChangeStatusDriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
@@ -125,7 +126,7 @@ export enum ResponseStauses {
   AlreadyBlocked = 'alreadyBlocked',
   AlreadyActive = 'alreadyActive',
   AlreadyVerified = 'alreadyVerified',
-  AlreadyAppended = 'alreadyAppended',
+  AlreadyAssigned = 'alreadyAssigned',
   AlreadyRejecteed = 'alreadyRejecteed',
   AlreadyAccepted = 'alreadyAccepted',
   DriverHasOrder = 'driverHasOrder',
@@ -142,7 +143,7 @@ export enum ResponseStauses {
   InvalidBankAccount = 'invalidBankAccount',
   BankAccountIsRequired = 'bankAccountIsRequired',
   FileIsRequired = 'fileIsRequired',
-  DriverAlreadyAppended = 'driverAlreadyAppended',
+  DriverAlreadyAssigned = 'driverAlreadyAssigned',
   OfferWasRejected = 'offerWasRejected',
   OfferWasCanceled = 'offerWasCanceled',
   NotEnoughBalance = 'notEnoughBalance',
@@ -191,6 +192,22 @@ export enum UserStates {
 export enum UsersRoleNames {
   SuperAdmin = 'Super admin',
   Agent = 'Agent',
+}
+
+export enum UserDocumentTypes {
+  Profile = 'profile',
+  DriverLicense = 'driverLicense',
+  Passport = 'passport',
+  IdCard = 'idCard'
+}
+
+export enum AwsS3BucketKeyNames {
+  Drivers = 'drivers',
+  DriversProfiles = 'drivers/profiles',
+  DriversPassports = 'drivers/passports',
+  DriversLicenses = 'drivers/driver-licenses',
+  Clients = 'clients',
+  Tmcs = 'tmcs',
 }
 
 export class BpmResponse {

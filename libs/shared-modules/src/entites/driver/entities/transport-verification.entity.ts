@@ -63,7 +63,7 @@ export class TransportVerification {
   @Column({ default: false })
   deleted: boolean;
 
-  @OneToOne(() => DriverTransport, (driverTransport) => driverTransport.transportVerification)
-  @JoinColumn({ name: 'driver_transport_id' })
-  driverTransport: DriverTransport; 
+  // @OneToOne(() => DriverTransport, (driverTransport) => driverTransport.transportVerification)
+  // @JoinColumn({ name: 'driver_transport_id' })
+  // driverTransport: DriverTransport; 
 }

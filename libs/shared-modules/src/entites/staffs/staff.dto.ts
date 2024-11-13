@@ -59,9 +59,4 @@ export class AppendDriversToTmsDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   driverIds: number[];
-
-  @ApiProperty({ required: true })
-  @IsNumber()
-  @IsNotEmpty()
-  driverMerchantId: number;
 }

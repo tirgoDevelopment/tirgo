@@ -1,8 +1,11 @@
-import { Client, Agent, AgentBankAccount, UserFile, Driver, DriverPhoneNumber, CargoTypeGroup, CargoStatus, Currency, Subscription, Role, Permission, ClientMerchant, ClientMerchantUser, ClientBankAccount, DriverMerchant, DriverMerchantUser, DriverBankAccount, OrderOffer, Account, Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber } from "@app/shared-modules";
+import { Client, Agent, AgentBankAccount, UserFile, Driver, DriverPhoneNumber, DriverDocuments, CargoTypeGroup, CargoStatus, Currency, Subscription, Role, Permission, ClientMerchant, ClientMerchantUser, ClientBankAccount, DriverMerchant, DriverMerchantUser, DriverBankAccount, OrderOffer, Account, Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod, CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber } from "@app/shared-modules";
 export {
   ClientDto,
   UpdateClientDto,
   DriverDto,
+  GetDriversDto,
+  UpdateDriverPhoneDto, 
+  UpdateDriverBirthDayDto,
   UpdateDriverDto,
   ClientMerchantDto,
   CreateClientMerchantDto,
@@ -24,7 +27,7 @@ export {
   RemoveDriverTransportDto,
   ChangeStatusDriverTransportDto
 } from "@app/shared-modules";
-export { BpmResponse, UserTypes, UserStates, SendOtpTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
+export { BpmResponse, UserTypes, UserStates, AwsS3BucketKeyNames, SendOtpTypes, UserDocumentTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
 export { AwsService, SundryService, CustomJwtService, TelegramBotService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';
 
 export {
@@ -54,6 +57,7 @@ export {
   ClientBankAccount,
   ClientMerchantUser,
   DriverPhoneNumber,
+  DriverDocuments,
   ClientPhoneNumber,
   DriverMerchant,
   DriverBankAccount,

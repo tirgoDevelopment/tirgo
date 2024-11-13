@@ -20,7 +20,7 @@ import { SubscriptionPayment } from '../entites/references/entities/subscription
 import { ClientMerchant } from '../entites/client-merchant/entites/client-merchant.entity';
 import { ClientBankAccount } from '../entites/client-merchant/entites/bank-account.entity';
 import { ClientMerchantUser } from '../entites/client-merchant/entites/client-merchant-user.entity';
-import { DriverPhoneNumber } from '../entites/driver/entities/driver-phonenumber.entity';
+import { DriverPhoneNumber } from '../entites/driver/entities/driver-phone-number.entity';
 import { ClientPhoneNumber } from '../entites/clients/client-phonenumber.entity';
 import { DriverMerchant } from '../entites/driver-merchant/entites/driver-merchant.entity';
 import { DriverBankAccount } from '../entites/driver-merchant/entites/bank-account.entity';
@@ -36,6 +36,7 @@ import { Transaction } from '../entites/transactions/transaction.entity';
 import { Permission } from '../entites/role/entities/permission.entity';
 import { LocationPlace } from '../entites/orders/entities/location.entity';
 import { TelegramBotUser } from '../entites/bot/bot.entity';
+import { DriverDocuments } from '../entites/driver/entities/driver-documents.entity';
 
 const entities = [
     TransportType,
@@ -63,6 +64,7 @@ const entities = [
     ClientBankAccount,
     ClientMerchantUser,
     DriverPhoneNumber,
+    DriverDocuments,
     ClientPhoneNumber,
     DriverMerchant,
     DriverBankAccount,
@@ -85,7 +87,7 @@ const entities = [
             password: 'postgres',
             username: 'postgres',
             entities: entities,
-            database: 'test',
+            database: 'tirgo',
             synchronize: true,
         }),
     ],

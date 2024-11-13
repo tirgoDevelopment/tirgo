@@ -425,9 +425,9 @@ export class DriverMerchantsService {
 
   async appendDriverToMerchant(dto: AppendDriverMerchantDto, user: User): Promise<BpmResponse> {
     try {
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { phoneNumbers: { phoneNumber: dto.phoneNumber.toString().replaceAll('+', '').trim() } } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { phoneNumbers: { number: dto.phoneNumber.toString().replaceAll('+', '').trim() } } });
       if (driver.driverMerchant) {
-        throw new BadRequestException(ResponseStauses.AlreadyAppended);
+        throw new BadRequestException(ResponseStauses.AlreadyAssigned);
       }
       const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: user.driverMerchantUser?.driverMerchant?.id } });
       driver.driverMerchant = merchant;

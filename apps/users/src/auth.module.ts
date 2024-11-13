@@ -33,7 +33,7 @@ import { TelegramBotController } from './bot/telegram-bot.controller';
     ClientsModule,
     DriversModule,
     StaffsModule,
-    AgentsModule,
+    // AgentsModule,
     AuthModule,
     SseModule
   ],

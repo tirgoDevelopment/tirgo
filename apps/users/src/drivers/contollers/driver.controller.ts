@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Delete, Query, Patch, Put, Req, Param, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { AppendDriversToTmsDto, DriverDto, UpdateDriverDto } from '../..';
+import { AppendDriversToTmsDto, DriverDto, UpdateDriverDto, GetDriversDto } from '../..';
 import { DriversService } from '../services/driver.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UpdateDriverBirthDayDto, UpdateDriverPhoneDto } from '@app/shared-modules/entites/driver/dtos/driver.dto';
@@ -13,7 +13,7 @@ export class DriversController {
   ) { }
 
   @ApiOperation({ summary: 'Driver register' })
-  @Post('register-driver')
+  @Post('register')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'profile', maxCount: 1 }
@@ -27,7 +27,7 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Create Driver' })
-  @Post('create-driver')
+  @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'driverLicense', maxCount: 1 },
@@ -44,31 +44,33 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Update driver profile' })
-  @Patch('update-driver-profile')
+  @Patch(':id/profile')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'profile', maxCount: 1 }
   ]))
   async updateDriverProfile(
     @UploadedFiles() files: { passport?: any[] },
+    @Param('id') id: number,
     @Req() req: Request
   ) {
-    return this.driversService.updateDrierProfile(files, req['user'])
+    return this.driversService.updateDrierProfile(files, id)
   }
 
   @ApiOperation({ summary: 'Add Driver Phone number' })
-  @Post('driver-add-phone')
+  @Post(':id/phone-number')
   @UsePipes(ValidationPipe)
   reateDriver(
+    @Param('id') id: number,
     @Body() driverData: UpdateDriverPhoneDto,
     @Req() req: Request
   ) {
-    return this.driversService.addPhoneNumber(driverData, req['user'])
+    return this.driversService.addPhoneNumber(driverData, id, req['user'])
   }
 
   @ApiOperation({ summary: 'Update driver' })
   @UsePipes(ValidationPipe)
-  @Put('update-driver')
+  @Put()
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'passport', maxCount: 1 },
     { name: 'driverLicense', maxCount: 1 },
@@ -82,122 +84,83 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Update driver phone' })
   @UsePipes(ValidationPipe)
-  @Patch('update-driver-phone/:id')
+  @Patch(':driverId/phone-number/:phoneNumberId')
   updateDriverPhone(
-    @Param('id') id: number,
+    @Param('driverId') driverId: number,
+    @Param('phoneNumberId') phoneNumberId: number,
     @Body() updateDriverPhoneDto: UpdateDriverPhoneDto,
     @Req() req: Request
   ) {
-    console.log(req['user'])
-    return this.driversService.updateDriverPhoneNumber(updateDriverPhoneDto, id, req['user'])
+    return this.driversService.updateDriverPhoneNumber(updateDriverPhoneDto, driverId, phoneNumberId, req['user'])
   }
 
   @ApiOperation({ summary: 'Update driver birthday date' })
   @UsePipes(ValidationPipe)
-  @Patch('update-driver-birthday-date')
-  updateDriverBirthday(
-    @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto,
-    @Req() req: Request
-  ) {
+  @Patch(':id/birthday-date')
+  updateDriverBirthday(@Param('id') id: number, @Body() updateDriverBirthDayDto: UpdateDriverBirthDayDto, @Req() req: Request) {
     console.log(req['user'])
-    return this.driversService.updateDriverBirthday(updateDriverBirthDayDto,  req['user'])
+    return this.driversService.updateDriverBirthday(updateDriverBirthDayDto, id,  req['user'])
   }
 
   @ApiOperation({ summary: 'Get driver by id' })
-  @Get('driver-by-id')
-  async getDriver(@Query('id') id: number, @Query('userId') userId: number) {
-    return this.driversService.getDriverById(id, userId);
+  @Get(':id')
+  async getDriver(@Param('id') id: number) {
+    return this.driversService.getDriverById(id);
   }
 
-  @ApiOperation({ summary: 'Get driver by id' })
-  @Get('driver-by-phone')
-  async getDriverByPhone(@Query('phone') phone: number) {
-    return this.driversService.getDriverByPhone(phone);
+  @ApiOperation({ summary: 'Get driver by phone number' })
+  @Get('phone-number/:phoneNumber')
+  async getDriverByPhone(@Param('phoneNumber') phoneNumber: number) {
+    return this.driversService.getDriverByPhone(phoneNumber);
   }
 
   @ApiOperation({ summary: 'Get all drivers' })
-  @Get('all-drivers') 
-  async getDrivers(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-    @Query('driverId') driverId: number,
-    @Query('firstName') firstName: string,
-    @Query('phoneNumber') phoneNumber: string,
-    @Query('transportKindId') transportKindId: string,
-    @Query('transportTypeId') transportTypeId: string,
-    @Query('isSubscribed') isSubscribed: boolean,
-    @Query('status') status: string,
-    @Query('userState') state: string,
-    @Query('isVerified') isVerified: string,
-    @Query('createdAtFrom') createdAtFrom: string,
-    @Query('createdAtTo') createdAtTo: string,
-    @Query('lastLoginFrom') lastLoginFrom: string,
-    @Query('lastLoginTo') lastLoginTo: string
-  ) {
-    return this.driversService.getAllDrivers(pageSize, pageIndex, sortBy, sortType, driverId, firstName, phoneNumber, transportKindId, transportTypeId, isSubscribed, status, state, isVerified,  createdAtFrom, createdAtTo, lastLoginFrom, lastLoginTo)
+  @Get() 
+  async getDrivers(@Query() query: GetDriversDto) {
+    return this.driversService.getAllDrivers(query);
   }
 
   @ApiOperation({ summary: 'Get all merchant drivers' })
-  @Get('merchant-drivers')
-  async getMerchantDeletedDrivers(
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-    @Query('merchantId') merchantId: number,
-    @Query('userState') state: string,
-  ) {
-    return this.driversService.getMerchantDrivers(pageSize, pageIndex, sortBy, sortType, merchantId, state);
+  @Get('merchants/:merchantId')
+  async getMerchantDeletedDrivers(@Param('merchantId') merchantId: number, @Query() query: GetDriversDto) {
+    return this.driversService.getMerchantDrivers(merchantId, query);
   }
 
   @ApiOperation({ summary: 'Get drivers by agent id' })
-  @Get('agent-drivers')
-  async getDriverByAgent(
-    @Query('agentId') agentId: number,
-    @Query('driverId') driverId: number,
-    @Query('firstName') firstName: string,
-    @Query('createdAtFrom') createdAtFrom: string,
-    @Query('createdAtTo') createdAtTo: string,
-    @Query('pageSize') pageSize: string,
-    @Query('pageIndex') pageIndex: string,
-    @Query('sortBy') sortBy: string,
-    @Query('sortType') sortType: string,
-    @Query('userState') state: string
-  ) {
-    return this.driversService.getDriverByAgentId(pageSize, pageIndex, sortBy, sortType, state, agentId, driverId, firstName, createdAtFrom, createdAtTo);
+  @Get('agents/:agentId')
+  async getDriverByAgent(@Param() agentId: number, @Query() query: GetDriversDto) {
+    return this.driversService.getAgentDrivers(agentId, query);
   }
 
   @ApiOperation({ summary: 'Delete driver' })
-  @Delete()
-  async deleteDriver(@Query('id') id: number, @Req() req: Request) {
+  @Delete(':id')
+  async deleteDriver(@Param('id') id: number, @Req() req: Request) {
     return this.driversService.deleteDriver(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Block driver' })
-  @Patch('block-driver')
-  async blockDriver(@Query('id') id: number, @Body('blockReason') blockReason: string, @Req() req: Request) {
+  @Patch(':id/block')
+  async blockDriver(@Param('id') id: number, @Body('blockReason') blockReason: string, @Req() req: Request) {
     return this.driversService.blockDriver(id, blockReason, req['user']);
   }
 
   @ApiOperation({ summary: 'Unblock driver' })
-  @Patch('unblock-driver')
-  async activateDriver(@Query('id') id: number, @Req() req: Request) {
+  @Patch(':id/unblock')
+  async activateDriver(@Param('id') id: number, @Req() req: Request) {
     return this.driversService.activateDriver(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Admin append driver to agent' })
-  @Post('append-driver-to-agent')
-  async appendToAgent(@Body('driverId') driverId: number, @Body('agentId') agentId: number, @Req() req: Request) {
-    return this.driversService.appendDriverToAgent(driverId, agentId, req['user']?.id)
+  @Post(':driverId/agents/:agentId')
+  async assignToAgent(@Param('driverId') driverId: number, @Param('agentId') agentId: number, @Req() req: Request) {
+    return this.driversService.assignDriverToAgent(driverId, agentId, req['user']?.id)
   }
 
-  @ApiOperation({ summary: 'Append drivers to tms' })
-  @Post('append-drivers-tms')
+  @ApiOperation({ summary: 'Assign drivers to TMC' })
+  @Post('tmcs/:tmcId/assign')
   @UsePipes(ValidationPipe)
-  async appendDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Req() req: Request) {
-    return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
+  async assignDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Param('tmcId') tmcId: number, @Req() req: Request) {
+    return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, tmcId, req['user']);
   }
 
 }

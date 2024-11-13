@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MinLength, MaxLength, IsNumber } from "class-validator";
+import { IsNotEmpty, IsString, MinLength, MaxLength, IsNumber, IsOptional, IsBoolean, IsDateString } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DriverDto {
@@ -20,16 +20,16 @@ export class DriverDto {
   birthdayDate?: Date;
  
   @ApiProperty({ required: false })
-  profilePhotoFilePath?: string;
+  profilePhoto?: string;
 
   @ApiProperty({ required: false })
   citizenship?: string;
 
   @ApiProperty({ required: false })
-  passportFilePath?: string;
+  passport?: string;
 
   @ApiProperty({ required: false })
-  driverLicenseFilePath?: string;
+  driverLicense?: string;
 
   @ApiProperty({ required: false })
   email?: string;
@@ -70,12 +70,12 @@ export class UpdateDriverDto {
 
   @ApiProperty({ required: false })
   citizenship?: string;
-
+  
   @ApiProperty({ required: false })
-  passportFilePath?: string;
-
+  passport?: string;
+  
   @ApiProperty({ required: false })
-  driverLicenseFilePath?: string;
+  driverLicense?: string;
 
   @ApiProperty({ required: false })
   email?: string;
@@ -84,7 +84,7 @@ export class UpdateDriverDto {
   birthdayDate?: Date;
  
   @ApiProperty({ required: false })
-  profilePhotoFilePath?: string;
+  profilePhoto?: string;
 
   @ApiProperty({ required: false })
   agentId: number;
@@ -95,14 +95,92 @@ export class UpdateDriverPhoneDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
-  phoneNumber: string;
+  number: string;
 
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  code: number;
 }
 
 export class UpdateDriverBirthDayDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
-  birthdayDate: string;
+  birthdayDate: Date;
 
+}
+
+export class GetDriversDto {
+  @IsOptional()
+  @IsNumber()
+  pageSize?: number;
+
+  @IsOptional()
+  @IsNumber()
+  pageIndex?: number;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsString()
+  sortType?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsNumber()
+  driverId?: number;
+
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsNumber()
+  transportKindId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  transportTypeId?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isSubscribed?: boolean;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  userState?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isVerified?: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  createdAtFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdAtTo?: string;
+
+  @IsOptional()
+  @IsDateString()
+  lastLoginFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  lastLoginTo?: string;
 }

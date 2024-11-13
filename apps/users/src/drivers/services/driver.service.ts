@@ -1,9 +1,9 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDocuments, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserDocumentTypes, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
-import { UpdateDriverBirthDayDto, UpdateDriverPhoneDto } from '@app/shared-modules/entites/driver/dtos/driver.dto';
+import { GetDriversDto, UpdateDriverBirthDayDto, UpdateDriverPhoneDto, AwsS3BucketKeyNames } from '../../';
 
 @Injectable()
 export class DriversService {
@@ -29,47 +29,46 @@ export class DriversService {
     try {
 
       const driver: Driver = new Driver();
-      if(user) {
-        switch (user.userType) {
-          case UserTypes.DriverMerchantUser: 
-          const driverMerchant: DriverMerchant = await queryRunner.manager.findOneOrFail(DriverMerchant, { where: { id: user.driverMerchantUser.driverMerchant?.id } }) 
-          driver.driverMerchant = driverMerchant;
-               break;
-        }
-      }
       const newUser = await queryRunner.manager.save(User, { userType: 'driver' });
       driver.user = newUser;
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
-      driver.email = createDriverDto.email;
       driver.birthdayDate = createDriverDto.birthdayDate;
-      driver.citizenship = createDriverDto.citizenship;
-      driver.createdBy = user;
       
-      if(files) {
-        const uploads: any = [];
-        if(files.profile) {
-          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
-          uploads.push(files.profile[0]);
+      if(files && files.profile[0]) {
+        const profile = files.profile[0];
+        const profileDoc = new DriverDocuments();
+        profileDoc.driverId = driver.id;
+        profileDoc.name = profile.originalname.split(' ').join('').trim();
+        profileDoc.bucket = 'drivers';
+        profileDoc.mimeType = profile.mimetype;
+        profileDoc.size = profile.size;
+        profileDoc.docType = UserDocumentTypes.Profile;
+        profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+        profileDoc.description = profile.description;
+        driver.profileFile = profileDoc;
+        await queryRunner.manager.save(DriverDocuments, profileDoc);
+
+        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.DriversProfiles, profile);
+        if(!res) {
+          throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
         }
-
-        // Upload files to AWS
-      const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
-      if(res.includes(false)) {
-        // await queryRunner.rollbackTransaction();
-        throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
       }
 
-      }
       if(typeof createDriverDto.phoneNumbers == 'string') {
         createDriverDto.phoneNumbers = JSON.parse(createDriverDto.phoneNumbers)
       }
+      
       if(!(createDriverDto.phoneNumbers instanceof Array)) {
         throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
       }
-      const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
+
+      const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phone => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.number = phone.number.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.code = phone.code;
+        driverPhoneNumber.isMain = phone.isMain;
+        driverPhoneNumber.createdBy = newUser;
         driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
@@ -82,17 +81,17 @@ export class DriversService {
       // Commit the transaction
       await queryRunner.commitTransaction();
 
-      const payload: any = { sub: newDriver.id, userId: newUser.id, userType: 'driver' };
+      const payload: any = { sub: newDriver.id, userId: newUser.id, userType: UserTypes.Driver };
       const token: string = await this.customJwtService.generateToken(payload);
 
       return new BpmResponse(true, { token }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
-      await queryRunner.rollbackTransaction();
-      // this.awsService.deleteFile('driver', passportFile.split(' ').join('').trim());
-      // this.awsService.deleteFile('driver', driverLicenseFile.split(' ').join('').trim());
-
       console.error(err);
-
+      await queryRunner.rollbackTransaction();
+      if(files && files.profile[0]) {
+        const profile = files.profile[0].originalname.split(' ').join('').trim();
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, profile);
+      }
       if (err instanceof HttpException) {
         throw err;
       } else if (err.code === '23505') {
@@ -135,40 +134,78 @@ export class DriversService {
       driver.citizenship = createDriverDto.citizenship;
       driver.createdBy = user;
       
-      // password
-
       if(files) {
         const uploads: any = [];
         if(files.passport) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          uploads.push(files.passport[0]);
+          const passport = files.passport[0];
+          const passportDoc = new DriverDocuments();
+          passportDoc.driverId = driver.id;
+          passportDoc.name = passport.originalname.split(' ').join('').trim();
+          passportDoc.bucket = AwsS3BucketKeyNames.DriversPassports;
+          passportDoc.mimeType = passport.mimetype;
+          passportDoc.size = passport.size;
+          passportDoc.docType = UserDocumentTypes.Passport;
+          passportDoc.fileHash = passport.filename.split(' ').join('').trim();
+          passportDoc.description = passport.description;
+          driver.passportFile = passportDoc;
+          await queryRunner.manager.save(DriverDocuments, passportDoc);
+          passport.bucket = AwsS3BucketKeyNames.DriversPassports;
+          uploads.push(passport);
         }
         if(files.profile) {
-          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
-          uploads.push(files.profile[0]);
+          const profile = files.profile[0];
+          const profileDoc = new DriverDocuments();
+          profileDoc.driverId = driver.id;
+          profileDoc.name = profile.originalname.split(' ').join('').trim();
+          profileDoc.bucket = AwsS3BucketKeyNames.DriversProfiles;
+          profileDoc.mimeType = profile.mimetype;
+          profileDoc.size = profile.size;
+          profileDoc.docType = UserDocumentTypes.Profile;
+          profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+          profileDoc.description = profile.description;
+          driver.profileFile = profileDoc;
+          await queryRunner.manager.save(DriverDocuments, profileDoc);
+          profile.bucket = AwsS3BucketKeyNames.DriversProfiles;
+          uploads.push(profile);
         }
         if(files.driverLicense) {
-          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
-          uploads.push(files.driverLicense[0]);
+          const driverLicense = files.driverLicense[0];
+          const driverLicenseDoc = new DriverDocuments();
+          driverLicenseDoc.driverId = driver.id;
+          driverLicenseDoc.name = driverLicense.originalname.split(' ').join('').trim();
+          driverLicenseDoc.bucket = AwsS3BucketKeyNames.DriversLicenses;
+          driverLicenseDoc.mimeType = driverLicense.mimetype;
+          driverLicenseDoc.size = driverLicense.size;
+          driverLicenseDoc.docType = UserDocumentTypes.DriverLicense;
+          driverLicenseDoc.fileHash = driverLicense.filename.split(' ').join('').trim();
+          driverLicenseDoc.description = driverLicense.description;
+          driver.driverLicenseFile = driverLicenseDoc;
+          await queryRunner.manager.save(DriverDocuments, driverLicenseDoc);
+          driverLicense.bucket = AwsS3BucketKeyNames.DriversLicenses;
+          uploads.push(driverLicense);
         }
 
         // Upload files to AWS
-      const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+      const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(file.bucket, file)));
       if(res.includes(false)) {
         // await queryRunner.rollbackTransaction();
         throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
       }
 
       }
+
       if(typeof createDriverDto.phoneNumbers == 'string') {
         createDriverDto.phoneNumbers = JSON.parse(createDriverDto.phoneNumbers)
       }
       if(!(createDriverDto.phoneNumbers instanceof Array)) {
         throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
       }
-      const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phoneNumber => {
+      const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phone => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.number = phone.number.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.code = phone.code;
+        driverPhoneNumber.isMain = phone.isMain;
+        driverPhoneNumber.createdBy = newUser;
         driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
@@ -184,9 +221,15 @@ export class DriversService {
       return new BpmResponse(true, { id: newDriver.id }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
-      // this.awsService.deleteFile('driver', passportFile.split(' ').join('').trim());
-      // this.awsService.deleteFile('driver', driverLicenseFile.split(' ').join('').trim());
-
+      if(files && files.passport[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversPassports, files.passport[0]?.originalname.split(' ').join('').trim());
+      }
+      if(files && files.profile[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, files.profile[0]?.originalname.split(' ').join('').trim());
+      }
+      if(files && files.driverLicense[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversLicenses, files.driverLicense[0]?.originalname.split(' ').join('').trim());
+      }
       console.error(err);
 
       if (err instanceof HttpException) {
@@ -202,65 +245,126 @@ export class DriversService {
   }
 
   async updateDriver(updateDriverDto: UpdateDriverDto, files: any): Promise<BpmResponse> {
+    const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
     try {
-      const driver = await this.driverRepository.findOneOrFail({ where: { id: updateDriverDto.id } });
+      await queryRunner.startTransaction();
+
+      const driver = await queryRunner.manager.findOneOrFail(Driver, { where: { id: updateDriverDto.id } })
       driver.firstName = updateDriverDto.firstName || driver.firstName;
       driver.lastName = updateDriverDto.lastName || driver.lastName;
       driver.email = updateDriverDto.email || driver.email;
       driver.birthdayDate = updateDriverDto.birthdayDate || driver.birthdayDate;
       driver.citizenship = updateDriverDto.citizenship || driver.citizenship;
 
-      const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phoneNumber => {
+      const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phone => {
         const driverPhoneNumber = new DriverPhoneNumber();
-        driverPhoneNumber.phoneNumber = phoneNumber.toString().replaceAll('+', '').trim();
-        driverPhoneNumber.driver = driver;
+        driverPhoneNumber.number = phone.number.toString().replaceAll('+', '').trim();
+        driverPhoneNumber.code = phone.code;
+        driverPhoneNumber.isMain = phone.isMain;
+        driverPhoneNumber.driver = driver; 
         return driverPhoneNumber;
       });
       driver.phoneNumbers = driverPhoneNumbers;
             
       if(files) {
         const uploads: any = [];
-        if(files.profile) {
-          driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
-          uploads.push(files.profile[0]);
-        } 
-        if(files.driverLicense) {
-          driver.driverLicenseFilePath = files.driverLicense[0].originalname.split(' ').join('').trim();
-          uploads.push(files.driverLicense[0])
-        }
         if(files.passport) {
-          driver.passportFilePath = files.passport[0].originalname.split(' ').join('').trim();
-          uploads.push(files.passport[0]);
+          const passport = files.passport[0];
+          const passportDoc = new DriverDocuments();
+          passportDoc.driverId = driver.id;
+          passportDoc.name = passport.originalname.split(' ').join('').trim();
+          passportDoc.bucket = AwsS3BucketKeyNames.DriversPassports;
+          passportDoc.mimeType = passport.mimetype;
+          passportDoc.size = passport.size;
+          passportDoc.docType = UserDocumentTypes.Passport;
+          passportDoc.fileHash = passport.filename.split(' ').join('').trim();
+          passportDoc.description = passport.description;
+          driver.passportFile = passportDoc;
+          await queryRunner.manager.save(DriverDocuments, passportDoc);
+          passport.bucket = AwsS3BucketKeyNames.DriversPassports;
+          uploads.push(passport);
+        }
+        if(files.profile) {
+          const profile = files.profile[0];
+          const profileDoc = new DriverDocuments();
+          profileDoc.driverId = driver.id;
+          profileDoc.name = profile.originalname.split(' ').join('').trim();
+          profileDoc.bucket = AwsS3BucketKeyNames.DriversProfiles;
+          profileDoc.mimeType = profile.mimetype;
+          profileDoc.size = profile.size;
+          profileDoc.docType = UserDocumentTypes.Profile;
+          profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+          profileDoc.description = profile.description;
+          driver.profileFile = profileDoc;
+          await queryRunner.manager.save(DriverDocuments, profileDoc);
+          profile.bucket = AwsS3BucketKeyNames.DriversProfiles;
+          uploads.push(profile);
+        }
+        if(files.driverLicense) {
+          const driverLicense = files.driverLicense[0];
+          const driverLicenseDoc = new DriverDocuments();
+          driverLicenseDoc.driverId = driver.id;
+          driverLicenseDoc.name = driverLicense.originalname.split(' ').join('').trim();
+          driverLicenseDoc.bucket = AwsS3BucketKeyNames.DriversLicenses;
+          driverLicenseDoc.mimeType = driverLicense.mimetype;
+          driverLicenseDoc.size = driverLicense.size;
+          driverLicenseDoc.docType = UserDocumentTypes.DriverLicense;
+          driverLicenseDoc.fileHash = driverLicense.filename.split(' ').join('').trim();
+          driverLicenseDoc.description = driverLicense.description;
+          driver.driverLicenseFile = driverLicenseDoc;
+          await queryRunner.manager.save(DriverDocuments, driverLicenseDoc);
+          driverLicense.bucket = AwsS3BucketKeyNames.DriversLicenses;
+          uploads.push(driverLicense);
         }
 
         // Upload files to AWS
-        const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(UserTypes.Driver, file)));
+        const res = await Promise.all(uploads.map((file: any) => this.awsService.uploadFile(file.bucket, file)));
         if(res.includes(false)) {
           // await queryRunner.rollbackTransaction();
           throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
         }
-      }
 
-      await this.driverRepository.save(driver);
+      }
+      
+      await queryRunner.manager.save(Driver, driver)
+           
+      // Commit the transaction
+      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
     } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      if(files && files.passport[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversPassports, files.passport[0]?.originalname.split(' ').join('').trim());
+      }
+      if(files && files.profile[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, files.profile[0]?.originalname.split(' ').join('').trim());
+      }
+      if(files && files.driverLicense[0]) {
+        this.awsService.deleteFile(AwsS3BucketKeyNames.DriversLicenses, files.driverLicense[0]?.originalname.split(' ').join('').trim());
+      }   
       console.log(err)
-      throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      if (err instanceof HttpException) {
+        throw err;
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async updateDriverPhoneNumber(updateDriverPhoneDto: UpdateDriverPhoneDto, phoneNumberId: number, user: any): Promise<BpmResponse> {
+  async updateDriverPhoneNumber(updateDriverPhoneDto: UpdateDriverPhoneDto, driverId: number, phoneNumberId: number, user: any): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied)
-      }
-      const result = await this.driverPhoneNumbersRepository.update({ id: phoneNumberId, driver: { id: user.driver?.id } }, { phoneNumber: updateDriverPhoneDto.phoneNumber })
-      console.log(result)
-      if(result.affected) {
-        return new BpmResponse(true, null, null);
-      } else {
-        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
-      }
+
+      const phoneNumber = await this.driverPhoneNumbersRepository.findOneOrFail({ where: { id: phoneNumberId, driver: { id: driverId } } });
+      console.log(phoneNumber)
+      phoneNumber.number = updateDriverPhoneDto.number.toString().replaceAll('+', '').trim();
+      phoneNumber.code = updateDriverPhoneDto.code;
+      await this.driverPhoneNumbersRepository.save(phoneNumber);
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
@@ -274,20 +378,27 @@ export class DriversService {
     }
   }
 
-  async updateDrierProfile(files: any, user: any): Promise<BpmResponse> {
+  async updateDrierProfile(files: any, driverId: number): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied)
-      }
-      
+
       if(!files.profile || !files.profile[0]) {
         throw new BadRequestException(ResponseStauses.FileIsRequired)
       }
+      const driver = await this.driverRepository.findOneOrFail({where: { id: driverId }});
 
-      const driver = await this.driverRepository.findOneOrFail({where: { id: user.driver?.id }});
-      driver.profileFilePath = files.profile[0].originalname.split(' ').join('').trim();
-
-      const res = await this.awsService.uploadFile(UserTypes.Driver, files.profile[0])
+      const profile = files.profile[0];
+      const profileDoc = new DriverDocuments();
+      profileDoc.driverId = driver.id;
+      profileDoc.name = profile.originalname.split(' ').join('').trim();
+      profileDoc.bucket = 'drivers';
+      profileDoc.mimeType = profile.mimetype;
+      profileDoc.size = profile.size;
+      profileDoc.docType = UserDocumentTypes.Profile;
+      profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+      profileDoc.description = profile.description;
+      driver.profileFile = profileDoc;
+        
+      const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.DriversProfiles, profile);
       if(!res) {
         throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
       }
@@ -306,16 +417,15 @@ export class DriversService {
       }
     }
   }
-  async addPhoneNumber(createDriverPhoneDto: UpdateDriverPhoneDto, user: any): Promise<BpmResponse> {
+  async addPhoneNumber(createDriverPhoneDto: UpdateDriverPhoneDto, driverId: number, user: any): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied)
-      }
-      const driver = await this.driverRepository.findOneOrFail({where: { id: user.driver?.id }});
+      const driver = await this.driverRepository.findOneOrFail({where: { id: driverId }});
 
       const newPhoneNumber = new DriverPhoneNumber();
-      newPhoneNumber.phoneNumber = createDriverPhoneDto.phoneNumber;
+      newPhoneNumber.number = createDriverPhoneDto.number;
+      newPhoneNumber.code = createDriverPhoneDto.code;
       newPhoneNumber.driver = driver;
+      newPhoneNumber.createdBy = user.id;
 
       const result = await this.driverPhoneNumbersRepository.save(newPhoneNumber)
       console.log(result)
@@ -333,18 +443,14 @@ export class DriversService {
     }
   }
 
-  async updateDriverBirthday(updateDriverBirthDayDto: UpdateDriverBirthDayDto, user: any): Promise<BpmResponse> {
+  async updateDriverBirthday(updateDriverBirthDayDto: UpdateDriverBirthDayDto, driverId: number, user: any): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied)
-      }
-      const result = await this.driverRepository.update({id: user.driver?.id}, { birthdayDate: updateDriverBirthDayDto.birthdayDate });
-      console.log('b result', result)
-      if(result.affected) {
-        return new BpmResponse(true, null, null);
-      } else {
-        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
-      }
+      const driver = await this.driverRepository.findOneOrFail({ where: {id: driverId} });
+      driver.birthdayDate = updateDriverBirthDayDto.birthdayDate;
+
+      await this.driverRepository.save(driver);
+
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {
@@ -359,14 +465,8 @@ export class DriversService {
     }
   }
 
-  async getDriverById(id: number, userId: number): Promise<BpmResponse> {
-    if (!id) {
-      return new BpmResponse(false, null, ['Id id required']);
-    }
+  async getDriverById(id: number): Promise<BpmResponse> {
 
-    if (!userId) {
-      return new BpmResponse(false, null, ['UserId id required']);
-    }
     try {
       const driver = await this.driverRepository
         .createQueryBuilder('driver')
@@ -387,46 +487,13 @@ export class DriversService {
         .where(`driver.deleted = false AND driver.id = ${id}`)
         .getOneOrFail();
 
-        const canceledOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { cargoStatus: { code: CargoStatusCodes.Canceled } } } });
-        const closdOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: true,  cargoStatus: { code: CargoStatusCodes.Closed } } } });
-        const completedOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: false,  cargoStatus: { code: CargoStatusCodes.Completed } } } });
-
-      const balances: Transaction[] = await this.transactionsRepository.query(`
-      SELECT
-      SUM(CASE WHEN t.transaction_type = '${TransactionTypes.TopUp}' AND verified = true AND created_by = ${userId} THEN t.amount ELSE 0 END) -
-      SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' AND verified = true AND created_by = ${userId} THEN t.amount ELSE 0 END) -
-      SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = true AND driver_id = ${id} THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS activeBalance,
-      SUM(CASE WHEN t.transaction_type = '${TransactionTypes.Withdraw}' AND verified = false AND rejected = false AND created_by = ${userId} THEN t.amount ELSE 0 END) AS onRequestBalance,
-      SUM(CASE WHEN t.transaction_type = '${TransactionTypes.SecureTransaction}' AND t.verified = false AND driver_id = ${id} AND  t.rejected = false THEN t.amount + t.tax_amount + t.additional_amount ELSE 0 END) AS frozenBalance,
-      c.name as currencyName
-      FROM
-          transaction t
-      LEFT JOIN currency c on c.id = t.currency_id 
-      GROUP BY
-          c.name;
-    `);
-      driver['balances'] = balances;
-      driver['canceledOrdersCount'] = canceledOrdersCount;
-      driver['completedOrdersCount'] = closdOrdersCount + completedOrdersCount;
+        // const canceledOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { cargoStatus: { code: CargoStatusCodes.Canceled } } } });
+        // const closdOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: true,  cargoStatus: { code: CargoStatusCodes.Closed } } } });
+        // const completedOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: false,  cargoStatus: { code: CargoStatusCodes.Completed } } } });
 
 
-      // const queryBuilder = this.transactionsRepository.createQueryBuilder('t')
-      //   .select([
-      //     't.id as id',
-      //     't.amount as amount',
-      //     't.rejected as rejected',
-      //     't.verified as verified',
-      //     't.transaction_type AS "transctionType"',
-      //     't.user_type AS "userType"',
-      //     't.comment as comment',
-      //     't.created_at AS "createdAt"',
-      //     'c.name AS "currencyName"'
-      //   ])
-      //   .leftJoin(Currency, 'c', 'c.id = t.currency_id')
-      //   .where(`t.created_by = ${userId}`);
-      // driver['transactions'] = await queryBuilder.getRawMany();
-      const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
-      driver['isBusy'] = isDriverBusy;
+      // const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
+      // driver['isBusy'] = isDriverBusy;
       return new BpmResponse(true, driver, null);
     } catch (err: any) {
       console.log(err)
@@ -443,11 +510,6 @@ export class DriversService {
   }
 
   async getDriverByPhone(phone: number): Promise<BpmResponse> {
-    // Parameter validation
-    if (!phone) {
-        return new BpmResponse(false, null, ['Phone number is required']);
-    }
-
     try {
         // Query to retrieve driver by phone number
         const driver = await this.driverRepository
@@ -483,33 +545,31 @@ export class DriversService {
     }
 }
 
-  async getAllDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, driverId: number, firstName: string, phoneNumber: string, transportKindId: string,
-    transportTypeId: string, isSubscribed: boolean, status: string, state: string, isVerified: string,
-     createdAtFrom: string, createdAtTo: string, lastLoginFrom: string, lastLoginTo: string): Promise<BpmResponse> {
+  async getAllDrivers(query: GetDriversDto): Promise<BpmResponse> {
     try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 0;
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 0;
       const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
+      if(query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType; 
       } else {
         sort['id'] = 'DESC'
       }
     const filter: any = { 
       deleted: false,
-      driverId, 
-      firstName, 
-      phoneNumber, 
-      transportKindId,
-      transportTypeId, 
-      isSubscribed, 
-      status, 
-      isVerified,
-      createdAtFrom, 
-      createdAtTo, 
-      lastLoginFrom, 
-      lastLoginTo,
-      state
+      driverId: query.driverId, 
+      firstName: query.firstName, 
+      phoneNumber: query.phoneNumber, 
+      transportKindId: query.transportKindId,
+      transportTypeId: query.transportTypeId, 
+      isSubscribed: query.isSubscribed, 
+      status: query.status, 
+      isVerified: query.isVerified,
+      createdAtFrom: query.createdAtFrom, 
+      createdAtTo: query.createdAtTo, 
+      lastLoginFrom: query.lastLoginFrom, 
+      lastLoginTo: query.lastLoginTo,
+      state: query.state
      };
     
       const drivers = await this.driverRepository.findAllDrivers(filter, sort, index, size)
@@ -532,23 +592,36 @@ export class DriversService {
     }
   }
   
-  async getMerchantDrivers(pageSize: string, pageIndex: string, sortBy: string, sortType: string, merchantId: number, state: string): Promise<BpmResponse> {
+  async getMerchantDrivers(merchantId: number, query: GetDriversDto): Promise<BpmResponse> {
     try {
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 0;
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 0;
       if(!merchantId || isNaN(merchantId)) {
         throw new BadRequestException(ResponseStauses.MerchantIdIsRequired)
       }
 
       const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType; 
+      if(query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType; 
       } else {
         sort['id'] = 'DESC'
       }
       const filter = {
         merchantId,
-        state
+        deleted: false,
+        driverId: query.driverId, 
+        firstName: query.firstName, 
+        phoneNumber: query.phoneNumber, 
+        transportKindId: query.transportKindId,
+        transportTypeId: query.transportTypeId, 
+        isSubscribed: query.isSubscribed, 
+        status: query.status, 
+        isVerified: query.isVerified,
+        createdAtFrom: query.createdAtFrom, 
+        createdAtTo: query.createdAtTo, 
+        lastLoginFrom: query.lastLoginFrom, 
+        lastLoginTo: query.lastLoginTo,
+        state: query.state
       }
       const drivers = await this.driverRepository.findAllMerchantDrivers(filter, sort, index, size);
  
@@ -574,26 +647,24 @@ export class DriversService {
 
   async deleteDriver(id: number, user: User): Promise<BpmResponse> {
     try {
-      if (!id) {
-        throw new BadRequestException(ResponseStauses.IdIsRequired);
-      }
       const driver = await this.driverRepository.findOneOrFail({ where: { id }, relations: ['phoneNumbers'] });
 
-      if (driver.deleted) {
+      if (driver.isDeleted) {
         // Driver is already deleted
         throw new BadRequestException(ResponseStauses.AlreadyDeleted);
       }
 
-      driver.deleted = true;
+      driver.isDeleted = true;
       driver.deletedAt = new Date();
       driver.deletedBy = user;
 
       // Update phoneNumbers by adding underscores
-      if (driver.phoneNumbers) {
-        driver.phoneNumbers.forEach(phone => {
-              phone.phoneNumber = '_' + phone.phoneNumber;
-          });
-      }
+      await Promise.all(driver.phoneNumbers.map(async (phoneNumber) => {
+        phoneNumber.isDeleted = true;
+        phoneNumber.deletedAt = new Date();
+        await this.driverPhoneNumbersRepository.save(phoneNumber);  
+      }))
+
       await this.driverRepository.save(driver);
 
       return new BpmResponse(true, null, null);
@@ -612,20 +683,14 @@ export class DriversService {
 
   async blockDriver(id: number, blockReason: string, user: User): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-      if (!id) {
-        throw new BadRequestException(ResponseStauses.IdIsRequired);
-      }
       const driver = await this.driverRepository.findOneOrFail({ where: { id } });
 
-      if (driver.blocked) {
+      if (driver.isBlocked) {
         // Driver is already blocked
         throw new BadRequestException(ResponseStauses.AlreadyBlocked);
       }
 
-      driver.blocked = true;
+      driver.isBlocked = true;
       driver.blockedAt = new Date();
       driver.blockReason = blockReason;
       driver.blockedBy = user;
@@ -648,15 +713,9 @@ export class DriversService {
 
   async activateDriver(id: number, user: User): Promise<BpmResponse> {
     try {
-      if(user.userType !== UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-      if (!id) {
-        throw new BadRequestException(ResponseStauses.IdIsRequired);
-      }
       const driver = await this.driverRepository.findOneOrFail({ where: { id } });
 
-      if (!driver.blocked) {
+      if (!driver.isBlocked) {
         // Driver is already active
         throw new BadRequestException(ResponseStauses.AlreadyActive);
       }
@@ -664,7 +723,7 @@ export class DriversService {
       driver.blockReason = null;
       driver.blockedAt = null;
       driver.blockedBy = null;
-      driver.blocked = false;
+      driver.isBlocked = false;
 
       await this.driverRepository.save(driver);
 
@@ -682,17 +741,17 @@ export class DriversService {
     }
   }
 
-  async appendDriverToMerchant(dto: AppendDriversToTmsDto, user: User): Promise<BpmResponse> {
+  async appendDriverToMerchant(dto: AppendDriversToTmsDto, tmcId: number, user: User): Promise<BpmResponse> {
     try {
       if(user.userType !== UserTypes.Staff) {
           throw new BadRequestException(ResponseStauses.AccessDenied);
       }
       const drivers: Driver[] = await this.driverRepository.find({ where: { id: In(dto.driverIds) }, relations: ['driverMerchant'] });
-      const isAppandedExists = drivers.some((el: any) => el.driverMerchant);
-      if(isAppandedExists) {
-        throw new BadRequestException(ResponseStauses.AlreadyAppended);
+      const isAssignedExists = drivers.some((el: any) => el.driverMerchant);
+      if(isAssignedExists) {
+        throw new BadRequestException(ResponseStauses.AlreadyAssigned);
       }
-      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: dto.driverMerchantId }, relations: ['drivers'] });
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: tmcId }, relations: ['drivers'] });
       if(merchant.drivers?.length) {
         merchant.drivers = [ ...merchant.drivers, ...drivers];
       } else {
@@ -712,20 +771,14 @@ export class DriversService {
     }
   }
 
-  async appendDriverToAgent(driverId: number, agentId: number, userId: number): Promise<BpmResponse> {
+  async assignDriverToAgent(driverId: number, agentId: number, user: any): Promise<BpmResponse> {
     try {
 
-      if (!driverId || isNaN(driverId)) {
-        throw new BadRequestException(ResponseStauses.DriverIdIsRequired);
-      } else if (!agentId || isNaN(agentId)) {
-        throw new BadRequestException(ResponseStauses.AgentIdIsRequired);
-      }
-
-      const isExists: boolean = await this.driverRepository.exists({ where: { id: driverId, agent: { id: agentId }, blocked: false, deleted: false } });
+      const isExists: boolean = await this.driverRepository.exists({ where: { id: driverId, agent: { id: agentId }, isBlocked: false, isDeleted: false } });
       if(isExists) {
-        throw new BadRequestException(ResponseStauses.DriverAlreadyAppended)
+        throw new BadRequestException(ResponseStauses.DriverAlreadyAssigned);
       }
-      const driver: Driver = await this.driverRepository.findOneOrFail({ where: { id: driverId, blocked: false, deleted: false } });
+      const driver: Driver = await this.driverRepository.findOneOrFail({ where: { id: driverId, isBlocked: false, isDeleted: false } });
       const agent: Agent = await this.agentsRepository.findOneOrFail({ where: { id: agentId, blocked: false, deleted: false } });
 
       driver.agent = agent;
@@ -744,14 +797,14 @@ export class DriversService {
     }
   }
 
-  async getDriverByAgentId(pageSize: string, pageIndex: string, sortBy: string, sortType: string, state: string, agentId: number, driverId: number, firstName: string, createdAtFrom: string, createdAtTo: string): Promise<BpmResponse> {
+  async getAgentDrivers(agentId: number, query: GetDriversDto): Promise<BpmResponse> {
     try {
 
-      const size = +pageSize || 10; // Number of items per page
-      const index = +pageIndex || 0;
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 0;
       const sort: any = {};
-      if(sortBy && sortType) {
-        sort[sortBy] = sortType;
+      if(query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType;
       } else {
         sort['id'] = 'DESC'
       }
@@ -760,12 +813,21 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       let filter: any = { 
-        state,
         agentId,
-        driverId,
-        firstName,
-        createdAtFrom,
-        createdAtTo
+        deleted: false,
+        driverId: query.driverId, 
+        firstName: query.firstName, 
+        phoneNumber: query.phoneNumber, 
+        transportKindId: query.transportKindId,
+        transportTypeId: query.transportTypeId, 
+        isSubscribed: query.isSubscribed, 
+        status: query.status, 
+        isVerified: query.isVerified,
+        createdAtFrom: query.createdAtFrom, 
+        createdAtTo: query.createdAtTo, 
+        lastLoginFrom: query.lastLoginFrom, 
+        lastLoginTo: query.lastLoginTo,
+        state: query.state
       };
 
       const drivers = await this.driverRepository.findAllAgentDrivers(filter, sort, index, size);

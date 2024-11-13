@@ -12,7 +12,7 @@ export class RabbitMQSenderService implements OnModuleInit {
     ) {}
 
   async onModuleInit() {
-    await this.init();
+    // await this.init();
   }
   
   async init() {

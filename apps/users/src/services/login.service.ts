@@ -146,7 +146,7 @@ export class LoginService {
                     user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
                     break;
                 case UserTypes.Driver:
-                    user = (await this.driversRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
+                    user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } } }))[0];
                     if(user) {
                         user.otpCode = code;
                         user.otpSentDatetime = new Date().getTime();
@@ -194,7 +194,7 @@ export class LoginService {
                     user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } }, relations: ['user'] }))[0];
                     break;
                 case UserTypes.Driver:
-                    user = (await this.driversRepository.find({ where: { phoneNumbers: { phoneNumber } }, relations: ['user'] }))[0];
+                    user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } }, relations: ['user'] }))[0];
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected

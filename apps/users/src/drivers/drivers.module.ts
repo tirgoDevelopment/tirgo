@@ -3,8 +3,8 @@ import { Agent, AwsService, CargoLoadMethod, CargoType, Client, CustomJwtService
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriversController } from "./contollers/driver.controller";
 import { DriversService } from "./services/driver.service";
-import { TransportsService } from "./services/transport.service";
-import { DriverTransportsController } from "./contollers/transport.controller";
+import { TransportsService } from "./services/driver-transport.service";
+import { DriverTransportsController } from "./contollers/driver-transport.controller";
 import { DriversRepository } from "./repositories/drivers.repository";
 import { DataSource } from "typeorm";
 import { JwtService } from "@nestjs/jwt";

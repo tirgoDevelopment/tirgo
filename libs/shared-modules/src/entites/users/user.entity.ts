@@ -3,6 +3,8 @@ import { Staff } from '../staffs/staff.entity';
 import { Transaction } from '../transactions/transaction.entity';
 import { Client } from '../clients/client.entity';
 import { Driver } from '../driver/entities/driver.entity';
+import { DriverPhoneNumber } from '../driver/entities/driver-phone-number.entity';
+import { DriverTransport } from '../driver/entities/driver-transport.entity';
 import { SubscriptionPayment } from '../references/entities/subscription-payment.entity';
 import { ClientMerchantUser } from '../client-merchant/entites/client-merchant-user.entity';
 import { ClientMerchant } from '../client-merchant/entites/client-merchant.entity';
@@ -13,6 +15,7 @@ import { Order } from '../orders/entities/order.entity';
 import { UserFile } from '../files/file.entity';
 import { Agent } from '../agents/entites/agent.entity';
 import { OrderOffer } from '../orders/entities/offer.entity';
+import { DriverDocuments } from '../driver/entities/driver-documents.entity';
 
 @Entity()
 export class User {
@@ -78,6 +81,12 @@ export class User {
     @OneToMany(() => Driver, (driver) => driver.createdBy)
     createdDrivers: Driver[];
 
+    @OneToMany(() => DriverPhoneNumber, (driverPhoneNumber) => driverPhoneNumber.createdBy)
+    createdDriverPhoneNumbers: DriverPhoneNumber[];
+
+    @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.createdBy)
+    createdDriverTransports: DriverTransport[];
+
     @OneToMany(() => Client, (client) => client.createdBy)
     createdClients: Client[];
 
@@ -105,6 +114,9 @@ export class User {
     @OneToMany(() => Driver, (driver) => driver.verifiedBy)
     verifiedDrivers: Driver[];
 
+    @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.verifiedBy)
+    verifiedDriverTransports: DriverTransport[];
+
     // relations belongs to blocked by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.blockedBy)
     blockedDriverMerchants: DriverMerchant[];
@@ -128,6 +140,15 @@ export class User {
     @OneToMany(() => Driver, (driver) => driver.deletedBy)
     deletedDrivers: Driver[];
 
+    @OneToMany(() => DriverPhoneNumber, (driverPhoneNumber) => driverPhoneNumber.createdBy)
+    deletedDriverPhoneNumbers: DriverPhoneNumber[];
+
+    @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.deletedBy)
+    deletedDriverDocuments: DriverDocuments[];
+
+    @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.deletedBy)
+    deletedDriverTransports: DriverTransport[];
+
     @OneToMany(() => Client, (client) => client.deletedBy)
     deletedClients: Client[];
 
@@ -140,4 +161,9 @@ export class User {
     // canceltedrelations belongs to  by user
     @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
     canceledOrderOffers: OrderOffer[];
+
+    // relations belongs to updated by user
+    @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.updatedBy)
+    updatedDriverDocuments: DriverDocuments[];
 }
+

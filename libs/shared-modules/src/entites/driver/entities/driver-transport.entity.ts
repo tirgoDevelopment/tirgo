@@ -1,11 +1,9 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Driver } from './driver.entity';
-import { TransportVerification } from './transport-verification.entity';
 import { TransportType } from '../../references/entities/transport-type.entity';
 import { TransportKind } from '../../references/entities/transport-kind.entity';
-import { CargoType } from '../../references/entities/cargo-type.entity';
-import { CargoPackage } from '../../references/entities/cargo-package.entity';
 import { CargoLoadMethod } from '../../references/entities/cargo-load-method.entity';
+import { User } from '../../users/user.entity';
 
 @Entity()
 export class DriverTransport {
@@ -13,91 +11,81 @@ export class DriverTransport {
   id: number;
 
   @Column({ nullable: true })
-  name: string;
+  brand: string;
 
-  @Column({ nullable: true, name: 'cubic_capacity' })
-  cubicCapacity?: number;
-
-  @Column({ nullable: true, name: 'state_number' })
-  stateNumber?: string
+  @Column({ nullable: true, name: 'transport_number' })
+  transportNumber: string;
 
   @Column({ nullable: true, name: 'is_adr' })
   isAdr?: boolean;
 
-  @Column({ nullable: true, name: 'is_high_cube' })
-  isHighCube?: boolean;
-
-  @Column({ nullable: true, name: 'refrigerator_from' })
-  refrigeratorFrom: number;
-
-  @Column({ nullable: true, name: 'refrigerator_to' })
-  refrigeratorTo: number;
-
-  @Column({ nullable: true, name: 'refrigerator_count' })
-  refrigeratorCount: number;
-
+  @Column({ nullable: true, name: 'is_main' })
+  isMain?: boolean;
+  
   @Column({ nullable: true, name: 'is_hook' })
   isHook: boolean;
+
+  @Column({ nullable: true })
+  capacity: string;
+
+  @Column({ nullable: true })
+  volume: number;
+
+  @Column({ nullable: true })
+  cubature: number;
+
+  @Column({ nullable: true, name: 'height_cubature' })
+  heightCubature: string;
+  
+  @Column({ nullable: true, name: 'is_refrigerator' })
+  isRefrigerator: number;
+
+  @Column({ nullable: true, name: 'refrigerator_from_count' })
+  refrigeratorFromCount: number;
+
+  @Column({ nullable: true, name: 'refrigerator_to_count' })
+  refrigeratorToCount: number;
 
   @Column({ nullable: true, name: 'load_capacity' })
   loadCapacity: string;
 
-  @Column({ nullable: true, name: 'tech_passport_front_file_path' })
-  techPassportFrontFilePath?: string;
-
-  @Column({ nullable: true, name: 'tech_passport_back_file_path' })
-  techPassportBackFilePath?: string;
-
-  @Column({ nullable: true, name: 'transport_front_file_path' })
-  transportFrontFilePath:string; 
-
-  @Column({ nullable: true, name: 'transport_back_file_path' })
-  transportBackFilePath:string; 
-
-  @Column({ nullable: true, name: 'transport_side_file_path' })
-  transportSideFilePath:string; 
-  
-  @Column({ nullable: true, name: 'passport_file_path' })
-  passportFilePath?: string;
-    
-  @Column({ nullable: true, name: 'driver_license_file_path' })
-  driverLicenseFilePath?: string;
-
-  @Column({ nullable: true, name: 'goods_transportation_license_card_file_path' })
-  goodsTransportationLicenseCardFilePath?: string;
-
-  @Column({ nullable: true, name: 'cistern_volume' })
-  cisternVolume: number;
-
-  @Column({ nullable: true, name: 'container_volume' })
-  containerVolume: number;
-
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
 
-  @Column({ default: true })
-  active: boolean;
+  @ManyToOne(() => User, (user) => user.createdDriverTransports, { nullable: true })
+  @JoinColumn({ name: 'created_by_id' })
+  createdBy: User;
 
-  @Column({ default: false })
-  deleted: boolean;
+  @Column({ nullable: true, name: 'is_deleted' })
+  isDeleted: boolean;
 
-  @Column({ default: false })
-  verified: boolean;
+  @Column({ type: 'timestamp', name: 'deleted_at' })
+  deletedAt: Date; 
 
-  @Column({ default: false })
-  requestToVerification: boolean;
+  @ManyToOne(() => User, (user) => user.deletedDriverTransports, { nullable: true })
+  @JoinColumn({ name: 'deleted_by_id' })
+  deletedBy: User;
 
-  @ManyToMany(() => TransportType)
+  @Column({ nullable: true, name: 'delete_reason' })
+  deleteReason: string;
+
+  @Column({ nullable: true, name: 'is_verified' })
+  isVerified: boolean;
+
+  @Column({ type: 'timestamp', name: 'verified_at' })
+  verifiedAt: Date; 
+
+  @ManyToOne(() => User, (user) => user.verifiedDriverTransports, { nullable: true })
+  @JoinColumn({ name: 'verified_by_id' })
+  verifiedBy: User;
+
+  @OneToOne(() => TransportType)
   @JoinTable()
-  transportTypes: TransportType[];
+  transportType: TransportType;
 
-  @ManyToMany(() => TransportKind)
+  @OneToOne(() => TransportKind)
   @JoinTable()
-  transportKinds: TransportKind[];
-
-  @ManyToMany(() => CargoType)
-  @JoinTable()
-  cargoTypes: CargoType[];
+  transportKind: TransportKind;
 
   @ManyToMany(() => CargoLoadMethod)
   @JoinTable()
@@ -106,8 +94,4 @@ export class DriverTransport {
   @ManyToOne(() => Driver, driver => driver.driverTransports)
   @JoinColumn({ name: 'driver_id' })
   driver?: Driver;
-  
-  @OneToOne(() => TransportVerification, { cascade: true })
-  @JoinColumn({ name: 'transport_verification_id' })
-  transportVerification: TransportVerification;
 }
