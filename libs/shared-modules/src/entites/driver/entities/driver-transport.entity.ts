@@ -80,11 +80,11 @@ export class DriverTransport {
   verifiedBy: User;
 
   @OneToOne(() => TransportType)
-  @JoinTable()
+  @JoinColumn({ name: 'transport_type_id' })
   transportType: TransportType;
 
   @OneToOne(() => TransportKind)
-  @JoinTable()
+  @JoinColumn({ name: 'transport_kind_id' })
   transportKind: TransportKind;
 
   @ManyToMany(() => CargoLoadMethod)

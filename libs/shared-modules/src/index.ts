@@ -123,6 +123,7 @@ export enum ResponseStauses {
   DuplicateError = 'duplicateError',
   PhoneNumberDuplicateError = 'phoneNumberDuplicateError',
   PhoneNumbeersMustBeArray = 'phoneNumbeersMustBeArray',
+  PhoneNumberShouldContainAll = 'PhoneNumberShouldContainAll',
   AlreadyDeleted = 'alreadyDeleted',
   AlreadyBlocked = 'alreadyBlocked',
   AlreadyActive = 'alreadyActive',

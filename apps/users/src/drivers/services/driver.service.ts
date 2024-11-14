@@ -34,17 +34,16 @@ export class DriversService {
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
       driver.birthdayDate = createDriverDto.birthdayDate;
-      
-      if(files && files.profile[0]) {
+      if(files && files.profile) {
         const profile = files.profile[0];
         const profileDoc = new DriverDocuments();
         profileDoc.driverId = driver.id;
-        profileDoc.name = profile.originalname.split(' ').join('').trim();
+        profileDoc.name = profile.originalname?.split(' ').join('').trim();
         profileDoc.bucket = 'drivers';
         profileDoc.mimeType = profile.mimetype;
         profileDoc.size = profile.size;
         profileDoc.docType = UserDocumentTypes.Profile;
-        profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+        profileDoc.fileHash = profile.filename?.split(' ').join('').trim();
         profileDoc.description = profile.description;
         driver.profileFile = profileDoc;
         await queryRunner.manager.save(DriverDocuments, profileDoc);
@@ -64,6 +63,9 @@ export class DriversService {
       }
 
       const driverPhoneNumbers = createDriverDto.phoneNumbers.map(phone => {
+        if(!phone.number || !phone.code || !phone.isMain) {
+          throw new BadRequestException(ResponseStauses.PhoneNumberShouldContainAll)
+        }
         const driverPhoneNumber = new DriverPhoneNumber();
         driverPhoneNumber.number = phone.number.toString().replaceAll('+', '').trim();
         driverPhoneNumber.code = phone.code;
@@ -88,7 +90,7 @@ export class DriversService {
     } catch (err: any) {
       console.error(err);
       await queryRunner.rollbackTransaction();
-      if(files && files.profile[0]) {
+      if(files && files.profile) {
         const profile = files.profile[0].originalname.split(' ').join('').trim();
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, profile);
       }
@@ -360,7 +362,6 @@ export class DriversService {
     try {
 
       const phoneNumber = await this.driverPhoneNumbersRepository.findOneOrFail({ where: { id: phoneNumberId, driver: { id: driverId } } });
-      console.log(phoneNumber)
       phoneNumber.number = updateDriverPhoneDto.number.toString().replaceAll('+', '').trim();
       phoneNumber.code = updateDriverPhoneDto.code;
       await this.driverPhoneNumbersRepository.save(phoneNumber);
@@ -470,21 +471,21 @@ export class DriversService {
     try {
       const driver = await this.driverRepository
         .createQueryBuilder('driver')
-        .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
         .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
         .leftJoinAndSelect('driver.driverTransports', 'transports')
-        .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
-        .leftJoinAndSelect('transports.transportKinds', 'transportKinds')
+        .leftJoinAndSelect('transports.transportType', 'transportType')
+        .leftJoinAndSelect('transports.transportKind', 'transportKind')
         .leftJoinAndSelect('transports.cargoLoadMethods', 'cargoLoadMethods')
-        .leftJoinAndSelect('driver.agent', 'agent')
-        .leftJoinAndSelect('driver.subscription', 'subscription')
-        .leftJoin('driver.orderOffers', 'orderOffers')
-        .leftJoinAndSelect('orderOffers.order', 'order')
+        .leftJoin('driver.phoneNumbers', 'phoneNumber')
+        .addSelect('phoneNumber.id')
+        .addSelect('phoneNumber.number')
+        .addSelect('phoneNumber.code')
+        .addSelect('phoneNumber.isMain')
         .leftJoin('driver.user', 'user')
         .addSelect('user.id')
         .addSelect('user.userType')
         .addSelect('user.lastLogin')
-        .where(`driver.deleted = false AND driver.id = ${id}`)
+        .where(`driver.is_deleted = false AND driver.id = ${id}`)
         .getOneOrFail();
 
         // const canceledOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { cargoStatus: { code: CargoStatusCodes.Canceled } } } });
@@ -517,7 +518,7 @@ export class DriversService {
             .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
             .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
             .leftJoinAndSelect('driver.driverTransports', 'transports')
-            .leftJoinAndSelect('transports.transportTypes', 'transportTypes')
+            .leftJoinAndSelect('transports.transportType', 'transportType')
             .leftJoinAndSelect('driver.agent', 'agent')
             .leftJoinAndSelect('driver.subscription', 'subscription')
             .leftJoin('driver.orderOffers', 'orderOffers')

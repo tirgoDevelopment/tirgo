@@ -31,7 +31,7 @@ export class LoginService {
         try {
             let user;
             if (userType == UserTypes.ClientMerchantUser) {
- 
+
                 user = await this.clientMerchantUsersRepository.findOneOrFail({ where: { username, active: true, deleted: false }, relations: ['clientMerchant', 'user'] });
             } else if (userType == UserTypes.DriverMerchantUser) {
 
@@ -63,7 +63,7 @@ export class LoginService {
                 user = await this.staffsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
             } else if (userType == UserTypes.Agent) {
                 user = await this.agentsRepository.findOneOrFail({ where: { username }, relations: ['user', 'user.role', 'user.role.permission'] })
-            } else { 
+            } else {
                 throw new NotFoundException(ResponseStauses.UserNotFound)
             }
             const isPasswordValid: boolean = await bcrypt.compare(password, user.user.password);
@@ -141,51 +141,49 @@ export class LoginService {
     async sendOtp(sendOtp: SendOtpDto): Promise<BpmResponse> {
         const { phoneNumber, userType, sendBy } = sendOtp;
         try {
+            let phone;
             let user;
             const code = await this.sundryService.generateOtpCode();
             switch (userType) {
                 case UserTypes.Client:
-                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { number: phoneNumber } } }))[0];
-                    if(user) {
-                        const phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber } })
-                        phone.verificationCode = code;
-                        phone.verificationCodeExpDatetime = new Date().getTime() + 60 * 1000;
-                        await this.clientPhoneNumberRepository.save(user);
-                    }
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['client'] })
+                    user = phone.client;
+                    phone.verificationCode = code;
+                    phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                    await this.clientPhoneNumberRepository.save(phone);
                     break;
                 case UserTypes.Driver:
-                    user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } } }))[0];
-                    if(user) {
-                        const phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber } })
-                        phone.verificationCode = code;
-                        phone.verificationCodeExpDatetime = new Date().getTime() + 60 * 1000;
-                        await this.driverPhoneNumberRepository.save(user);
-                    }
+                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['driver'] })
+                    user = phone.driver;
+                    phone.verificationCode = code;
+                    phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                    await this.driverPhoneNumberRepository.save(phone);
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected
                     throw new Error('Invalid user type');
-            } 
+            }
             let isCodeSent;
             switch (sendBy) {
                 case SendOtpTypes.Sms:
-                    isCodeSent = await this.smsService.sendOtp(phoneNumber, code);
-                break
-                case SendOtpTypes.Telegram: 
-                    isCodeSent = await this.telegramBotService.sendOtpCode(phoneNumber, code)
-                break
+                    isCodeSent = await this.smsService.sendOtp(phone.code + phone.number, code);
+                    break
+                case SendOtpTypes.Telegram:
+                    isCodeSent = await this.telegramBotService.sendOtpCode(phone.code + phone.number, code)
+                    break
             }
-            if(!isCodeSent) {
+            console.log(isCodeSent)
+            if (!isCodeSent) {
                 throw new InternalErrorException(ResponseStauses.InternalServerError)
             }
-            if(!user) {
+            if (!user) {
                 return new BpmResponse(true, { isRegistered: false, code });
             } else {
                 return new BpmResponse(true, { isRegistered: true })
             }
 
         } catch (err: any) {
-            console.log(err)
+            console.log(err.message, err instanceof HttpException)
             if (err instanceof HttpException) {
                 throw err
             } else {
@@ -201,29 +199,27 @@ export class LoginService {
             let phone;
             switch (userType) {
                 case UserTypes.Client:
-                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { number: phoneNumber } }, relations: ['user'] }))[0];
-                    phone = await this.clientPhoneNumberRepository.findOneOrFail({where: {number: phoneNumber}})
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['client', 'client.user'] })
+                    user = phone.client;
                     break;
                 case UserTypes.Driver:
-                    user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } }, relations: ['user'] }))[0];
-                    phone = await this.clientPhoneNumberRepository.findOneOrFail({where: {number: phoneNumber}})
+                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['driver', 'driver.user'] })
+                    user = phone.driver;
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected
                     throw new Error('Invalid user type');
             }
-
-            const oneMinute = 60 * 1000
-            if (new Date().getTime()  >  (phone.verificationCodeExpDatetime - oneMinute)) {
+            if (phone.verificationCodeExpDatetime < new Date().getTime()) {
                 throw new BadRequestException(ResponseStauses.OtpExpired);
-            } else if(code !== user.otpCode) {
+            } else if (code !== phone.verificationCode) {
                 throw new BadRequestException(ResponseStauses.InvalidCode);
             }
 
             const payload: any = { sub: user.id, userId: user.user.id, userType };
             const token: string = await this.customJwtService.generateToken(payload);
             return new BpmResponse(true, { token })
-        } catch(err: any) {
+        } catch (err: any) {
             console.log(err)
             if (err instanceof HttpException) {
                 throw err
