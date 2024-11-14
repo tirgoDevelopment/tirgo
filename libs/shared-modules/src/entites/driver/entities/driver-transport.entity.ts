@@ -59,7 +59,7 @@ export class DriverTransport {
   @Column({ nullable: true, name: 'is_deleted' })
   isDeleted: boolean;
 
-  @Column({ type: 'timestamp', name: 'deleted_at' })
+  @Column({ type: 'timestamp', name: 'deleted_at', nullable: true })
   deletedAt: Date; 
 
   @ManyToOne(() => User, (user) => user.deletedDriverTransports, { nullable: true })
