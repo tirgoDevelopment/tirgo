@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Agent, BadRequestException, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SendOtpTypes, SmsService, Staff, SundryService, TelegramBotService, User, UserTypes, } from '..';
+import { Agent, BadRequestException, DriverPhoneNumber, ClientPhoneNumber, BpmResponse, Client, ClientMerchant, ClientMerchantUser, CustomJwtService, Driver, DriverMerchant, DriverMerchantUser, InternalErrorException, NotFoundException, ResponseStauses, SendOtpTypes, SmsService, Staff, SundryService, TelegramBotService, User, UserTypes, } from '..';
 import { LoginDto, SendOtpDto, VerifyOtpDto } from '../auth.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -14,7 +14,9 @@ export class LoginService {
         @InjectRepository(DriverMerchant) private readonly driverMerchantsRepository: Repository<DriverMerchant>,
         @InjectRepository(DriverMerchantUser) private readonly driverMerchantUsersRepository: Repository<DriverMerchantUser>,
         @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+        @InjectRepository(DriverPhoneNumber) private readonly driverPhoneNumberRepository: Repository<DriverPhoneNumber>,
         @InjectRepository(Client) private readonly clientsRepository: Repository<Client>,
+        @InjectRepository(ClientPhoneNumber) private readonly clientPhoneNumberRepository: Repository<ClientPhoneNumber>,
         @InjectRepository(Staff) private readonly staffsRepository: Repository<Staff>,
         @InjectRepository(User) private readonly usersRepository: Repository<User>,
         @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
@@ -143,14 +145,21 @@ export class LoginService {
             const code = await this.sundryService.generateOtpCode();
             switch (userType) {
                 case UserTypes.Client:
-                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } } }))[0];
+                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { number: phoneNumber } } }))[0];
+                    if(user) {
+                        const phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber } })
+                        phone.verificationCode = code;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60 * 1000;
+                        await this.clientPhoneNumberRepository.save(user);
+                    }
                     break;
                 case UserTypes.Driver:
                     user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } } }))[0];
                     if(user) {
-                        user.otpCode = code;
-                        user.otpSentDatetime = new Date().getTime();
-                        await this.driversRepository.save(user);
+                        const phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber } })
+                        phone.verificationCode = code;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60 * 1000;
+                        await this.driverPhoneNumberRepository.save(user);
                     }
                     break;
                 default:
@@ -189,12 +198,15 @@ export class LoginService {
         try {
             const { phoneNumber, userType, code } = verifyCodeDto;
             let user;
+            let phone;
             switch (userType) {
                 case UserTypes.Client:
-                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { phoneNumber } }, relations: ['user'] }))[0];
+                    user = (await this.clientsRepository.find({ where: { phoneNumbers: { number: phoneNumber } }, relations: ['user'] }))[0];
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({where: {number: phoneNumber}})
                     break;
                 case UserTypes.Driver:
                     user = (await this.driversRepository.find({ where: { phoneNumbers: { number: phoneNumber } }, relations: ['user'] }))[0];
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({where: {number: phoneNumber}})
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected
@@ -202,7 +214,7 @@ export class LoginService {
             }
 
             const oneMinute = 60 * 1000
-            if ((new Date().getTime() - user.otpSentDatetime) > oneMinute) {
+            if (new Date().getTime()  >  (phone.verificationCodeExpDatetime - oneMinute)) {
                 throw new BadRequestException(ResponseStauses.OtpExpired);
             } else if(code !== user.otpCode) {
                 throw new BadRequestException(ResponseStauses.InvalidCode);

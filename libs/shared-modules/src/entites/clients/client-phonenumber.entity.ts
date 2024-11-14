@@ -23,7 +23,7 @@ export class ClientPhoneNumber {
     verificationCode: number;
     
     @Column({ nullable: true, name: 'verification_code_exp_datetime', type: 'bigint' })
-    verificationCodeExpDatetime: bigint;
+    verificationCodeExpDatetime: number;
 
     @Column({ nullable: true, name: 'is_verified' })
     isVerified: boolean;
