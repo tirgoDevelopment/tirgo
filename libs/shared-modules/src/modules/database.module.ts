@@ -37,6 +37,7 @@ import { Permission } from '../entites/role/entities/permission.entity';
 import { LocationPlace } from '../entites/orders/entities/location.entity';
 import { TelegramBotUser } from '../entites/bot/bot.entity';
 import { DriverDocuments } from '../entites/driver/entities/driver-documents.entity';
+import { ClientDocuments } from '../entites/clients/clients-documents.entity';
 
 const entities = [
     TransportType,
@@ -65,6 +66,7 @@ const entities = [
     ClientMerchantUser,
     DriverPhoneNumber,
     DriverDocuments,
+    ClientDocuments,
     ClientPhoneNumber,
     DriverMerchant,
     DriverBankAccount,
@@ -72,11 +74,11 @@ const entities = [
     DriverMerchantUser,
     OrderOffer,
     Account,
-    Agent, 
+    Agent,
     AgentBankAccount,
     LocationPlace,
     TelegramBotUser
-  ];
+];
 
 @Module({
     imports: [
