@@ -59,12 +59,12 @@ export class VerifyOtpDto {
     userType: string;
 
     @ApiProperty({ required: true })
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     code: string;
 
     @ApiProperty({ required: true })
     @IsNumber()
     @IsNotEmpty()
-    otpCode: string;
+    otpCode: number;
 }
