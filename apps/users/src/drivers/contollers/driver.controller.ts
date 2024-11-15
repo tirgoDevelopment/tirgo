@@ -156,11 +156,11 @@ export class DriversController {
     return this.driversService.assignDriverToAgent(driverId, agentId, req['user']?.id)
   }
 
-  @ApiOperation({ summary: 'Assign drivers to TMC' })
-  @Post('tmcs/:tmcId/assign')
+  @ApiOperation({ summary: 'Assign drivers to TMS' })
+  @Post('tmses/:tmsId/assign')
   @UsePipes(ValidationPipe)
-  async assignDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Param('tmcId') tmcId: number, @Req() req: Request) {
-    return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, tmcId, req['user']);
+  async assignDriver(@Body() appendDriverMerchantDto: AppendDriversToTmsDto, @Param('tmsId') tmsId: number, @Req() req: Request) {
+    return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, tmsId, req['user']);
   }
 
 }

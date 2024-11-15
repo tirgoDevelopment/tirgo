@@ -209,7 +209,7 @@ export enum AwsS3BucketKeyNames {
   DriversPassports = 'drivers/passports',
   DriversLicenses = 'drivers/driver-licenses',
   Clients = 'clients',
-  Tmcs = 'tmcs',
+  Tmses = 'tmses',
   ClientsProfiles = 'clients/profiles',
 }
 

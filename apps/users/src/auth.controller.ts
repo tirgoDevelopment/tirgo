@@ -26,6 +26,13 @@ export class AuthController {
     return this.loginService.sendOtp(sendOtp);
   }
 
+  @ApiOperation({ summary: 'Send otp to additional phonenumber' })
+  @Post('send-otp/additional-phone')
+  @UsePipes(ValidationPipe)
+  sendOtpAdditionalPhone(@Body() sendOtp: SendOtpDto) {
+    return this.loginService.sendOtpAdditionalPhone(sendOtp);
+  }
+
   @ApiOperation({ summary: 'Verify otp' })
   @Post('verify-otp')
   @UsePipes(ValidationPipe)
