@@ -13,7 +13,7 @@ export class ClientsRepository extends Repository<Client> {
     async findAllClients(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('c')
         .leftJoin("c.phoneNumbers", "phoneNumber")
-        .addSelect('phoneNumber.phoneNumber')
+        .addSelect(['phoneNumber.number', 'phoneNumber.code'])
         .leftJoin("c.user", "user")
         .addSelect(['user.id', 'user.lastLogin']);
     
@@ -23,7 +23,10 @@ export class ClientsRepository extends Repository<Client> {
          queryBuilder.andWhere('c.id = :id', { id: +filter.clientId });
         }
         if (filter.phoneNumber) {
-            queryBuilder.andWhere('phoneNumber.phoneNumber LIKE :phoneNumber', { phoneNumber: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
+            queryBuilder.andWhere('phoneNumber.number LIKE :number', { number: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
+        }
+        if (filter.phoneCode) {
+            queryBuilder.andWhere('phoneNumber.code LIKE :code', { code: `%${filter.phoneCode.trim().replace(/\+/g, '')}%` });
         }
         if (filter.firstName) {
             queryBuilder.andWhere('c.firstName ILIKE :firstName', { firstName: `%${filter.firstName.trim()}%` });
@@ -50,26 +53,26 @@ export class ClientsRepository extends Repository<Client> {
         }
         switch (filter.state) {
             case UserStates.Active:
-                queryBuilder.andWhere('c.blocked = false');
-                queryBuilder.andWhere('c.deleted = false');
+                queryBuilder.andWhere('c.is_blocked = false');
+                queryBuilder.andWhere('c.is_deleted = false');
                 break;
             case UserStates.Blocked:
-                queryBuilder.andWhere('c.blocked = true');
-                queryBuilder.andWhere('c.deleted = false');
+                queryBuilder.andWhere('c.is_blocked = true');
+                queryBuilder.andWhere('c.is_deleted = false');
                 break;
             case UserStates.Verified:
-                queryBuilder.andWhere('c.verified = true');
-                queryBuilder.andWhere('c.deleted = false');
+                queryBuilder.andWhere('c.is_verified = true');
+                queryBuilder.andWhere('c.is_deleted = false');
                 break;
             case UserStates.Unverified:
-                queryBuilder.andWhere('c.verified = false');
-                queryBuilder.andWhere('c.deleted = false');
+                queryBuilder.andWhere('c.is_verified = false');
+                queryBuilder.andWhere('c.is_deleted = false');
                 break;
             case UserStates.Deleted:
-                queryBuilder.andWhere('c.deleted = true');
+                queryBuilder.andWhere('c.is_deleted = true');
                 break;
             case UserStates.NotDeleted:
-                queryBuilder.andWhere('c.deleted = false');
+                queryBuilder.andWhere('c.is_deleted = false');
                 break;
         }
 

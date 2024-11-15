@@ -258,10 +258,11 @@ export class ClientsService {
       }
 
       const filter: any = {
-        state: query.state,
+        state: query.state || UserStates.Active,
         clientId: query.clientId,
         firstName: query.firstName,
         phoneNumber: query.phoneNumber,
+        phoneCode: query.phoneCode,
         createdAtFrom: query.createdAtFrom,
         createdAtTo: query.createdAtTo,
         lastLoginFrom: query.lastLoginFrom,
