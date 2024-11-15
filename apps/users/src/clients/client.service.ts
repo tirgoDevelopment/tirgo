@@ -23,13 +23,8 @@ export class ClientsService {
     try {
       await queryRunner.startTransaction();
 
-      if (!(/[a-zA-Z]/.test(createClientDto.password) && /\d/.test(createClientDto.password))) {
-        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
-      }
-
-      const passwordHash = await this.sundriesService.generateHashPassword(createClientDto.password);
       const client: Client = new Client();
-      client.user = await this.usersRepository.save({ userType: UserTypes.Client, password: passwordHash });
+      client.user = await this.usersRepository.save({ userType: UserTypes.Client });
       client.firstName = createClientDto.firstName;
       client.lastName = createClientDto.lastName;
 
@@ -212,6 +207,7 @@ export class ClientsService {
       const client = await this.clientRepository
         .createQueryBuilder('client')
         .leftJoinAndSelect('client.phoneNumbers', 'phoneNumber')
+        .leftJoinAndSelect('client.profileFile', 'profileFile')
         .leftJoin('client.user', 'user')
         .addSelect('user.id')
         .addSelect('user.userType')
@@ -220,21 +216,21 @@ export class ClientsService {
         .getOneOrFail();
 
 
-        const ordersInfo = await this.ordersRepository
-        .createQueryBuilder('o')
-        .select([
-          'COUNT(o.id) AS "totalOrders"',
-          `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Completed} THEN 1 ELSE 0 END) AS "completedOrders"`,
-          `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Canceled} THEN 1 ELSE 0 END) AS "cancelledOrders"`
-        ])
-        .leftJoin('o.client', 'client')
-        .leftJoin('o.cargoStatus', 'cargoStatus')
-        .where('o.deleted = false')
-        .andWhere('client.id = :id', { id })
-        .getRawOne();
+        // const ordersInfo = await this.ordersRepository
+        // .createQueryBuilder('o')
+        // .select([
+        //   'COUNT(o.id) AS "totalOrders"',
+        //   `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Completed} THEN 1 ELSE 0 END) AS "completedOrders"`,
+        //   `COUNT(CASE WHEN cargoStatus.code = ${CargoStatusCodes.Canceled} THEN 1 ELSE 0 END) AS "cancelledOrders"`
+        // ])
+        // .leftJoin('o.client', 'client')
+        // .leftJoin('o.cargoStatus', 'cargoStatus')
+        // .where('o.deleted = false')
+        // .andWhere('client.id = :id', { id })
+        // .getRawOne();
       
-        console.log(ordersInfo)
-        client['ordersInfo'] = ordersInfo;
+        // console.log(ordersInfo)
+        // client['ordersInfo'] = ordersInfo;
       return new BpmResponse(true, client, null);
     } catch (err: any) {
       console.log(err)
