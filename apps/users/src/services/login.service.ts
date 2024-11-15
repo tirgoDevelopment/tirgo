@@ -196,6 +196,64 @@ export class LoginService {
         }
     }
 
+    async sendOtpAdditionalPhone(sendOtp: SendOtpDto): Promise<BpmResponse> {
+        const { number, code, userType, sendBy } = sendOtp;
+        try {
+            let phone;
+            let user;
+            const otpCode = await this.sundryService.generateOtpCode();
+            switch (userType) {
+                case UserTypes.Client:
+                    phone = await this.clientPhoneNumberRepository.findOne({ where: { number, code }, relations: ['client'] })
+                    if(phone) {
+                        user = phone.client;
+                        phone.verificationCode = otpCode;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                        await this.clientPhoneNumberRepository.save(phone);
+                    }
+                    break;
+                case UserTypes.Driver:
+                    phone = await this.driverPhoneNumberRepository.findOne({ where: { number, code }, relations: ['driver'] })
+                    if(phone){
+                        user = phone.driver;
+                        phone.verificationCode = otpCode;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                        await this.driverPhoneNumberRepository.save(phone);
+                    }
+                    break;
+                default:
+                    // Handle other user types or throw an error if unexpected
+                    throw new Error('Invalid user type');
+            }
+            
+            if (user) {
+                return new BpmResponse(true, { isRegistered: true });
+            } else {
+                let isCodeSent;
+                switch (sendBy) {
+                    case SendOtpTypes.Sms:
+                        isCodeSent = await this.smsService.sendOtp(code + number, otpCode);
+                        break
+                    case SendOtpTypes.Telegram:
+                        isCodeSent = await this.telegramBotService.sendOtpCode(code + number, otpCode)
+                        break
+                }
+                if (!isCodeSent) {
+                    throw new InternalErrorException(ResponseStauses.InternalServerError)
+                }
+                return new BpmResponse(true, { isRegistered: false, otpCode });
+            }
+
+        } catch (err: any) {
+            console.log(err.message, err instanceof HttpException)
+            if (err instanceof HttpException) {
+                throw err
+            } else {
+                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+            }
+        }
+    }
+
     async verifyCode(verifyCodeDto: VerifyOtpDto): Promise<BpmResponse> {
         try {
             const { number, userType, code, otpCode } = verifyCodeDto;

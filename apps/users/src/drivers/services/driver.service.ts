@@ -742,7 +742,7 @@ export class DriversService {
     }
   }
 
-  async appendDriverToMerchant(dto: AppendDriversToTmsDto, tmcId: number, user: User): Promise<BpmResponse> {
+  async appendDriverToMerchant(dto: AppendDriversToTmsDto, tmsId: number, user: User): Promise<BpmResponse> {
     try {
       if(user.userType !== UserTypes.Staff) {
           throw new BadRequestException(ResponseStauses.AccessDenied);
@@ -752,7 +752,7 @@ export class DriversService {
       if(isAssignedExists) {
         throw new BadRequestException(ResponseStauses.AlreadyAssigned);
       }
-      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: tmcId }, relations: ['drivers'] });
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: tmsId }, relations: ['drivers'] });
       if(merchant.drivers?.length) {
         merchant.drivers = [ ...merchant.drivers, ...drivers];
       } else {
