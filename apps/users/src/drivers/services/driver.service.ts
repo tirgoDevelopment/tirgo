@@ -114,7 +114,6 @@ export class DriversService {
 
     try {
 
-      const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
       if(user) {
         switch (user.userType) {
@@ -124,7 +123,7 @@ export class DriversService {
                break;
         }
       }
-      const newUser = await queryRunner.manager.save(User, { userType: 'driver', password: passwordHash });
+      const newUser = await queryRunner.manager.save(User, { userType: 'driver' });
       driver.user = newUser;
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
