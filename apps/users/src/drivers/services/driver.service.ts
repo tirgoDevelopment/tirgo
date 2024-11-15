@@ -114,10 +114,6 @@ export class DriversService {
 
     try {
 
-      if (!(/[a-zA-Z]/.test(createDriverDto.password) && /\d/.test(createDriverDto.password))) {
-        throw new BadRequestException(ResponseStauses.PasswordShouldCointainNumStr);
-      }
-      const passwordHash = await this.sundriesService.generateHashPassword(createDriverDto.password);
       const driver: Driver = new Driver();
       if(user) {
         switch (user.userType) {
@@ -127,7 +123,7 @@ export class DriversService {
                break;
         }
       }
-      const newUser = await queryRunner.manager.save(User, { userType: 'driver', password: passwordHash });
+      const newUser = await queryRunner.manager.save(User, { userType: 'driver' });
       driver.user = newUser;
       driver.firstName = createDriverDto.firstName;
       driver.lastName = createDriverDto.lastName;
@@ -223,13 +219,13 @@ export class DriversService {
       return new BpmResponse(true, { id: newDriver.id }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
-      if(files && files.passport[0]) {
+      if(files && files.passport) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversPassports, files.passport[0]?.originalname.split(' ').join('').trim());
       }
-      if(files && files.profile[0]) {
+      if(files && files.profile) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, files.profile[0]?.originalname.split(' ').join('').trim());
       }
-      if(files && files.driverLicense[0]) {
+      if(files && files.driverLicense) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversLicenses, files.driverLicense[0]?.originalname.split(' ').join('').trim());
       }
       console.error(err);

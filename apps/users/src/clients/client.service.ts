@@ -30,7 +30,7 @@ export class ClientsService {
       const passwordHash = await this.sundriesService.generateHashPassword(createClientDto.password);
       const client: Client = new Client();
       client.user = await this.usersRepository.save({ userType: UserTypes.Client, password: passwordHash });
-      client.firstName = createClientDto.firstName; 0
+      client.firstName = createClientDto.firstName;
       client.lastName = createClientDto.lastName;
 
 
