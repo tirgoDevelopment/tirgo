@@ -89,7 +89,7 @@ const entities = [
             password: 'postgres',
             username: 'postgres',
             entities: entities,
-            database: 'test',
+            database: 'postgres',
             synchronize: true,
         }),
     ],

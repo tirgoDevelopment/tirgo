@@ -146,18 +146,22 @@ export class LoginService {
             const otpCode = await this.sundryService.generateOtpCode();
             switch (userType) {
                 case UserTypes.Client:
-                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['client'] })
-                    user = phone.client;
-                    phone.verificationCode = otpCode;
-                    phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
-                    await this.clientPhoneNumberRepository.save(phone);
+                    phone = await this.clientPhoneNumberRepository.findOne({ where: { number, code }, relations: ['client'] })
+                    if(phone) {
+                        user = phone.client;
+                        phone.verificationCode = otpCode;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                        await this.clientPhoneNumberRepository.save(phone);
+                    }
                     break;
                 case UserTypes.Driver:
-                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['driver'] })
-                    user = phone.driver;
-                    phone.verificationCode = otpCode;
-                    phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
-                    await this.driverPhoneNumberRepository.save(phone);
+                    phone = await this.driverPhoneNumberRepository.findOne({ where: { number, code }, relations: ['driver'] })
+                    if(phone){
+                        user = phone.driver;
+                        phone.verificationCode = otpCode;
+                        phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
+                        await this.driverPhoneNumberRepository.save(phone);
+                    }
                     break;
                 default:
                     // Handle other user types or throw an error if unexpected
@@ -166,10 +170,10 @@ export class LoginService {
             let isCodeSent;
             switch (sendBy) {
                 case SendOtpTypes.Sms:
-                    isCodeSent = await this.smsService.sendOtp(phone.code + phone.number, otpCode);
+                    isCodeSent = await this.smsService.sendOtp(code + number, otpCode);
                     break
                 case SendOtpTypes.Telegram:
-                    isCodeSent = await this.telegramBotService.sendOtpCode(phone.code + phone.number, otpCode)
+                    isCodeSent = await this.telegramBotService.sendOtpCode(code + number, otpCode)
                     break
             }
             console.log(isCodeSent)
