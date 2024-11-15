@@ -11,8 +11,7 @@ export class DriversRepository extends Repository<Driver> {
 
     async findAllDrivers(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('d')
-            .leftJoinAndSelect("d.agent", "agent")
-            .leftJoinAndSelect("d.subscription", "subscription")
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect("d.driverTransports", "driverTransport")
             .leftJoin("d.user", "user")
             .addSelect(['user.id', 'user.lastLogin'])
@@ -146,7 +145,7 @@ export class DriversRepository extends Repository<Driver> {
 
     async findAllMerchantDrivers(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('d')
-            .leftJoinAndSelect('d.subscription', 'subscription')
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect('d.driverTransports', 'driverTransports')
             .leftJoinAndSelect('driverTransports.transportKind', 'transportKind')
             .leftJoinAndSelect('d.agent', 'agent')
@@ -231,7 +230,7 @@ export class DriversRepository extends Repository<Driver> {
 
         const queryBuilder = this.createQueryBuilder('d')
             .leftJoinAndSelect("d.agent", "agent")
-            .leftJoinAndSelect("d.subscription", "subscription")
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect("d.driverTransports", "driverTransport")
             .leftJoin("d.user", "user")
             .addSelect(['user.id', 'user.lastLogin'])
