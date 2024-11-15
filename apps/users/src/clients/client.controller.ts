@@ -15,24 +15,24 @@ export class ClientsController {
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profileFile', maxCount: 1 },
+    { name: 'profile', maxCount: 1 },
   ]))
   async createClient(
-    @UploadedFiles() files: { profileFile?: any[] },
+    @UploadedFiles() files: { profile?: any[] },
     @Body() clientData: ClientDto,
     @Req() req: Request
   ) {
-    return this.clientsService.createClient(files.profileFile[0], clientData, req['user'])
+    return this.clientsService.createClient(files.profile[0], clientData, req['user'])
   }
 
   @ApiOperation({ summary: 'Update client' })
   @Put()
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
-    { name: 'profileFile', maxCount: 1 },
+    { name: 'profile', maxCount: 1 },
   ]))
   async updateClient(
-    @UploadedFiles() files: { profileFile?: any[] },
+    @UploadedFiles() files: { profile?: any[] },
     @Body() clientData: UpdateClientDto,
   ) {
     return this.clientsService.updateClient(files[0], clientData)
