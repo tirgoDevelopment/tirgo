@@ -102,6 +102,10 @@ export class GetClientsDto {
   phoneNumber?: string;
 
   @IsOptional()
+  @IsString()
+  phoneCode?: string;
+
+  @IsOptional()
   @IsNumber()
   transportKindId?: number;
 
