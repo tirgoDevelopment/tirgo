@@ -467,6 +467,7 @@ export class DriversService {
     try {
       const driver = await this.driverRepository
         .createQueryBuilder('driver')
+        .leftJoinAndSelect('driver.profileFile', 'profileFile')
         .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
         .leftJoinAndSelect('driver.driverTransports', 'transports')
         .leftJoinAndSelect('transports.transportType', 'transportType')
@@ -511,6 +512,7 @@ export class DriversService {
         // Query to retrieve driver by phone number
         const driver = await this.driverRepository
             .createQueryBuilder('driver')
+            .leftJoinAndSelect('driver.profileFile', 'profileFile')
             .leftJoinAndSelect('driver.phoneNumbers', 'phoneNumber')
             .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
             .leftJoinAndSelect('driver.driverTransports', 'transports')

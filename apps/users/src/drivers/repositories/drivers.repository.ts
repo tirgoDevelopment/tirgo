@@ -11,8 +11,7 @@ export class DriversRepository extends Repository<Driver> {
 
     async findAllDrivers(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('d')
-            .leftJoinAndSelect("d.agent", "agent")
-            .leftJoinAndSelect("d.subscription", "subscription")
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect("d.driverTransports", "driverTransport")
             .leftJoin("d.user", "user")
             .addSelect(['user.id', 'user.lastLogin'])
@@ -34,6 +33,9 @@ export class DriversRepository extends Repository<Driver> {
         if (filter.phoneNumber) {
             queryBuilder.andWhere('phoneNumber.phoneNumber LIKE :phoneNumber', { phoneNumber: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
         }
+        if (filter.phoneCode) {
+            queryBuilder.andWhere('phoneNumber.code LIKE :phoneCode', { phoneCode: `%${filter.phoneCode.trim().replace(/\+/g, '')}%` });
+        }
         if (filter.firstName) {
             queryBuilder.andWhere('d.firstName ILIKE :firstName', { firstName: `%${filter.firstName.trim()}%` });
         }
@@ -44,10 +46,10 @@ export class DriversRepository extends Repository<Driver> {
             queryBuilder.andWhere('transportType.id = :transportTypeId', { transportTypeId: filter.transportTypeId });
         }
         if (filter.isVerified === 'true') {
-            queryBuilder.andWhere('d.verified = :verified', { verified: true });
+            queryBuilder.andWhere('d.is_verified = :verified', { verified: true });
         }
         if (filter.isVerified === 'false') {
-            queryBuilder.andWhere('d.verified = :verified', { verified: false });
+            queryBuilder.andWhere('d.is_verified = :verified', { verified: false });
         }
         if (filter.createdAtFrom && filter.createdAtTo) {
             queryBuilder.andWhere('d.createdAt BETWEEN :createdAtFrom AND :createdAtTo', {
@@ -71,22 +73,22 @@ export class DriversRepository extends Repository<Driver> {
         }
         switch (filter.state) {
             case UserStates.Active:
-                queryBuilder.andWhere('d.blocked = false');
+                queryBuilder.andWhere('d.is_blocked = false');
                 break;
             case UserStates.Blocked:
-                queryBuilder.andWhere('d.blocked = true');
+                queryBuilder.andWhere('d.is_blocked = true');
                 break;
             case UserStates.Verified:
-                queryBuilder.andWhere('d.verified = true');
+                queryBuilder.andWhere('d.is_verified = true');
                 break;
             case UserStates.Unverified:
-                queryBuilder.andWhere('d.verified = false');
+                queryBuilder.andWhere('d.is_verified = false');
                 break;
             case UserStates.Deleted:
-                queryBuilder.andWhere('d.deleted = true');
+                queryBuilder.andWhere('d.is_deleted = true');
                 break;
             case UserStates.NotDeleted:
-                queryBuilder.andWhere('d.deleted = false');
+                queryBuilder.andWhere('d.is_deleted = false');
                 break;
         }
     
@@ -146,7 +148,7 @@ export class DriversRepository extends Repository<Driver> {
 
     async findAllMerchantDrivers(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('d')
-            .leftJoinAndSelect('d.subscription', 'subscription')
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect('d.driverTransports', 'driverTransports')
             .leftJoinAndSelect('driverTransports.transportKind', 'transportKind')
             .leftJoinAndSelect('d.agent', 'agent')
@@ -159,7 +161,7 @@ export class DriversRepository extends Repository<Driver> {
             .leftJoin(User, 'u', 'u.id = d.created_by')
             .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
             .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-            .where('u.user_type = :userType AND dm.id = :merchantId AND d.deleted = true', {
+            .where('u.user_type = :userType AND dm.id = :merchantId AND d.is_deleted = true', {
                 userType: UserTypes.DriverMerchantUser,
                 merchantId: filter.merchantId
             });
@@ -167,19 +169,19 @@ export class DriversRepository extends Repository<Driver> {
         // Apply state filter
         switch (filter.state) {
             case UserStates.Active:
-                queryBuilder.andWhere('d.blocked = false');
+                queryBuilder.andWhere('d.is_blocked = false');
                 break;
             case UserStates.Blocked:
-                queryBuilder.andWhere('d.blocked = true');
+                queryBuilder.andWhere('d.is_blocked = true');
                 break;
             case UserStates.Verified:
-                queryBuilder.andWhere('d.verified = true');
+                queryBuilder.andWhere('d.is_verified = true');
                 break;
             case UserStates.Unverified:
-                queryBuilder.andWhere('d.verified = false');
+                queryBuilder.andWhere('d.is_verified = false');
                 break;
             case UserStates.Deleted:
-                queryBuilder.andWhere('d.deleted = true');
+                queryBuilder.andWhere('d.is_deleted = true');
                 break;
         }
     
@@ -231,7 +233,7 @@ export class DriversRepository extends Repository<Driver> {
 
         const queryBuilder = this.createQueryBuilder('d')
             .leftJoinAndSelect("d.agent", "agent")
-            .leftJoinAndSelect("d.subscription", "subscription")
+            .leftJoinAndSelect("d.profileFile", "profileFile")
             .leftJoinAndSelect("d.driverTransports", "driverTransport")
             .leftJoin("d.user", "user")
             .addSelect(['user.id', 'user.lastLogin'])
@@ -267,19 +269,19 @@ export class DriversRepository extends Repository<Driver> {
 
         switch (filter.state) {
             case UserStates.Active:
-                queryBuilder.andWhere('d.blocked = false');
+                queryBuilder.andWhere('d.is_blocked = false');
                 break;
             case UserStates.Blocked:
-                queryBuilder.andWhere('d.blocked = true');
+                queryBuilder.andWhere('d.is_blocked = true');
                 break;
             case UserStates.Verified:
-                queryBuilder.andWhere('d.verified = true');
+                queryBuilder.andWhere('d.is_verified = true');
                 break;
             case UserStates.Unverified:
-                queryBuilder.andWhere('d.verified = false');
+                queryBuilder.andWhere('d.is_verified = false');
                 break;
             case UserStates.Deleted:
-                queryBuilder.andWhere('d.deleted = true');
+                queryBuilder.andWhere('d.is_deleted = true');
                 break;
         }
     
