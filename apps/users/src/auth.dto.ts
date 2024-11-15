@@ -25,7 +25,12 @@ export class SendOtpDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     @IsString()
-    phoneNumber: string
+    number: string
+
+    @ApiProperty({ required: true })
+    @IsNotEmpty()
+    @IsString()
+    code: string
 
     @ApiProperty({ required: true })
     @IsString()
@@ -45,7 +50,7 @@ export class VerifyOtpDto {
     @ApiProperty({ required: true })
     @IsNotEmpty()
     @IsString()
-    phoneNumber: string
+    number: string
 
     @ApiProperty({ required: true })
     @IsString()
@@ -57,4 +62,9 @@ export class VerifyOtpDto {
     @IsNumber()
     @IsNotEmpty()
     code: string;
+
+    @ApiProperty({ required: true })
+    @IsNumber()
+    @IsNotEmpty()
+    otpCode: string;
 }

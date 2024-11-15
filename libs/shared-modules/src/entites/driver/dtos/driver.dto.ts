@@ -100,7 +100,7 @@ export class UpdateDriverPhoneDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
-  code: number;
+  code: string;
 }
 
 export class UpdateDriverBirthDayDto {

@@ -11,7 +11,7 @@ export class ClientPhoneNumber {
     number: string;
     
     @Column({ nullable: false })
-    code: number;
+    code: string;
     
     @Column({ nullable: true, name: 'is_main' })
     isMain: boolean;

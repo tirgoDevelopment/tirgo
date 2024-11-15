@@ -139,23 +139,23 @@ export class LoginService {
     }
 
     async sendOtp(sendOtp: SendOtpDto): Promise<BpmResponse> {
-        const { phoneNumber, userType, sendBy } = sendOtp;
+        const { number, code, userType, sendBy } = sendOtp;
         try {
             let phone;
             let user;
-            const code = await this.sundryService.generateOtpCode();
+            const otpCode = await this.sundryService.generateOtpCode();
             switch (userType) {
                 case UserTypes.Client:
-                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['client'] })
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['client'] })
                     user = phone.client;
-                    phone.verificationCode = code;
+                    phone.verificationCode = otpCode;
                     phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
                     await this.clientPhoneNumberRepository.save(phone);
                     break;
                 case UserTypes.Driver:
-                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['driver'] })
+                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['driver'] })
                     user = phone.driver;
-                    phone.verificationCode = code;
+                    phone.verificationCode = otpCode;
                     phone.verificationCodeExpDatetime = new Date().getTime() + 60000;
                     await this.driverPhoneNumberRepository.save(phone);
                     break;
@@ -166,10 +166,10 @@ export class LoginService {
             let isCodeSent;
             switch (sendBy) {
                 case SendOtpTypes.Sms:
-                    isCodeSent = await this.smsService.sendOtp(phone.code + phone.number, code);
+                    isCodeSent = await this.smsService.sendOtp(phone.code + phone.number, otpCode);
                     break
                 case SendOtpTypes.Telegram:
-                    isCodeSent = await this.telegramBotService.sendOtpCode(phone.code + phone.number, code)
+                    isCodeSent = await this.telegramBotService.sendOtpCode(phone.code + phone.number, otpCode)
                     break
             }
             console.log(isCodeSent)
@@ -177,7 +177,7 @@ export class LoginService {
                 throw new InternalErrorException(ResponseStauses.InternalServerError)
             }
             if (!user) {
-                return new BpmResponse(true, { isRegistered: false, code });
+                return new BpmResponse(true, { isRegistered: false, otpCode });
             } else {
                 return new BpmResponse(true, { isRegistered: true })
             }
@@ -194,16 +194,16 @@ export class LoginService {
 
     async verifyCode(verifyCodeDto: VerifyOtpDto): Promise<BpmResponse> {
         try {
-            const { phoneNumber, userType, code } = verifyCodeDto;
+            const { number, userType, code, otpCode } = verifyCodeDto;
             let user;
             let phone;
             switch (userType) {
                 case UserTypes.Client:
-                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['client', 'client.user'] })
+                    phone = await this.clientPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['client', 'client.user'] })
                     user = phone.client;
                     break;
                 case UserTypes.Driver:
-                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number: phoneNumber }, relations: ['driver', 'driver.user'] })
+                    phone = await this.driverPhoneNumberRepository.findOneOrFail({ where: { number, code }, relations: ['driver', 'driver.user'] })
                     user = phone.driver;
                     break;
                 default:
@@ -212,7 +212,7 @@ export class LoginService {
             }
             if (phone.verificationCodeExpDatetime < new Date().getTime()) {
                 throw new BadRequestException(ResponseStauses.OtpExpired);
-            } else if (code !== phone.verificationCode) {
+            } else if (otpCode !== phone.verificationCode) {
                 throw new BadRequestException(ResponseStauses.InvalidCode);
             }
 
