@@ -12,6 +12,7 @@ export class ClientsRepository extends Repository<Client> {
 
     async findAllClients(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('c')
+        .leftJoin("c.profileFile", "profileFile")
         .leftJoin("c.phoneNumbers", "phoneNumber")
         .addSelect(['phoneNumber.number', 'phoneNumber.code'])
         .leftJoin("c.user", "user")
