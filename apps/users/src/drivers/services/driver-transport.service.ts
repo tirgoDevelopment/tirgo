@@ -1,6 +1,6 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { AwsService, BadRequestException, BpmResponse, CargoLoadMethod, CargoType, Driver, DriverTransport, InternalErrorException, NoContentException, NotFoundException, ResponseStauses, SundryService, TransportKind, TransportType, UserTypes } from '../..';
 import { ChangeStatusDriverTransportDto, DriverTransportDto, DriverTransportVerificationDto, RemoveDriverTransportDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
 
@@ -15,7 +15,8 @@ export class TransportsService {
     @InjectRepository(CargoLoadMethod) private readonly cargoLoadMethodsRepository: Repository<CargoLoadMethod>,
     @InjectRepository(CargoType) private readonly cargoTypesRepository: Repository<CargoType>,
     private awsService: AwsService,
-    private sundriesService: SundryService
+    private sundriesService: SundryService,
+    private dataSource: DataSource
   ) { }
 
   async addDriverTransport(driverId: number, transportDto: DriverTransportDto): Promise<BpmResponse> {
@@ -301,19 +302,23 @@ export class TransportsService {
   }
 
   async changeActiveDriverTransport(driverId: number, transportId: number): Promise<BpmResponse> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
       const result = await this.driverTransportsRepository.update({ driver: { id: driverId } }, { isMain: false });
 
       if(result.affected == 1) {
         const data = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId, driver: { id: driverId } }});
         data.isMain = true;
         await this.driverTransportsRepository.save(data);
+        await queryRunner.commitTransaction();
         return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError);
       }
     } catch (err: any) {
+      await queryRunner.rollbackTransaction();
       console.log(err)
       if (err instanceof HttpException) {
         throw err;

@@ -73,14 +73,14 @@ export class DriverTransportsController {
     }
 
     @ApiOperation({ summary: 'Change driver transport status' })
-    @Patch('active/:tramsportId')
+    @Patch('active/:transportId')
     @UsePipes(ValidationPipe)
     async changeDriverTransportStatus(@Param('driverId') driverId: number, @Param('transportId') transportId: number) {
         return this.driverTransportsService.changeActiveDriverTransport(driverId, transportId);
     }
 
     @ApiOperation({ summary: 'Get driver transport by driver id' })
-    @Get(':tramsportId')
+    @Get(':transportId')
     async getDriverTransprots(@Param('driverId') driverId: number, @Param('transportId') transportId: number) {
         return this.driverTransportsService.getTransportByDriverId(driverId, transportId);
     }
