@@ -490,7 +490,7 @@ export class DriversService {
         // const completedOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: false,  cargoStatus: { code: CargoStatusCodes.Completed } } } });
 
         const transports = driver.driverTransports;
-        driver.driverTransports = transports.filter((el: any) => el.isDeleted == false);
+        driver.driverTransports = transports.filter((el: any) => !el.isDeleted);
         driver['deletedTransports'] = transports.filter((el: any) => el.isDeleted == true);
 
       // const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
