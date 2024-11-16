@@ -64,7 +64,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Get client by id' })
-  @Get(':clientId')
+  @Get(':id')
   async getClient(@Param('id') id: number) {
     return this.clientsService.getClientById(id);
   }
