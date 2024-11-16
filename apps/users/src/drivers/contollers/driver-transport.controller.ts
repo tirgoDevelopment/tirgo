@@ -14,22 +14,11 @@ export class DriverTransportsController {
     @ApiOperation({ summary: 'Create driver transport' })
     @Post()
     @UsePipes(ValidationPipe)
-    @UseInterceptors(FileFieldsInterceptor([
-        { name: 'techPassportFront', maxCount: 1}, 
-        { name: 'techPassportBack', maxCount: 1}, 
-        { name: 'transportFront', maxCount: 1}, 
-        { name: 'transportBack', maxCount: 1}, 
-        { name: 'transportSide', maxCount: 1}, 
-        { name: 'goodsTransportationLicenseCard', maxCount: 1}, 
-        { name: 'driverLicense', maxCount: 1}, 
-        { name: 'passport', maxCount: 1},
-    ]))
     async createDriver(
         @Param('driverId') driverId: number,
-        @UploadedFiles() files: { passport?: any[], driverLicense?: any[], goodsTransportationLicenseCard?: any[], transport?: any[], techPassportBack?: any[], techPassportFront?: any[]},
         @Body() data: DriverTransportDto,
     ) {
-        return this.driverTransportsService.addDriverTransport(driverId, files, data)
+        return this.driverTransportsService.addDriverTransport(driverId, data)
     }
 
     // @ApiOperation({ summary: 'Verify driver transport' })

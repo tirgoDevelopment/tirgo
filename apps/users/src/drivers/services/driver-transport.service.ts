@@ -18,7 +18,7 @@ export class TransportsService {
     private sundriesService: SundryService
   ) { }
 
-  async addDriverTransport(driverId: number, files: any, transportDto: DriverTransportDto): Promise<BpmResponse> {
+  async addDriverTransport(driverId: number, transportDto: DriverTransportDto): Promise<BpmResponse> {
     try {
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
@@ -36,8 +36,8 @@ export class TransportsService {
         
       }
       if(transportDto.cargoLoadMethodIds) {
-      console.log(JSON.parse(transportDto.cargoLoadMethodIds), 'loadingMethodIds')
-      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.cargoLoadMethodIds)) } });
+      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
+      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(transportDto.cargoLoadMethodIds) } });
       transport.cargoLoadMethods = cargoLoads;
       }
       if(transportDto.volume) {
@@ -209,16 +209,16 @@ export class TransportsService {
   async updateDriverTransport(transportId: number, driverId: number, files: any, transportDto: DriverTransportDto): Promise<BpmResponse> {
     try {
 
-      const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportDto.id } });
+      const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId } });
       console.log(transportDto.transportKindId, 'transportKindId')
       console.log(transportDto.transportTypeId, 'transportTypeId')
       console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
-      console.log(JSON.parse(transportDto.cargoLoadMethodIds), 'loadingMethodIds')
+      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
       const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: transportDto.transportKindId } });
       const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: transportDto.transportTypeId } });
-      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.cargoLoadMethodIds)) } });
+      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(transportDto.cargoLoadMethodIds) } });
 
       transport.transportKind = transportKind;
       transport.transportType = transportType;
