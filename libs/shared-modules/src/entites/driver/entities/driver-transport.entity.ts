@@ -79,11 +79,11 @@ export class DriverTransport {
   @JoinColumn({ name: 'verified_by_id' })
   verifiedBy: User;
 
-  @OneToMany(() => TransportType, (transportType) => transportType.driverTransports)
+  @ManyToOne(() => TransportType, (transportType) => transportType.driverTransports)
   @JoinColumn({ name: 'transport_type_id' })
   transportType: TransportType;
 
-  @OneToMany(() => TransportKind, (transportKind) => transportKind.driverTransports)
+  @ManyToOne(() => TransportKind, (transportKind) => transportKind.driverTransports)
   @JoinColumn({ name: 'transport_kind_id' })
   transportKind: TransportKind;
 
