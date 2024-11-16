@@ -210,13 +210,14 @@ export class TransportsService {
     try {
 
       const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportDto.id } });
-      console.log(JSON.parse(transportDto.transportKindId), 'transportKindId')
-      console.log(JSON.parse(transportDto.transportTypeId), 'transportTypeId')
+      console.log(transportDto.transportKindId, 'transportKindId')
+      console.log(transportDto.transportTypeId, 'transportTypeId')
+      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
       console.log(JSON.parse(transportDto.cargoLoadMethodIds), 'loadingMethodIds')
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
-      const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: JSON.parse(transportDto.transportKindId) } });
-      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: JSON.parse(transportDto.transportTypeId) } });
+      const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: transportDto.transportKindId } });
+      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: transportDto.transportTypeId } });
       const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.cargoLoadMethodIds)) } });
 
       transport.transportKind = transportKind;
