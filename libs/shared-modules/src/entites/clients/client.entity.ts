@@ -26,7 +26,7 @@ export class Client {
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
 
-  @Column({ default: false })
+  @Column({ default: false, name: 'is_blocked' })
   isBlocked: boolean;
 
   @Column({ name: 'blocked_at', nullable: true })
@@ -39,7 +39,7 @@ export class Client {
   @JoinColumn({ name: 'blocked_by' })
   blockedBy: User;
 
-  @Column({ default: false })
+  @Column({ default: false, name: 'is_deleted' })
   isDeleted: boolean;
 
   @Column({ name: 'deleted_at', nullable: true })
