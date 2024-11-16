@@ -207,13 +207,12 @@ export class TransportsService {
     }
   }
 
-  async updateDriverTransport(transportId: number, driverId: number, files: any, transportDto: DriverTransportDto): Promise<BpmResponse> {
+  async updateDriverTransport(transportId: number, driverId: number, transportDto: DriverTransportDto): Promise<BpmResponse> {
     try {
 
       const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId } });
       console.log(transportDto.transportKindId, 'transportKindId')
       console.log(transportDto.transportTypeId, 'transportTypeId')
-      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
       console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });

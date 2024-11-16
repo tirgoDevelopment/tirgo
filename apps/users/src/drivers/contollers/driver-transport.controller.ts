@@ -45,24 +45,12 @@ export class DriverTransportsController {
     @ApiOperation({ summary: 'Update driver transport' })
     @Put(':transportId')
     @UsePipes(ValidationPipe)
-    @UseInterceptors(FileFieldsInterceptor([
-        { name: 'techPassportFrontFilePath', maxCount: 1}, 
-        { name: 'techPassportBackFilePath', maxCount: 1}, 
-        { name: 'transportFrontFilePath', maxCount: 1}, 
-        { name: 'transportBackFilePath', maxCount: 1}, 
-        { name: 'transportSideFilePath', maxCount: 1}, 
-        { name: 'goodsTransportationLicenseCardFilePath', maxCount: 1}, 
-        { name: 'driverLicenseFilePath', maxCount: 1}, 
-        { name: 'passportFilePath', maxCount: 1},
-    ]))
     async updateDriver(
-        @UploadedFiles() files: { passportFilePath?: any[], driverLicenseFilePath?: any[], 
-            goodsTransportationLicenseCardFilePath?: any[], transportFilePath?: any[], techPassportBackFilePath?: any[], techPassportFrontFilePath?: any[]},
         @Param('driverId') driverId: number,
         @Param('transportId') transportId: number,
         @Body() data: any,
     ) {
-        return this.driverTransportsService.updateDriverTransport(transportId, driverId, files, data)
+        return this.driverTransportsService.updateDriverTransport(transportId, driverId, data)
     }
 
     @ApiOperation({ summary: 'Remove driver transport' })
