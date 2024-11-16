@@ -26,12 +26,12 @@ export class TransportsService {
       transport.driver = driver;
       
       if(transportDto.transportKindId) {
-        const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: JSON.parse(transportDto.transportKindId) } });
+        const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: transportDto.transportKindId } });
         transport.transportKind = transportKind;
       }
       if(transportDto.transportTypeId) {
-      console.log(JSON.parse(transportDto.transportTypeId), 'transportTypeIds')
-      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: JSON.parse(transportDto.transportTypeId) } });
+      console.log(transportDto.transportTypeId, 'transportTypeIds')
+      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: transportDto.transportTypeId } });
       transport.transportType = transportType;
         
       }
@@ -46,8 +46,6 @@ export class TransportsService {
       if(transportDto.capacity) {
         transport.capacity = transportDto.capacity;
       }
-
-
       if (transportDto.brand) {
         transport.brand = transportDto.brand;
       }
