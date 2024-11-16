@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Staff } from '../../staffs/staff.entity';
+import { DriverTransport } from '../../driver/entities/driver-transport.entity';
 
 @Entity()
 export class TransportKind {
@@ -24,4 +25,7 @@ export class TransportKind {
   @Column({ default: false })
   deleted: boolean;
 
+  @ManyToOne(() => DriverTransport, (driverTransport) => driverTransport.transportKind, { nullable: true })
+  @JoinColumn({ name: 'driver_transport_id' })
+  driverTransports: DriverTransport;
 }

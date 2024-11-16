@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Driver } from './driver.entity';
 import { TransportType } from '../../references/entities/transport-type.entity';
 import { TransportKind } from '../../references/entities/transport-kind.entity';
@@ -79,11 +79,11 @@ export class DriverTransport {
   @JoinColumn({ name: 'verified_by_id' })
   verifiedBy: User;
 
-  @OneToOne(() => TransportType)
+  @OneToMany(() => TransportType, (transportType) => transportType.driverTransports)
   @JoinColumn({ name: 'transport_type_id' })
   transportType: TransportType;
 
-  @OneToOne(() => TransportKind)
+  @OneToMany(() => TransportKind, (transportKind) => transportKind.driverTransports)
   @JoinColumn({ name: 'transport_kind_id' })
   transportKind: TransportKind;
 
