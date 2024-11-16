@@ -72,7 +72,7 @@ export class DriverTransport {
   @Column({ nullable: true, name: 'is_verified' })
   isVerified: boolean;
 
-  @Column({ type: 'timestamp', name: 'verified_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'verified_at' })
   verifiedAt: Date; 
 
   @ManyToOne(() => User, (user) => user.verifiedDriverTransports, { nullable: true })
