@@ -70,16 +70,17 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Update driver' })
   @UsePipes(ValidationPipe)
-  @Put()
+  @Put(':id')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'passport', maxCount: 1 },
     { name: 'driverLicense', maxCount: 1 },
   ]))
   updateDriver(
     @UploadedFiles() files: { passport?: any[], driverLicense?: any[] },
-    @Body() updateDriverDto: UpdateDriverDto
+    @Body() updateDriverDto: UpdateDriverDto,
+    @Param('id') id: number
     ) {
-    return this.driversService.updateDriver(updateDriverDto, files)
+    return this.driversService.updateDriver(id, updateDriverDto, files)
   }
 
   @ApiOperation({ summary: 'Update driver phone' })

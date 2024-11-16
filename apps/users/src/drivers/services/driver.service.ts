@@ -242,13 +242,13 @@ export class DriversService {
     }
   }
 
-  async updateDriver(updateDriverDto: UpdateDriverDto, files: any): Promise<BpmResponse> {
+  async updateDriver(driverId:number, updateDriverDto: UpdateDriverDto, files: any): Promise<BpmResponse> {
     const queryRunner = this.driverRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     try {
       await queryRunner.startTransaction();
 
-      const driver = await queryRunner.manager.findOneOrFail(Driver, { where: { id: updateDriverDto.id } })
+      const driver = await queryRunner.manager.findOneOrFail(Driver, { where: { id: driverId } })
       driver.firstName = updateDriverDto.firstName || driver.firstName;
       driver.lastName = updateDriverDto.lastName || driver.lastName;
       driver.email = updateDriverDto.email || driver.email;
