@@ -24,7 +24,9 @@ export class DriversRepository extends Repository<Driver> {
             .leftJoin("driverTransport.transportType", "transportType")
             .addSelect(['transportType.name', 'transportType.id'])
             .leftJoin("driverTransport.transportKind", "transportKind")
-            .addSelect(['transportKind.name', 'transportKind.id']);
+            .addSelect(['transportKind.name', 'transportKind.id'])
+            .leftJoin("driverTransport.cargoLoadMethods", "cargoLoadMethod")
+            .addSelect(['cargoLoadMethod.name', 'cargoLoadMethod.id']);
     
         // Apply filters conditionally
         if (filter.driverId) {
