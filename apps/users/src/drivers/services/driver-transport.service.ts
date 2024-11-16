@@ -305,12 +305,11 @@ export class TransportsService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      const result = await this.driverTransportsRepository.update({ driver: { id: driverId } }, { isMain: false });
-
-      if(result.affected == 1) {
-        const data = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId, driver: { id: driverId } }});
+      const result = await queryRunner.manager.update(DriverTransport ,{ driver: { id: driverId } }, { isMain: false });
+      if(result.affected) {
+        const data = await queryRunner.manager.findOneOrFail(DriverTransport ,{ where: { id: transportId, driver: { id: driverId } }});
         data.isMain = true;
-        await this.driverTransportsRepository.save(data);
+        await queryRunner.manager.save(data);
         await queryRunner.commitTransaction();
         return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
       } else {
