@@ -2,7 +2,6 @@ import { Body, Controller, Post, UseInterceptors, UploadedFiles, UsePipes, Valid
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { TransportsService } from '../services/driver-transport.service';
 import { DriverTransportDto } from '../..';
-import { ChangeStatusDriverTransportDto, DriverTransportVerificationDto, RemoveDriverTransportDto } from '@app/shared-modules/entites/driver/dtos/driver-transport.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Drivers transport')
