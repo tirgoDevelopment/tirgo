@@ -469,8 +469,7 @@ export class DriversService {
         .createQueryBuilder('driver')
         .leftJoinAndSelect('driver.profileFile', 'profileFile')
         .leftJoinAndSelect('driver.driverMerchant', 'driverMerchant')
-        .leftJoinAndSelect('driver.driverTransports', 'transports', 'transports.is_deleted = false')
-        .leftJoinAndSelect('driver.driverTransports', 'deletedTransports', 'deletedTransports.is_deleted = true')
+        .leftJoinAndSelect('driver.driverTransports', 'transports')
         .leftJoinAndSelect('transports.transportType', 'transportType')
         .leftJoinAndSelect('transports.transportKind', 'transportKind')
         .leftJoinAndSelect('transports.cargoLoadMethods', 'cargoLoadMethods')
@@ -490,6 +489,9 @@ export class DriversService {
         // const closdOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: true,  cargoStatus: { code: CargoStatusCodes.Closed } } } });
         // const completedOrdersCount = await this.orderOffersRepository.count({ where: { accepted: true, driver: { id }, order: { isSafeTransaction: false,  cargoStatus: { code: CargoStatusCodes.Completed } } } });
 
+        const transports = driver.driverTransports;
+        driver.driverTransports = transports.filter((el: any) => el.isDeleted == false);
+        driver['deletedTransports'] = transports.filter((el: any) => el.isDeleted == true);
 
       // const isDriverBusy = await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: false, cargoStatus: { code: CargoStatusCodes.Accepted } } } }) || await this.orderOffersRepository.exists({ where: { accepted: true, driver: { id: driver.id }, order: { isSafeTransaction: true, cargoStatus: { code: In([CargoStatusCodes.Accepted, CargoStatusCodes.Completed]) } } } });
       // driver['isBusy'] = isDriverBusy;
