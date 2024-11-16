@@ -206,13 +206,14 @@ export class ClientsService {
       // const client = await this.clientRepository.findOneOrFail({ where: { id, deleted: false }, relations: ['phoneNumbers', 'user'] });
       const client = await this.clientRepository
         .createQueryBuilder('client')
-        .leftJoinAndSelect('client.phoneNumbers', 'phoneNumber')
+        .leftJoin('client.phoneNumbers', 'phoneNumber')
+        .addSelect(['phoneNumber.id', 'phoneNumber.number', 'phoneNumber.code', 'phoneNumber.isMain'])
         .leftJoinAndSelect('client.profileFile', 'profileFile')
         .leftJoin('client.user', 'user')
         .addSelect('user.id')
         .addSelect('user.userType')
         .addSelect('user.lastLogin')
-        .where(`client.deleted = false AND client.id = ${id}`)
+        .where(`client.is_deleted = false AND client.id = ${id}`)
         .getOneOrFail();
 
 
