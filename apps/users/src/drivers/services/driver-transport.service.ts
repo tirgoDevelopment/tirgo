@@ -19,66 +19,136 @@ export class TransportsService {
     private dataSource: DataSource
   ) { }
 
-  async addDriverTransport(driverId: number, transportDto: DriverTransportDto): Promise<BpmResponse> {
+  async addDriverTransport(driverId: number, dto: DriverTransportDto): Promise<BpmResponse> {
+    const queryRunner = await this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
+      const driverExistingTransports: DriverTransport[] = await this.driverTransportsRepository.find({ where: { driver: { id: driverId }, isDeleted: false } });
+      
+      const transport: DriverTransport = new DriverTransport();
+      const isActiveTransportExists = driverExistingTransports.some((transport: DriverTransport) => transport.isMain)
+      if(isActiveTransportExists) {
+        if(dto.isMain !== true && dto.isMain !== false) {
+          throw new BadRequestException(ResponseStauses.IsMainFieldIsReuqired);
+        }
+        transport.isMain = dto.isMain == true;
+      } else {
+        transport.isMain = true;
+      }
+
+      transport.brand = dto.brand;
+      transport.driver = driver;
+      transport.transportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: dto.transportKindId } });
+
+      if(dto.transportTypeId) {
+        transport.transportType = await this.transportTypesRepository.findOneOrFail({ where: { id: dto.transportTypeId } });
+      }
+      if(dto.cargoLoadMethodIds) {
+        transport.cargoLoadMethods = await this.cargoLoadMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
+      }
+      if(dto.volume) {
+        transport.volume = dto.volume;
+      }
+      if(dto.capacity) {
+        transport.capacity = dto.capacity;
+      }
+      if (dto.cubature) {
+        transport.cubature = dto.cubature;
+      }
+      if (dto.transportNumber) {
+        transport.transportNumber = dto.transportNumber;
+      }
+      if (dto.isAdr) {
+        transport.isAdr = dto.isAdr == true;
+      }
+      if (dto.heightCubature) {
+        transport.heightCubature = dto.heightCubature;
+      }
+      if (dto.refrigeratorFromCount) {
+        transport.refrigeratorFromCount = dto.refrigeratorFromCount;
+      }
+      if (dto.refrigeratorToCount) {
+        transport.refrigeratorToCount = dto.refrigeratorToCount;
+      }
+      if (dto.isRefrigerator) {
+        transport.isRefrigerator = dto.isRefrigerator == true;
+      }
+      if (dto.isHook) {
+        transport.isHook = dto.isHook == true;
+      }
+      if (dto.loadCapacity) {
+        transport.loadCapacity = dto.loadCapacity;
+      }
+
+      if(isActiveTransportExists && dto.isMain == true) {
+        await queryRunner.manager.update(DriverTransport, { driver: { id: driverId } }, { isMain: false });
+      }
+
+      await queryRunner.manager.save(transport);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err;
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(err.message)
+      } else if (err.code === '23505') {
+        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+      }
+    }
+    finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateDriverTransport(transportId: number, driverId: number, dto: DriverTransportDto): Promise<BpmResponse> {
     try {
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
-      const transport: DriverTransport = new DriverTransport();
-      transport.driver = driver;
-      
-      if(transportDto.transportKindId) {
-        const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: transportDto.transportKindId } });
-        transport.transportKind = transportKind;
-      }
-      if(transportDto.transportTypeId) {
-      console.log(transportDto.transportTypeId, 'transportTypeIds')
-      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: transportDto.transportTypeId } });
-      transport.transportType = transportType;
-        
-      }
-      if(transportDto.cargoLoadMethodIds) {
-      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
-      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(transportDto.cargoLoadMethodIds) } });
-      transport.cargoLoadMethods = cargoLoads;
-      }
-      if(transportDto.volume) {
-        transport.volume = transportDto.volume;
-      }
-      if(transportDto.capacity) {
-        transport.capacity = transportDto.capacity;
-      }
-      if (transportDto.brand) {
-        transport.brand = transportDto.brand;
-      }
-      if (transportDto.cubature) {
-        transport.cubature = transportDto.cubature;
-      }
-      if (transportDto.transportNumber) {
-        transport.transportNumber = transportDto.transportNumber;
-      }
-      if (transportDto.isAdr) {
-        transport.isAdr = transportDto.isAdr.toString() == 'true';
-      }
-      if (transportDto.heightCubature) {
-        transport.heightCubature = transportDto.heightCubature;
-      }
-      if (transportDto.refrigeratorFromCount) {
-        transport.refrigeratorFromCount = transportDto.refrigeratorFromCount;
-      }
-      if (transportDto.refrigeratorToCount) {
-        transport.refrigeratorToCount = transportDto.refrigeratorToCount;
-      }
-      if (transportDto.isRefrigerator) {
-        transport.isRefrigerator = transportDto.isRefrigerator;
-      }
-      if (transportDto.isHook) {
-        transport.isHook = transportDto.isHook;
-      }
-      if (transportDto.loadCapacity) {
-        transport.loadCapacity = transportDto.loadCapacity;
-      }
+      const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId } });
 
-      const res = await this.driverTransportsRepository.save(transport);
+      transport.brand = dto.brand;
+      transport.transportNumber = dto.transportNumber;
+      transport.transportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: dto.transportKindId } });
+      transport.transportType = await this.transportTypesRepository.findOneOrFail({ where: { id: dto.transportTypeId } });
+
+      if(dto.cargoLoadMethodIds) {
+        transport.cargoLoadMethods = await this.cargoLoadMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
+      }
+      if (dto.capacity && dto.capacity != null) {
+        transport.capacity = dto.capacity;
+      }
+      if (dto.isAdr) {
+        transport.isAdr = dto.isAdr;
+      }
+      if (dto.heightCubature) {
+        transport.heightCubature = dto.heightCubature;
+      }
+      if (dto.refrigeratorFromCount) {
+        transport.refrigeratorFromCount = dto.refrigeratorFromCount;
+      }
+      if (dto.refrigeratorToCount) {
+        transport.refrigeratorToCount = dto.refrigeratorToCount;
+      }
+      if (dto.isRefrigerator) {
+        transport.isRefrigerator = dto.isRefrigerator;
+      }
+      if (dto.isHook) {
+        transport.isHook = dto.isHook;
+      }
+      if(dto.volume) {
+        transport.volume = dto.volume;
+      }
+      if(dto.capacity) {
+        transport.capacity = dto.capacity;
+      }
+      
+      await this.driverTransportsRepository.save(transport);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
@@ -94,36 +164,36 @@ export class TransportsService {
     }
   }
 
-  async addDriverTransportToVerification(files: any, transportDto: DriverTransportVerificationDto){
+  async addDriverTransportToVerification(files: any, dto: DriverTransportVerificationDto){
     try {
-      // if (!transportDto.driverId || isNaN(transportDto.driverId)) {
+      // if (!dto.driverId || isNaN(dto.driverId)) {
       //   throw new BadRequestException(ResponseStauses.IdIsRequired);
       // }
-      // const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportDto.transportId } });
-      // console.log(JSON.parse(transportDto.transportKindIds), 'transportKindIds')
-      // console.log(JSON.parse(transportDto.transportTypeIds), 'transportTypeIds')
-      // console.log(JSON.parse(transportDto.loadingMethodIds), 'loadingMethodIds')
-      // console.log(JSON.parse(transportDto.cargoTypeIds), 'cargoTypeIds')
-      // const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: transportDto.driverId } });
-      // const transportKinds: TransportKind[] = await this.transportKindsRepository.find({ where: { id: In(JSON.parse(transportDto.transportKindIds)) } });
-      // const transportTypes: TransportType[] = await this.transportTypesRepository.find({ where: { id: In(JSON.parse(transportDto.transportTypeIds)) } });
-      // const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(transportDto.loadingMethodIds)) } });
-      // const cargoTypes: CargoType[] = await this.cargoTypesRepository.find({ where: { id: In(JSON.parse(transportDto.cargoTypeIds)) } });
+      // const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: dto.transportId } });
+      // console.log(JSON.parse(dto.transportKindIds), 'transportKindIds')
+      // console.log(JSON.parse(dto.transportTypeIds), 'transportTypeIds')
+      // console.log(JSON.parse(dto.loadingMethodIds), 'loadingMethodIds')
+      // console.log(JSON.parse(dto.cargoTypeIds), 'cargoTypeIds')
+      // const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: dto.driverId } });
+      // const transportKinds: TransportKind[] = await this.transportKindsRepository.find({ where: { id: In(JSON.parse(dto.transportKindIds)) } });
+      // const transportTypes: TransportType[] = await this.transportTypesRepository.find({ where: { id: In(JSON.parse(dto.transportTypeIds)) } });
+      // const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(JSON.parse(dto.loadingMethodIds)) } });
+      // const cargoTypes: CargoType[] = await this.cargoTypesRepository.find({ where: { id: In(JSON.parse(dto.cargoTypeIds)) } });
 
       // transport.transportKinds = transportKinds;
       // transport.transportTypes = transportTypes;
       // transport.cargoLoadMethods = cargoLoads;
       // transport.cargoTypes = cargoTypes;
       // transport.driver = driver;
-      // transport.name = transportDto.name;
-      // transport.cubicCapacity = transportDto.cubicCapacity;
-      // transport.stateNumber = transportDto.stateNumber;
-      // transport.isAdr = transportDto.isAdr;
+      // transport.name = dto.name;
+      // transport.cubicCapacity = dto.cubicCapacity;
+      // transport.stateNumber = dto.stateNumber;
+      // transport.isAdr = dto.isAdr;
 
-      // transport.refrigeratorFrom = transportDto.refrigeratorFrom || transport.refrigeratorFrom;
-      // transport.refrigeratorTo = transportDto.refrigeratorTo || transport.refrigeratorTo;
-      // transport.refrigeratorCount = transportDto.refrigeratorCount || transport.refrigeratorCount;
-      // transport.isHook = transportDto.isHook || transport.isHook;
+      // transport.refrigeratorFrom = dto.refrigeratorFrom || transport.refrigeratorFrom;
+      // transport.refrigeratorTo = dto.refrigeratorTo || transport.refrigeratorTo;
+      // transport.refrigeratorCount = dto.refrigeratorCount || transport.refrigeratorCount;
+      // transport.isHook = dto.isHook || transport.isHook;
 
       // transport.requestToVerification = true;
       // transport.verified = true;
@@ -133,56 +203,56 @@ export class TransportsService {
       //   if (files.techPassportFrontFilePath) {
       //     transport.techPassportFrontFilePath = files.techPassportFrontFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.techPassportFrontFilePath[0])
-      //   } else if(!transportDto.techPassportFrontFilePath) {
+      //   } else if(!dto.techPassportFrontFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.techPassportBackFilePath) {
       //     transport.techPassportBackFilePath = files.techPassportBackFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.techPassportBackFilePath[0])
       //   }
-      //   else if(!transportDto.techPassportBackFilePath) {
+      //   else if(!dto.techPassportBackFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.transportFrontFilePath) {
       //     transport.transportFrontFilePath = files.transportFrontFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.transportFrontFilePath[0])
       //   }
-      //   else if(!transportDto.transportFrontFilePath) {
+      //   else if(!dto.transportFrontFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.transportBackFilePath) {
       //     transport.transportBackFilePath = files.transportBackFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.transportBackFilePath[0])
       //   }
-      //   else if(!transportDto.transportBackFilePath) {
+      //   else if(!dto.transportBackFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.transportSideFilePath) {
       //     transport.transportSideFilePath = files.transportSideFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.transportSideFilePath[0])
       //   }
-      //   else if(!transportDto.transportSideFilePath) {
+      //   else if(!dto.transportSideFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.goodsTransportationLicenseCardFilePath) {
       //     transport.goodsTransportationLicenseCardFilePath = files.goodsTransportationLicenseCardFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.goodsTransportationLicenseCardFilePath[0])
       //   }
-      //   else if(!transportDto.goodsTransportationLicenseCardFilePath) {
+      //   else if(!dto.goodsTransportationLicenseCardFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.driverLicenseFilePath) {
       //     transport.driverLicenseFilePath = files.driverLicenseFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.driverLicenseFilePath[0])
       //   }
-      //   else if(!transportDto.driverLicenseFilePath) {
+      //   else if(!dto.driverLicenseFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
       //   if (files.passportFilePath) {
       //     transport.passportFilePath = files.passportFilePath[0].originalname.split(' ').join('');
       //     uploads.push(files.passportFilePath[0])
       //   }
-      //   else if(!transportDto.passportFilePath) {
+      //   else if(!dto.passportFilePath) {
       //     throw new BadRequestException(ResponseStauses.AllFieldsRequired);
       //   }
 
@@ -207,76 +277,7 @@ export class TransportsService {
     }
   }
 
-  async updateDriverTransport(transportId: number, driverId: number, transportDto: DriverTransportDto): Promise<BpmResponse> {
-    try {
-
-      const transport: DriverTransport = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId } });
-      console.log(transportDto.transportKindId, 'transportKindId')
-      console.log(transportDto.transportTypeId, 'transportTypeId')
-      console.log(transportDto.cargoLoadMethodIds, 'loadingMethodIds')
-
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
-      const transportKind: TransportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: transportDto.transportKindId } });
-      const transportType: TransportType = await this.transportTypesRepository.findOneOrFail({ where: { id: transportDto.transportTypeId } });
-      const cargoLoads: CargoLoadMethod[] = await this.cargoLoadMethodsRepository.find({ where: { id: In(transportDto.cargoLoadMethodIds) } });
-
-      transport.transportKind = transportKind;
-      transport.transportType = transportType;
-      transport.cargoLoadMethods = cargoLoads;
-      transport.driver = driver;
-
-      if (transportDto.brand && transportDto.brand != null) {
-        transport.brand = transportDto.brand;
-      }
-      if (transportDto.capacity && transportDto.capacity != null) {
-        transport.capacity = transportDto.capacity;
-      }
-      if (transportDto.transportNumber && transportDto.transportNumber != null) {
-        transport.transportNumber = transportDto.transportNumber;
-      }
-      if (transportDto.isAdr) {
-        transport.isAdr = transportDto.isAdr;
-      }
-      if (transportDto.heightCubature) {
-        transport.heightCubature = transportDto.heightCubature;
-      }
-      if (transportDto.refrigeratorFromCount && transportDto.refrigeratorFromCount != null) {
-        transport.refrigeratorFromCount = transportDto.refrigeratorFromCount;
-      }
-      if (transportDto.refrigeratorToCount && transportDto.refrigeratorToCount != null) {
-        transport.refrigeratorToCount = transportDto.refrigeratorToCount;
-      }
-      if (transportDto.isRefrigerator && transportDto.isRefrigerator != null) {
-        transport.isRefrigerator = transportDto.isRefrigerator;
-      }
-      if (transportDto.isHook && transportDto.isHook != null) {
-        transport.isHook = transportDto.isHook;
-      }
-      if(transportDto.volume) {
-        transport.volume = transportDto.volume;
-      }
-      if(transportDto.capacity) {
-        transport.capacity = transportDto.capacity;
-      }
-      
-
-      const res = await this.driverTransportsRepository.save(transport);
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
-    } catch (err: any) {
-      console.log(err)
-      if (err instanceof HttpException) {
-        throw err;
-      } else if (err.name == 'EntityNotFoundError') {
-        throw new NotFoundException(err.message)
-      } else if (err.code === '23505') {
-        throw new InternalErrorException(ResponseStauses.DuplicateError, err.message);
-      } else {
-        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
-      }
-    }
-  }
-
-  async removeDriverTransport(driverId: number, transportId: number, user): Promise<BpmResponse> {
+  async deleteDriverTransport(driverId: number, transportId: number, user): Promise<BpmResponse> {
     try {
     
       const data = await this.driverTransportsRepository.findOneOrFail({ where: { id: transportId, driver: { id: driverId } }});
@@ -285,7 +286,7 @@ export class TransportsService {
       data.deletedAt = new Date();
       data.deletedBy = user;
       await this.driverTransportsRepository.save(data);
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
     } catch (err: any) {
       console.log(err)
       if (err instanceof HttpException) {
@@ -332,15 +333,16 @@ export class TransportsService {
 
   async getTransportByDriverId(driverId: number, transportId: number): Promise<BpmResponse> {
     try {
+      const transport = await this.driverTransportsRepository.createQueryBuilder(`t`)
+        .leftJoinAndSelect(`t.driver`, `d`)
+        .leftJoinAndSelect(`t.transportType`, `tt`)
+        .leftJoinAndSelect(`t.transportKind`, `tk`)
+        .leftJoinAndSelect(`t.cargoLoadMethods`, `clm`)
+        .where(`t.id = :id`, { id: transportId })
+        .andWhere(`d.id = :driverId`, { driverId })
+        .getOneOrFail();
 
-      const transports: DriverTransport[] = await this.driverTransportsRepository.find({
-        where: { driver: { id: driverId }, id: transportId },
-        relations: ['driver', 'transportTypes', 'transportKinds', 'cargoTypes', 'cargoLoadMethods', 'transportVerification']
-      })
-      if (!transports.length) {
-        throw new NoContentException()
-      }
-      return new BpmResponse(true, transports, null);
+      return new BpmResponse(true, transport, null);
     } catch (err: any) {
       console.log(err)
       if (err instanceof HttpException) {

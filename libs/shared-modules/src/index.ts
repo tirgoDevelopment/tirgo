@@ -152,7 +152,8 @@ export enum ResponseStauses {
   AccessDenied = 'accessDenied',
   TokenExpired = 'tokenExpired',
   OtpExpired = 'otpExpired',
-  InvalidCode = 'invalidCode'
+  InvalidCode = 'invalidCode',
+  IsMainFieldIsReuqired = 'IsMainFieldIsReuqired'
 }
 
 export enum CargoStatusCodes {

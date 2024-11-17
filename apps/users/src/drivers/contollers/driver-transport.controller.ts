@@ -57,7 +57,7 @@ export class DriverTransportsController {
     @Delete(':transportId')
     @UsePipes(ValidationPipe)
     async removeDriverTransport(@Param('driverId') driverId: number, @Param('transportId') transportId: number, @Req() req: any) {
-        return this.driverTransportsService.removeDriverTransport(driverId, transportId, req['user'])
+        return this.driverTransportsService.deleteDriverTransport(driverId, transportId, req['user'])
     }
 
     @ApiOperation({ summary: 'Change driver transport status' })
