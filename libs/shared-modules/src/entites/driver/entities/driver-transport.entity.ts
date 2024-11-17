@@ -10,10 +10,10 @@ export class DriverTransport {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   brand: string;
 
-  @Column({ nullable: true, name: 'transport_number' })
+  @Column({ nullable: false, name: 'transport_number', unique: true })
   transportNumber: string;
 
   @Column({ nullable: true, name: 'is_adr' })
@@ -38,7 +38,7 @@ export class DriverTransport {
   heightCubature: string;
   
   @Column({ nullable: true, name: 'is_refrigerator' })
-  isRefrigerator: number;
+  isRefrigerator: boolean;
 
   @Column({ nullable: true, name: 'refrigerator_from_count' })
   refrigeratorFromCount: number;
@@ -79,11 +79,11 @@ export class DriverTransport {
   @JoinColumn({ name: 'verified_by_id' })
   verifiedBy: User;
 
-  @ManyToOne(() => TransportType, (transportType) => transportType.driverTransports)
+  @ManyToOne(() => TransportType, (transportType) => transportType.driverTransports, { nullable: false })
   @JoinColumn({ name: 'transport_type_id' })
   transportType: TransportType;
 
-  @ManyToOne(() => TransportKind, (transportKind) => transportKind.driverTransports)
+  @ManyToOne(() => TransportKind, (transportKind) => transportKind.driverTransports, { nullable: false })
   @JoinColumn({ name: 'transport_kind_id' })
   transportKind: TransportKind;
 

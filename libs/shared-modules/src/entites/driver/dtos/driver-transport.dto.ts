@@ -3,12 +3,15 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class DriverTransportDto {
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   id?: number;
   
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsNotEmpty()
   brand: string;
+
+  @ApiProperty({ required: false })
+  transportNumber:string; 
 
   @ApiProperty({ required: false })
   @IsNotEmpty()
@@ -18,68 +21,41 @@ export class DriverTransportDto {
   @IsNotEmpty()
   transportTypeId: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   loadCapacity: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   cargoLoadMethodIds: any;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   capacity: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   volume:number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   cubature:number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   heightCubature: string;
 
-  @ApiProperty({ required: false })
-  transportNumber:string; 
+  @ApiProperty({ required: true })
+  isRefrigerator: boolean;
 
-  @ApiProperty({ required: false })
-  isRefrigerator: number;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   refrigeratorFromCount: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   refrigeratorToCount: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   isHook: boolean;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   isAdr: boolean;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   isMain: boolean;
-
-  @ApiProperty({ required: false })
-  techPassportFrontFilePath:string; 
-
-  @ApiProperty({ required: false })
-  techPassportBackFilePath:string; 
-
-  @ApiProperty({ required: false })
-  transportFrontFilePath:string; 
-
-  @ApiProperty({ required: false })
-  transportBackFilePath:string; 
-
-  @ApiProperty({ required: false })
-  transportSideFilePath:string; 
-
-  @ApiProperty({ required: false })
-  goodsTransportationLicenseCardFilePath:string; 
-
-  @ApiProperty({ required: false })
-  driverLicenseFilePath:string; 
-
-  @ApiProperty({ required: false })
-  passportFilePath:string;
 }
 
 export class DriverTransportVerificationDto {
