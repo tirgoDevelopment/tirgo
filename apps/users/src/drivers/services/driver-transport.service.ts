@@ -85,12 +85,12 @@ export class TransportsService {
       if(isActiveTransportExists && dto.isMain == true) {
         await queryRunner.manager.update(DriverTransport, { driver: { id: driverId } }, { isMain: false });
       }
-
-      await queryRunner.manager.save(transport);
+      const result = await queryRunner.manager.save(DriverTransport, transport);
+      console.log('result', result)
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
-      await queryRunner.rollbackTransaction();
       console.log(err)
+      await queryRunner.rollbackTransaction();
       if (err instanceof HttpException) {
         throw err;
       } else if (err.name == 'EntityNotFoundError') {
