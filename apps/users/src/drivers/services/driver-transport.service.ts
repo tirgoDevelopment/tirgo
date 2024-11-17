@@ -13,19 +13,16 @@ export class TransportsService {
     @InjectRepository(TransportKind) private readonly transportKindsRepository: Repository<TransportKind>,
     @InjectRepository(TransportType) private readonly transportTypesRepository: Repository<TransportType>,
     @InjectRepository(CargoLoadMethod) private readonly cargoLoadMethodsRepository: Repository<CargoLoadMethod>,
-    @InjectRepository(CargoType) private readonly cargoTypesRepository: Repository<CargoType>,
-    private awsService: AwsService,
-    private sundriesService: SundryService,
     private dataSource: DataSource
   ) { }
 
   async addDriverTransport(driverId: number, dto: DriverTransportDto): Promise<BpmResponse> {
     const queryRunner = await this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     try {
+      await queryRunner.connect();
       await queryRunner.startTransaction();
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId } });
-      const driverExistingTransports: DriverTransport[] = await this.driverTransportsRepository.find({ where: { driver: { id: driverId }, isDeleted: false } });
+      const driver: Driver = await queryRunner.manager.findOneOrFail(Driver, { where: { id: driverId } });
+      const driverExistingTransports: DriverTransport[] = await queryRunner.manager.find(DriverTransport, { where: { driver: { id: driverId }, isDeleted: false } });
       
       const transport: DriverTransport = new DriverTransport();
       const isActiveTransportExists = driverExistingTransports.some((transport: DriverTransport) => transport.isMain)
@@ -40,13 +37,13 @@ export class TransportsService {
 
       transport.brand = dto.brand;
       transport.driver = driver;
-      transport.transportKind = await this.transportKindsRepository.findOneOrFail({ where: { id: dto.transportKindId } });
+      transport.transportKind = await queryRunner.manager.findOneOrFail(TransportKind, { where: { id: dto.transportKindId } });
 
       if(dto.transportTypeId) {
-        transport.transportType = await this.transportTypesRepository.findOneOrFail({ where: { id: dto.transportTypeId } });
+        transport.transportType = await queryRunner.manager.findOneOrFail(TransportType, { where: { id: dto.transportTypeId } });
       }
       if(dto.cargoLoadMethodIds) {
-        transport.cargoLoadMethods = await this.cargoLoadMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
+        transport.cargoLoadMethods = await queryRunner.manager.find(CargoLoadMethod,{ where: { id: In(dto.cargoLoadMethodIds) } });
       }
       if(dto.volume) {
         transport.volume = dto.volume;
@@ -85,8 +82,8 @@ export class TransportsService {
       if(isActiveTransportExists && dto.isMain == true) {
         await queryRunner.manager.update(DriverTransport, { driver: { id: driverId } }, { isMain: false });
       }
-      const result = await queryRunner.manager.save(DriverTransport, transport);
-      console.log('result', result)
+      await queryRunner.manager.save(DriverTransport, transport);
+      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
