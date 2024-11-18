@@ -29,7 +29,7 @@ export class ClientDto {
 
   @ApiProperty({ required: true })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(8)
   @MaxLength(16)
   password?: string;
