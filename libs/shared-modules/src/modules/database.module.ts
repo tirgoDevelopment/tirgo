@@ -84,7 +84,7 @@ const entities = [
     imports: [
         TypeOrmModule.forRoot({
             type: 'postgres',
-            host: '65.1.148.56',
+            host: 'localhost',
             port: 5432,
             password: 'postgres',
             username: 'postgres',
