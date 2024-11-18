@@ -24,7 +24,7 @@ export class ClientsService {
     try {
       await queryRunner.startTransaction();
 
-      const client: Client = new Client();
+      const client: Client = queryRunner.manager.create(Client);
       client.user = await this.usersRepository.save({ userType: UserTypes.Client });
       client.firstName = createClientDto.firstName;
       client.lastName = createClientDto.lastName;
@@ -50,11 +50,13 @@ export class ClientsService {
       });
       client.phoneNumbers = clientPhoneNumbers;
 
+      const newClient = await this.clientRepository.save(client);
+
       if(files && files.profile) {
         profileFile = files.profile[0];
 
         const profileDoc = new ClientDocuments();
-        profileDoc.clientId = client.id;
+        profileDoc.clientId = newClient.id;
         profileDoc.name = profileFile.originalname?.split(' ').join('').trim();
         profileDoc.bucket = 'clients';
         profileDoc.mimeType = profileFile.mimetype;
@@ -65,12 +67,11 @@ export class ClientsService {
         client.profileFile = profileDoc;
         await queryRunner.manager.save(ClientDocuments, profileDoc);
 
-        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.ClientsProfiles, profileDoc);
+        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.ClientsProfiles, profileFile);
         if(!res) {
           throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
         }
       }
-      await this.clientRepository.save(client);
 
       await queryRunner.commitTransaction();
 
