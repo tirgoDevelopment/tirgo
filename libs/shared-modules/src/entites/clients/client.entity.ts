@@ -15,6 +15,9 @@ export class Client {
   @Column({ nullable: false, name: 'last_name' })
   lastName: string;
 
+  @Column({ nullable: true, name: 'birthday_date' })
+  birthdayDate?: Date;
+
   @OneToOne(() => ClientDocuments, (document) => document.clientId  , { cascade: true, onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'profile_file_id' })
   profileFile?: ClientDocuments;

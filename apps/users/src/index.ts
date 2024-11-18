@@ -3,6 +3,8 @@ export {
   ClientDto,
   UpdateClientDto,
   DriverDto,
+  UpdateClientPhoneDto, 
+  UpdateClientBirthDayDto,
   GetDriversDto,
   GetClientsDto,
   UpdateDriverPhoneDto, 
