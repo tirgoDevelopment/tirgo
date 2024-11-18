@@ -17,9 +17,10 @@ export class ClientsService {
     private sundriesService: SundryService
   ) { }
 
-  async createClient(profileFile: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
+  async createClient(files: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
     const queryRunner = this.clientRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
+    let profileFile;
     try {
       await queryRunner.startTransaction();
 
@@ -49,15 +50,17 @@ export class ClientsService {
       });
       client.phoneNumbers = clientPhoneNumbers;
 
-      if(profileFile) {
+      if(files && files.profile) {
+        profileFile = files.profile[0];
+
         const profileDoc = new ClientDocuments();
         profileDoc.clientId = client.id;
-        profileDoc.name = profileFile.originalname.split(' ').join('').trim();
+        profileDoc.name = profileFile.originalname?.split(' ').join('').trim();
         profileDoc.bucket = 'clients';
         profileDoc.mimeType = profileFile.mimetype;
         profileDoc.size = profileFile.size;
         profileDoc.docType = UserDocumentTypes.Profile;
-        profileDoc.fileHash = profileFile.filename.split(' ').join('').trim();
+        profileDoc.fileHash = profileFile.filename?.split(' ').join('').trim();
         profileDoc.description = profileFile.description;
         client.profileFile = profileDoc;
         await queryRunner.manager.save(ClientDocuments, profileDoc);
@@ -75,7 +78,7 @@ export class ClientsService {
     } catch (err: any) {
       console.log(err)
       await queryRunner.rollbackTransaction();
-      this.awsService.deleteFile(AwsS3BucketKeyNames.ClientsProfiles, profileFile.originalname.split(' ').join('').trim())
+      this.awsService.deleteFile(AwsS3BucketKeyNames.ClientsProfiles, profileFile.originalname?.split(' ').join('').trim())
 
       if (err instanceof HttpException) {
         throw err
