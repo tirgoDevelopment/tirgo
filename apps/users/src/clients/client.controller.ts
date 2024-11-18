@@ -22,7 +22,7 @@ export class ClientsController {
     @Body() clientData: ClientDto,
     @Req() req: Request
   ) {
-    return this.clientsService.createClient(files.profile[0], clientData, req['user'])
+    return this.clientsService.createClient(files, clientData, req['user'])
   }
 
   @ApiOperation({ summary: 'Create client' })
@@ -36,7 +36,7 @@ export class ClientsController {
     @Body() clientData: ClientDto,
     @Req() req: Request
   ) {
-    return this.clientsService.createClient(files.profile[0], clientData, req['user'])
+    return this.clientsService.createClient(files, clientData, req['user'])
   }
 
   @ApiOperation({ summary: 'Update client' })
