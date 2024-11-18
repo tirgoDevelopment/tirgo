@@ -11,6 +11,20 @@ export class ClientsController {
     private clientsService: ClientsService
   ) { }
 
+  @ApiOperation({ summary: 'Register client' })
+  @Post()
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'profile', maxCount: 1 },
+  ]))
+  async registerClient(
+    @UploadedFiles() files: { profile?: any[] },
+    @Body() clientData: ClientDto,
+    @Req() req: Request
+  ) {
+    return this.clientsService.createClient(files.profile[0], clientData, req['user'])
+  }
+
   @ApiOperation({ summary: 'Create client' })
   @Post()
   @UsePipes(ValidationPipe)
