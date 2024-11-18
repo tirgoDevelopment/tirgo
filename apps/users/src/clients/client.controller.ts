@@ -12,7 +12,7 @@ export class ClientsController {
   ) { }
 
   @ApiOperation({ summary: 'Register client' })
-  @Post()
+  @Post('register')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'profile', maxCount: 1 },
