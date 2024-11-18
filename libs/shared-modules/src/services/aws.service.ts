@@ -22,7 +22,7 @@ export class AwsService {
     try {
         const s3Params = {
             Bucket: 'tirgo-bucket',
-            Key: `${keyName}/${file.originalname.split(' ').join('').trim()}`,
+            Key: `${keyName}/${file.originalname?.split(' ').join('').trim()}`,
             Body: file.buffer,
           };
           // Perform the PutObject operation
