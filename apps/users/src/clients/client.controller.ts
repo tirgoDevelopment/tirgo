@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Get, Query, Delete, Patch, Put, Param, } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ClientsService } from './client.service';
-import { ClientDto, GetClientsDto, UpdateClientDto } from '..';
+import { ClientDto, GetClientsDto, UpdateClientBirthDayDto, UpdateClientDto, UpdateClientPhoneDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Clients')
@@ -64,6 +64,25 @@ export class ClientsController {
     @Req() req: Request
   ) {
     return this.clientsService.updateClientProfile(files, id)
+  }
+
+  @ApiOperation({ summary: 'Update driver phone' })
+  @UsePipes(ValidationPipe)
+  @Patch(':clientId/phone-number/:phoneNumberId')
+  updateDriverPhone(
+    @Param('clientId') clientId: number,
+    @Param('phoneNumberId') phoneNumberId: number,
+    @Body() dto: UpdateClientPhoneDto,
+    @Req() req: Request
+  ) {
+    return this.clientsService.updateClientPhoneNumber(dto, clientId, phoneNumberId, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Update driver birthday date' })
+  @UsePipes(ValidationPipe)
+  @Patch(':id/birthday-date')
+  updateDriverBirthday(@Param('id') id: number, @Body() dto: UpdateClientBirthDayDto, @Req() req: Request) {
+    return this.clientsService.updateClientBirthday(dto, id,  req['user'])
   }
 
   @ApiOperation({ summary: 'Add client Phone number' })

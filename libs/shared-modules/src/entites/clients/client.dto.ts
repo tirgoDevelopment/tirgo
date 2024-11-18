@@ -149,3 +149,23 @@ export class GetClientsDto {
   @IsDateString()
   lastLoginTo?: string;
 }
+
+export class UpdateClientPhoneDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  number: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  code: string;
+}
+
+export class UpdateClientBirthDayDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  birthdayDate: Date;
+
+}

@@ -27,7 +27,7 @@ export { Transaction } from "./entites/transactions/transaction.entity";
 export { User } from "./entites/users/user.entity";
 export { Client } from "./entites/clients/client.entity";
 export { ClientPhoneNumber } from "./entites/clients/client-phonenumber.entity";
-export { ClientDto, UpdateClientDto, GetClientsDto } from "./entites/clients/client.dto";
+export { ClientDto, UpdateClientDto, GetClientsDto, UpdateClientPhoneDto, UpdateClientBirthDayDto } from "./entites/clients/client.dto";
 export { ClientDocuments } from "./entites/clients/clients-documents.entity";
 export { Driver } from "./entites/driver/entities/driver.entity";
 export { DriverService } from "./entites/driver/entities/driver-service.entity";

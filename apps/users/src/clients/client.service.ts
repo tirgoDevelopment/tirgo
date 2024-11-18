@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AwsS3BucketKeyNames, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, GetClientsDto, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, User, UserDocumentTypes, UserStates, UserTypes } from '..';
+import { AwsS3BucketKeyNames, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, GetClientsDto, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, UpdateClientBirthDayDto, UpdateClientPhoneDto, User, UserDocumentTypes, UserStates, UserTypes } from '..';
 import { ClientsRepository } from './repositories/client.repository';
 import { ClientDocuments } from '..';
 
@@ -169,6 +169,49 @@ export class ClientsService {
     } catch (err: any) {
       console.log(err)
       if (err.message.includes('EntityNotFoundError')) {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async updateClientPhoneNumber(updateDriverPhoneDto: UpdateClientPhoneDto, clientId: number, phoneNumberId: number, user: any): Promise<BpmResponse> {
+    try {
+
+      const phoneNumber = await this.clientPhoneNumberRepository.findOneOrFail({ where: { id: phoneNumberId, client: { id: clientId } } });
+      phoneNumber.number = updateDriverPhoneDto.number.toString().replaceAll('+', '').trim();
+      phoneNumber.code = updateDriverPhoneDto.code;
+      await this.clientPhoneNumberRepository.save(phoneNumber);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async updateClientBirthday(dto: UpdateClientBirthDayDto, clientId: number, user: any): Promise<BpmResponse> {
+    try {
+      const client = await this.clientRepository.findOneOrFail({ where: {id: clientId} });
+      client.birthdayDate = dto.birthdayDate;
+
+      await this.clientRepository.save(client);
+
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        // Client not found
         throw new NoContentException();
       } else if (err instanceof HttpException) {
         throw err
