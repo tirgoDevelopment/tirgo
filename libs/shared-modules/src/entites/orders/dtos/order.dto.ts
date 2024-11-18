@@ -1,5 +1,14 @@
-import { IS_UUID, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID, ValidateNested, isUUID } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
+import { Client } from "../../clients/client.entity";
+import { Driver } from "../../driver/entities/driver.entity";
+import { TransportKindDto } from "../../references/dtos/transport-kind.dto";
+import { TransportTypeDto } from "../../references/dtos/transport-type.dto";
+import { CargoTypeDto } from "../../references/dtos/cargo-type.dto";
+import { CargoLoadingMethodDto } from "../../references/dtos/cargo-loading-method.dto";
+import { CargoStatusDto } from "../../references/dtos/cargo-status.dto";
+import { User } from "../../users/user.entity";
+import { CurrencyDto } from "../../references/dtos/currency.dto";
 
 class LocationDto {
   @ApiProperty({ required: true })
@@ -20,152 +29,118 @@ class LocationDto {
 
 export class OrderDto {
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   id?: number;
-  
-  @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  loadingLocation: LocationDto;
 
   @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  deliveryLocation: LocationDto;
-
-  @ApiProperty({ required: false })
-  merchantId: number;
-
-  @ApiProperty({ required: false })
-  additionalClientId: number;
-
-  @ApiProperty({ required: false })
-  clientId: number;
-
-  @ApiProperty({ required: false })
-  cargoStatusId?: number;
+  client: Client;
 
   @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  customsPlaceLocation?: LocationDto;
+  additionalClient: Client;
 
   @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  customsClearancePlaceLocation?: LocationDto;
+  driver: Driver;
 
   @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  additionalLoadingLocation?: LocationDto;
+  cargoWeight: number;
 
-  @ApiProperty({ required: true })
-  @ValidateNested()
-  @IsNotEmpty()
-  additionalDeliveryLocation?: LocationDto;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })  
   isAdr?: boolean;
 
-  @ApiProperty({ required: false })
-  isCarnetTir?: boolean;
+  @ApiProperty({ required: true })  
+  isHook?: boolean;
 
-  @ApiProperty({ required: false })
-  isGlonas?: boolean;
-
-  @ApiProperty({ required: false })
-  isParanom?: boolean;
-
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })  
   offeredPrice?: number;
 
-  @ApiProperty({ required: false })
-  paymentMethod?: string;
+  @ApiProperty({ required: true })  
+  isCashlessPayment: boolean;
 
-  @ApiProperty({ required: false })
-  inAdvancePrice?: number;
+  @ApiProperty({ required: true })    
+  isSecureTransaction: boolean;
 
-  @ApiProperty({ required: false })
-  offeredPriceCurrencyId: string;
+  @ApiProperty({ required: true })    
+  isBorderCrossing: boolean;
 
-  @ApiProperty({ required: false })
-  inAdvancePriceCurrencyId: string;
+  @ApiProperty({ required: true })    
+  cargoDimension: string;
 
-  @ApiProperty({ required: false })
-  refrigeratorFrom?: string;
+  @ApiProperty({ required: true })    
+  refrigeratorFromCount?: string;
 
-  @ApiProperty({ required: false })
-  refrigeratorTo?: string;
+  @ApiProperty({ required: true })    
+  refrigeratorToCount?: string;
 
-  @ApiProperty({ required: false })
-  refrigeratorCount?: number;
+  @ApiProperty({ required: true })  
+  isRefrigerator?: boolean;
 
-  @ApiProperty({ required: true })
-  @IsDate()
-  @IsNotEmpty()
+  @ApiProperty({ required: true })    
   sendDate: Date;
 
-  @ApiProperty({ required: true })
-  @IsBoolean()
+  @ApiProperty({ required: true })  
+  cisternVolume: string;
+
+  @ApiProperty({ required: true })  
+  loadCapacity: string;
+
+  @ApiProperty({ required: false })    
   @IsNotEmpty()
-  isSafeTransaction: boolean;
+  fromLocation: LocationDto;
 
-  @ApiProperty({ required: true })
-  @IsUUID()
+  @ApiProperty({ required: false })    
   @IsNotEmpty()
-  transportTypeIds: string[];
+  toLocation: LocationDto;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: true })    
+  transportType: TransportTypeDto[];
+
+  @ApiProperty({ required: false })    
   @IsNotEmpty()
-  transportKindIds: string[];
+  transportKinds: TransportKindDto[];
 
-  @ApiProperty({ required: true })
-  @IsUUID()
+  @ApiProperty({ required: true })    
+  cargoLoadMethods?: CargoLoadingMethodDto;
+
+  @ApiProperty({ required: false })    
   @IsNotEmpty()
-  cargoTypeId: string;
+  cargoType: CargoTypeDto;
 
-  @ApiProperty({ required: false })
-  isUrgent: boolean;
+  @ApiProperty({ required: true })    
+  cargoStatus?: CargoStatusDto;
 
-  @ApiProperty({ required: false })
-  isTwoDays: boolean
+  @ApiProperty({ required: true })  
+  offeredPriceCurrency: CurrencyDto;
 
-  @ApiProperty({ required: false })
-  isHook: boolean;
+  @ApiProperty({ required: true })  
+  createdAt: Date;
 
-  @ApiProperty({ required: false })
-  isHighCube: boolean;
+  @ApiProperty({ required: true })  
+  createdBy: User;
 
-  @ApiProperty({ required: false })
-  cisternVolume: number;
+  @ApiProperty({ required: true })  
+  isDeleted: boolean;
 
-  @ApiProperty({ required: false })
-  containerVolume: number;
+  @ApiProperty({ required: true })  
+  deletedAt: Date;
 
-  @ApiProperty({ required: false })
-  capacity:number;
+  @ApiProperty({ required: true })  
+  deletedBy: User;
 
-  @ApiProperty({ required: false })
-  cargoWeight?: number;
+  @ApiProperty({ required: true })  
+  deleteReason: string;
 
-  @ApiProperty({ required: false })
-  cargoLength?: number;
+  @ApiProperty({ required: true })  
+  isCanceled: boolean;
 
-  @ApiProperty({ required: false })
-  cargoWidth?: number;
+  @ApiProperty({ required: true })  
+  canceledAt: Date;
 
-  @ApiProperty({ required: false })
-  cargoHeight?: number;
+  @ApiProperty({ required: true })  
+  canceledBy: User;
 
-  @ApiProperty({ required: false })
-  volume?: number;
+  @ApiProperty({ required: true })  
+  cancelReason: string;
 
-  @ApiProperty({ required: false })
-  loadingMethodId?: string;
-
-  @ApiProperty({ required: false })
-  cargoPackageId?: string;
 }
 
 export class AppendOrderDto {

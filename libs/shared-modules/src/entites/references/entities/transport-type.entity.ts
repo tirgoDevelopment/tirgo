@@ -1,6 +1,7 @@
-import { Column, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Staff } from '../../staffs/staff.entity';
 import { DriverTransport } from '../../driver/entities/driver-transport.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 @Entity()
 export class TransportType {
@@ -28,5 +29,7 @@ export class TransportType {
   @OneToMany(() => DriverTransport, (driverTransport) => driverTransport.transportType, { nullable: true })
   @JoinColumn({ name: 'driver_transport_id' })
   driverTransports: DriverTransport;
-
+  
+  @OneToMany(() => Order, order => order.transportType)
+  orders: Order[];
 }
