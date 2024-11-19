@@ -162,9 +162,15 @@ export class User {
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.deletedBy)
     deletedClientMerchants: ClientMerchant[];
 
+    @OneToMany(() => Order, (order) => order.deletedBy)
+    deletedOrders: Order[];
+
     // canceltedrelations belongs to  by user
     @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
     canceledOrderOffers: OrderOffer[];
+
+    @OneToMany(() => Order, (order) => order.canceledBy)
+    canceledOrders: Order[];
 
     // relations belongs to updated by user
     @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.updatedBy)

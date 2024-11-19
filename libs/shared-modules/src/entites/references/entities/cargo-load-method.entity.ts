@@ -18,6 +18,6 @@ export class CargoLoadMethod {
   @Column({ default: false })
   deleted: boolean;
 
-  @OneToMany(() => Order, order => order.loadingMethod)
-  orders: Order[];
+  // @OneToMany(() => Order, order => order.loadingMethod)
+  // orders: Order[];
 }
