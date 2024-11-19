@@ -17,7 +17,4 @@ export class CargoPackage {
 
   @Column({ default: false })
   deleted: boolean;
-
-  @OneToMany(() => Order, order => order.cargoPackage)
-  orders: Order[];
 }

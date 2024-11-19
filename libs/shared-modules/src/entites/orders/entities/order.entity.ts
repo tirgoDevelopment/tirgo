@@ -67,22 +67,38 @@ export class Order {
   loadCapacity: string;
   
   @OneToOne(() => LocationPlace, { nullable: false })
-  @JoinColumn({ name: 'from_location_id' })
-  fromLocation: LocationPlace;
+  @JoinColumn({ name: 'loading_location_id' })
+  loadingLocation: LocationPlace;
   
   @OneToOne(() => LocationPlace, { nullable: false })
-  @JoinColumn({ name: 'to_location_id' })
-  toLocation: LocationPlace;
+  @JoinColumn({ name: 'delivery_location_id' })
+  deliveryLocation: LocationPlace;
+
+  @OneToOne(() => LocationPlace, { nullable: true })
+  @JoinColumn({ name: 'additional_loading_location_id' })
+  additionalLoadingLocation: LocationPlace;
+
+  @OneToOne(() => LocationPlace, { nullable: true })
+  @JoinColumn({ name: 'additional_delivery_location_id' })
+  additionalDeliveryLocation: LocationPlace;
+
+  @OneToOne(() => LocationPlace, { nullable: true })
+  @JoinColumn({ name: 'customs_out_clearance_location_id' })
+  customsOutClearanceLocation: LocationPlace;
+
+  @OneToOne(() => LocationPlace, { nullable: true })
+  @JoinColumn({ name: 'customs_in_clearance_location_id' })
+  customsInClearanceLocation: LocationPlace;
   
   @ManyToOne(() => TransportType, transportType => transportType.orders, { nullable: false })
   @JoinColumn({ name: 'transport_type_id' })
-  transportType: TransportType[];
+  transportType: TransportType;
   
   @ManyToMany(() => TransportKind, { nullable: false })
   @JoinTable()
   transportKinds: TransportKind[];
   
-  @ManyToMany(() => CargoLoadMethod)
+  @ManyToMany(() => CargoLoadMethod, { nullable: true })
   @JoinTable()
   cargoLoadMethods?: CargoLoadMethod
   
@@ -108,7 +124,7 @@ export class Order {
   @Column({ default: false, name: 'is_deleted' })
   isDeleted: boolean;
 
-  @Column({ type: 'timestamp', name: 'deleted_at' })
+  @Column({ type: 'timestamp', name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   @ManyToOne(() => User, (user) => user.deletedOrders, {nullable: true})
@@ -121,7 +137,7 @@ export class Order {
   @Column({ default: false, name: 'is_cancelted' })
   isCanceled: boolean;
 
-  @Column({ type: 'timestamp', name: 'canceled_at' })
+  @Column({ type: 'timestamp', name: 'canceled_at', nullable: true })
   canceledAt: Date;
 
   @ManyToOne(() => User, (user) => user.canceledOrders, {nullable: true})

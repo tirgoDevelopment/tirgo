@@ -16,13 +16,13 @@ export class RabbitMQSenderService implements OnModuleInit {
   }
   
   async init() {
-    this.connection = await amqp.connect("amqp://localhost:5672");
-    this.channel = await this.connection.createChannel();
-    await this.channel.assertQueue('users');
-    await this.channel.assertQueue('orderOfferToClient');
-    await this.channel.assertQueue('orderOfferToDriver');
-    await this.channel.assertQueue('acceptOfferToDriver');
-    await this.channel.assertQueue('acceptOfferToClient');
+    // this.connection = await amqp.connect("amqp://localhost:5672");
+    // this.channel = await this.connection.createChannel();
+    // await this.channel.assertQueue('users');
+    // await this.channel.assertQueue('orderOfferToClient');
+    // await this.channel.assertQueue('orderOfferToDriver');
+    // await this.channel.assertQueue('acceptOfferToDriver');
+    // await this.channel.assertQueue('acceptOfferToClient');
   }
 
   async sendMessage(message: string) {

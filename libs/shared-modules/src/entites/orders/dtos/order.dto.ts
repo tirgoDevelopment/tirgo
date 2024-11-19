@@ -33,13 +33,7 @@ export class OrderDto {
   id?: number;
 
   @ApiProperty({ required: false })
-  client: Client;
-
-  @ApiProperty({ required: false })
-  additionalClient: Client;
-
-  @ApiProperty({ required: false })
-  driver: Driver;
+  additionalClientId: number;
 
   @ApiProperty({ required: false })
   cargoWeight: number;
@@ -85,62 +79,31 @@ export class OrderDto {
 
   @ApiProperty({ required: true })    
   @IsNotEmpty()
-  fromLocation: LocationDto;
+  loadingLocation: {name: string, latitude: string, longitude: string};
 
   @ApiProperty({ required: true })    
   @IsNotEmpty()
-  toLocation: LocationDto;
+  deliveryLocation: {name: string, latitude: string, longitude: string};
 
   @ApiProperty({ required: false })    
-  transportType: TransportTypeDto[];
+  transportTypeId: string;
 
   @ApiProperty({ required: true })    
   @IsNotEmpty()
-  transportKinds: TransportKindDto[];
+  transportKindIds: string[];
 
   @ApiProperty({ required: true })    
-  cargoLoadMethods?: CargoLoadingMethodDto;
+  cargoLoadMethodIds?: string[];
 
   @ApiProperty({ required: true })    
   @IsNotEmpty()
-  cargoType: CargoTypeDto;
+  cargoTypeId: string;
 
   @ApiProperty({ required: false })    
-  cargoStatus?: CargoStatusDto;
+  cargoStatusId?: string;
 
   @ApiProperty({ required: false })  
-  offeredPriceCurrency: CurrencyDto;
-
-  @ApiProperty({ required: false })  
-  createdAt: Date;
-
-  @ApiProperty({ required: false })  
-  createdBy: User;
-
-  @ApiProperty({ required: false })  
-  isDeleted: boolean;
-
-  @ApiProperty({ required: false })  
-  deletedAt: Date;
-
-  @ApiProperty({ required: false })  
-  deletedBy: User;
-
-  @ApiProperty({ required: false })  
-  deleteReason: string;
-
-  @ApiProperty({ required: false })  
-  isCanceled: boolean;
-
-  @ApiProperty({ required: false })  
-  canceledAt: Date;
-
-  @ApiProperty({ required: false })  
-  canceledBy: User;
-
-  @ApiProperty({ required: false })  
-  cancelReason: string;
-
+  offeredPriceCurrencyId: string;
 }
 
 export class AppendOrderDto {
@@ -164,4 +127,103 @@ export class AppendOrderDto {
   @IsNumber()
   @IsNotEmpty()
   amount: number;
+}
+
+export class AdminOrderDto {
+
+  @ApiProperty({ required: false })
+  id?: number;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsNumber()
+  clientId: number;
+
+  @ApiProperty({ required: false })
+  additionalClientId: number;
+
+  @ApiProperty({ required: false })
+  driverId: number;
+
+  @ApiProperty({ required: false })
+  cargoWeight: number;
+
+  @ApiProperty({ required: false })  
+  isAdr?: boolean;
+
+  @ApiProperty({ required: false })  
+  isHook?: boolean;
+
+  @ApiProperty({ required: false })  
+  offeredPrice?: number;
+
+  @ApiProperty({ required: false })  
+  isCashlessPayment: boolean;
+
+  @ApiProperty({ required: false })    
+  isSecureTransaction: boolean;
+
+  @ApiProperty({ required: false })    
+  isBorderCrossing: boolean;
+
+  @ApiProperty({ required: false })    
+  cargoDimension: string;
+
+  @ApiProperty({ required: false })    
+  refrigeratorFromCount?: string;
+
+  @ApiProperty({ required: false })    
+  refrigeratorToCount?: string;
+
+  @ApiProperty({ required: false })  
+  isRefrigerator?: boolean;
+
+  @ApiProperty({ required: false })    
+  sendDate: Date;
+
+  @ApiProperty({ required: false })  
+  cisternVolume: string;
+
+  @ApiProperty({ required: false })  
+  loadCapacity: string;
+
+  @ApiProperty({ required: true })    
+  @IsNotEmpty()
+  loadingLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: true })    
+  @IsNotEmpty()
+  deliveryLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: true })    
+  customsOutClearanceLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: true })    
+  customsInClearanceLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: true })    
+  additionalLoadingLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: true })    
+  additionalDeliveryLocation: {name: string, latitude: string, longitude: string};
+
+  @ApiProperty({ required: false })    
+  transportTypeId: string;
+
+  @ApiProperty({ required: true })    
+  @IsNotEmpty()
+  transportKindIds: string[];
+
+  @ApiProperty({ required: true })    
+  cargoLoadMethodIds?: string[];
+
+  @ApiProperty({ required: true })    
+  @IsNotEmpty()
+  cargoTypeId: string;
+
+  @ApiProperty({ required: false })    
+  cargoStatusId?: string;
+
+  @ApiProperty({ required: false })  
+  offeredPriceCurrencyId: string;
 }

@@ -25,9 +25,6 @@ export class Currency {
   @Column({ default: false })
   deleted: boolean;
 
-  @OneToMany(() => Order, order => order.inAdvancePriceCurrency)
-  inAdvanceOrders: Order[];
-
   @OneToMany(() => OrderOffer, order => order.currency  )
   orderOffer: OrderOffer[];
 
