@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CargoLoadMethod, CargoPackage, CargoStatus, CargoType, Client, ClientMerchant, Currency, CustomJwtService, Driver, LocationPlace, Order, OrderOffer, Staff, TransportKind, TransportType, User } from '..';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { StaffsController } from './controllers/staffs.controller';
+import { StaffsController } from './staffs.controller';
 import { StaffsService } from './staffs.service';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 

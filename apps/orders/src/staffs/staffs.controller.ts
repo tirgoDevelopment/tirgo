@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
-import { StaffsService } from '../staffs.service';
-import { AdminOrderDto, AppendOrderDto, OrderDto } from '../..';
+import { StaffsService } from './staffs.service';
+import { AdminOrderDto, AppendOrderDto, OrderDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Staffs orders')
-@Controller('staffs')
+@Controller()
 export class StaffsController {
   constructor(private readonly staffsService: StaffsService) {}
   
   @ApiOperation({ summary: 'Get all orders' })
-  @Get()
+  @Get('staffs')
   async getAllMerchantOrders(
     @Query() query: any
   ) {
@@ -17,26 +17,26 @@ export class StaffsController {
   }
 
   @ApiOperation({ summary: 'Get order by id' })
-  @Get(':id')
+  @Get(':id/staffs')
   async getOrderById(@Param('id') id: number) {
     return this.staffsService.getOrderById(id)
   }
 
   @ApiOperation({ summary: 'Staff create order for client' })
   @UsePipes(ValidationPipe)
-  @Post()
+  @Post('staffs')
   async createOrder(@Body() dto: AdminOrderDto, @Req() req: Request) {
     return this.staffsService.createOrder(dto, req['user']);
   }
 
   @ApiOperation({ summary: 'Staff cancel order' })
-  @Post('')
+  @Post(':id/staffs/cancel')
   async cancelOrder(@Body('id') id: number, @Req() req: Request) {
     return this.staffsService.cancelOrder(id, req['user']);
   }
 
   @ApiOperation({ summary: 'Staff update order' })
-  @Put(':id')
+  @Put(':id/staffs')
   async updateOrder(@Body() updateOrderDto: AdminOrderDto, @Param('id') id: number) {
     return this.staffsService.updateOrder(id, updateOrderDto);
   }
