@@ -11,17 +11,17 @@ import { User } from "../../users/user.entity";
 import { CurrencyDto } from "../../references/dtos/currency.dto";
 
 class LocationDto {
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsString()
   @IsNotEmpty()
   latitude: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsString()
   @IsNotEmpty()
   longitude: string;
@@ -29,138 +29,138 @@ class LocationDto {
 
 export class OrderDto {
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   id?: number;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   client: Client;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   additionalClient: Client;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   driver: Driver;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   cargoWeight: number;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isAdr?: boolean;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isHook?: boolean;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   offeredPrice?: number;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isCashlessPayment: boolean;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   isSecureTransaction: boolean;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   isBorderCrossing: boolean;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   cargoDimension: string;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   refrigeratorFromCount?: string;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   refrigeratorToCount?: string;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isRefrigerator?: boolean;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   sendDate: Date;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   cisternVolume: string;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   loadCapacity: string;
 
-  @ApiProperty({ required: false })    
+  @ApiProperty({ required: true })    
   @IsNotEmpty()
   fromLocation: LocationDto;
 
-  @ApiProperty({ required: false })    
+  @ApiProperty({ required: true })    
   @IsNotEmpty()
   toLocation: LocationDto;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   transportType: TransportTypeDto[];
 
-  @ApiProperty({ required: false })    
+  @ApiProperty({ required: true })    
   @IsNotEmpty()
   transportKinds: TransportKindDto[];
 
   @ApiProperty({ required: true })    
   cargoLoadMethods?: CargoLoadingMethodDto;
 
-  @ApiProperty({ required: false })    
+  @ApiProperty({ required: true })    
   @IsNotEmpty()
   cargoType: CargoTypeDto;
 
-  @ApiProperty({ required: true })    
+  @ApiProperty({ required: false })    
   cargoStatus?: CargoStatusDto;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   offeredPriceCurrency: CurrencyDto;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   createdAt: Date;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   createdBy: User;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isDeleted: boolean;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   deletedAt: Date;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   deletedBy: User;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   deleteReason: string;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   isCanceled: boolean;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   canceledAt: Date;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   canceledBy: User;
 
-  @ApiProperty({ required: true })  
+  @ApiProperty({ required: false })  
   cancelReason: string;
 
 }
 
 export class AppendOrderDto {
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsNotEmpty()
   orderId: number;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsUUID()
   @IsNotEmpty()
   currencyId: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsNotEmpty()
   driverId: number;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsNotEmpty()
   amount: number;
