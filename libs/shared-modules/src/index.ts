@@ -131,6 +131,8 @@ export enum ResponseStauses {
   AlreadyAssigned = 'alreadyAssigned',
   AlreadyRejecteed = 'alreadyRejecteed',
   AlreadyAccepted = 'alreadyAccepted',
+  AlreadyCanceled = 'alreadyCanceled',
+  OrderIsClosed = 'orderIsClosed',
   DriverHasOrder = 'driverHasOrder',
   DriverArchived = 'driverArchived',
   DriverBlocked = 'driverBlocked',
