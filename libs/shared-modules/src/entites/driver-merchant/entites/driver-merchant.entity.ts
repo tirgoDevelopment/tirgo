@@ -92,8 +92,8 @@ export class DriverMerchant {
   @OneToMany(() => DriverBankAccount, (bankAccount) => bankAccount.driverMerchant)
   bankAccounts?: DriverBankAccount[];
   
-  @OneToMany(() => Order, (order) => order.clientMerchant)
-  orders?: Order[];
+  // @OneToMany(() => Order, (order) => order.clientMerchant)
+  // orders?: Order[];
 
   @Column({ default: false })
   verified?: boolean;

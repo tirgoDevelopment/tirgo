@@ -81,8 +81,8 @@ export class ClientMerchant {
   @OneToMany(() => ClientBankAccount, (bankAccount) => bankAccount.clientMerchant)
   bankAccounts?: ClientBankAccount[];
 
-  @OneToMany(() => Order, (order) => order.clientMerchant)
-  orders?: Order[];
+  // @OneToMany(() => Order, (order) => order.clientMerchant)
+  // orders?: Order[];
 
   @Column({ default: false })
   verified?: boolean;

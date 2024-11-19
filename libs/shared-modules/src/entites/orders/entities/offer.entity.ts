@@ -46,9 +46,9 @@ export class OrderOffer {
   @JoinColumn({ name: 'driver_id' })
   driver: Driver;
 
-  @ManyToOne(() => Order, order => order.driverOffers)
-  @JoinColumn({ name: 'order_id' })
-  order: Order;
+  // @ManyToOne(() => Order, order => order.driverOffers)
+  // @JoinColumn({ name: 'order_id' })
+  // order: Order;
 
   @ManyToOne(() => Currency, currency => currency.orderOffer)
   @JoinColumn({ name: 'currency_id' })
