@@ -11,17 +11,17 @@ import { User } from "../../users/user.entity";
 import { CurrencyDto } from "../../references/dtos/currency.dto";
 
 class LocationDto {
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   latitude: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
   longitude: string;
