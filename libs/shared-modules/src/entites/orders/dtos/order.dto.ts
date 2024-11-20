@@ -141,6 +141,9 @@ export class OrderQueryDto {
   deliveryLocationName: string;
 
   @ApiProperty({ required: false })
+  sendDate: Date;
+
+  @ApiProperty({ required: false })
   createdAt: Date;
 }
 

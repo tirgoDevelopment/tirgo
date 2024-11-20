@@ -275,7 +275,7 @@ export class StaffsService {
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,  
         relations: [
-          'loadingLocation', 'deliveryLocation', 'offeredPriceCurrency', 
+          'loadingLocation', 'deliveryLocation', 'additionalLoadingLocation', 'additionalDeliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation', 'offeredPriceCurrency', 
         'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds', 'client'] });
         if(orders.length) {
         const ordersCount = await this.ordersRepository.count({ where: filter });
