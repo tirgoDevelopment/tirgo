@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
 import { DriversService } from './drivers.service';
-import { OrderOfferDto, RejectOfferDto } from '..';
+import { OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -9,24 +9,14 @@ import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-o
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
   
-  // @ApiOperation({ summary: 'Get all orders' })
-  // @Get('all-orders')
-  // async getAllMerchantOrders(
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,
-  //   @Query('orderId') orderId: number,
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   @Query('statusId') statusId: string,
-  //   @Query('loadingLocation') loadingLocation: string,
-  //   @Query('deliveryLocation') deliveryLocation: string,
-  //   @Query('transportKindId') transportKindId: string,
-  //   @Query('transportTypeId') transportTypeId: string,
-  //   @Query('createdAt') createdAt: string,
-  //   @Query('sendDate') sendDate: string
-  // ) {
-  //   return this.driversService.getOrders(sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
-  // }
+  @ApiOperation({ summary: 'Get all orders' })
+  @Get()
+  async getAllMerchantOrders(
+    @Query() query: OrderQueryDto,
+    @Req() req: Request
+  ) {
+    return this.driversService.getOrders(req['user'], query);
+  }
 
   // @ApiOperation({ summary: 'Get all driver orders' })
   // @Get('orders')

@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver, RejectOfferDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, OrderOffer, Driver, RejectOfferDto, OrderQueryDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -47,81 +47,85 @@ export class DriversService {
   //   }
   // }
 
-  // async getOrders(sortBy: string, sortType: string, pageIndex: string, pageSize: string, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
-  //   try {
+  async getOrders(user: User, query: OrderQueryDto): Promise<BpmResponse> {
+    try {
 
-  //     const size = +pageSize || 10; // Number of items per page
-  //     const index = +pageIndex || 1
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 1
 
-  //     const sort: any = {};
-  //     if (sortBy && sortType) {
-  //       sort[sortBy] = sortType;
-  //     } else {
-  //       sort['id'] = 'DESC'
-  //     }
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { user: { id: user.id } }, relations: ['driverTransports', 'driverTransports.transportType'] })
 
-  //     const filter: any = { deleted: false };
-  //     if (transportTypeId) {
-  //       filter.transportType = { id: transportTypeId }
-  //     }
-  //     if (orderId) {
-  //       filter.id = orderId;
-  //     }
-  //     if (transportKindId) {
-  //       filter.transportKind = { id: transportKindId }
-  //     }
-  //     if (statusId) {
-  //       const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
-  //       if (status.code == CargoStatusCodes.Closed) {
-  //         filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
-  //       } else {
-  //         filter.cargoStatus = { id: statusId };
-  //       }
-  //     }
-  //     if (loadingLocation) {
-  //       filter.loadingLocation = { name: loadingLocation }
-  //     }
-  //     if (deliveryLocation) {
-  //       filter.deliveryLocation = { name: deliveryLocation }
-  //     }
-  //     if (createdAt) {
-  //       filter.createdAt = createdAt
-  //     }
-  //     if (sendDate) {
-  //       filter.sendDate = sendDate
-  //     }
+      const driverTransportTypeIds: string[] = driver.driverTransports.map((driverTransport) => driverTransport.transportType.id);
 
-  //     const orders = await this.ordersRepository.find({
-  //       order: sort,
-  //       where: filter,
-  //       skip: (index - 1) * size, // Skip the number of items based on the page number
-  //       take: size,
-  //       relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
-  //       'additionalLoadingLocation',
-  //       'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 
-  //       'driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers',
-  //       'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
-  //     });
+      const sort: any = {};
+      if (query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
 
-  //     const merchantsCount = await this.ordersRepository.count({ where: filter });
-  //     const totalPagesCount = Math.ceil(merchantsCount / size);
+      const filter: any = { deleted: false };
+      if (query.transportTypeId) {
+        filter.transportType = { id: In(driverTransportTypeIds) }
+      }
+      if (query.orderId) {
+        filter.id = query.orderId;
+      }
+      if (query.transportKindId) {
+        filter.transportKind = { id: query.transportKindId }
+      }
+      if (query.statusCode) {
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: query.statusCode } });
+        if (status.code == CargoStatusCodes.Closed) {
+          filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
+        } else {
+          filter.cargoStatus = { code: query.statusCode };
+        }
+      }
+      if (query.loadingLocationName) {
+        filter.loadingLocation = { name: query.loadingLocationName }
+      }
+      if (query.deliveryLocationName) {
+        filter.deliveryLocation = { name: query.deliveryLocationName }
+      }
+      if (query.createdAt) {
+        filter.createdAt = query.createdAt
+      }
+      if (query.sendDate) {
+        filter.sendDate = query.sendDate
+      }
 
-  //     if (orders.length) {
-  //       return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size}, null);
-  //     } else {
-  //       throw new NoContentException();
-  //     }
-  //   } catch (err: any) {
-  //     console.log(err)
-  //     if (err instanceof HttpException) {
-  //       throw err
-  //     } else if (err.name == 'EntityNotFoundError') {
-  //       throw new NoContentException();
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-  //     }
-  //   }
-  // }
+      const orders = await this.ordersRepository.find({
+        order: sort,
+        where: filter,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size,
+        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 
+        'driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers',
+        'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+      });
+
+      const merchantsCount = await this.ordersRepository.count({ where: filter });
+      const totalPagesCount = Math.ceil(merchantsCount / size);
+
+      if (orders.length) {
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size}, null);
+      } else {
+        throw new NoContentException();
+      }
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
 
   // async getDriverOrders(user: any, sortBy: string, sortType: string, pageIndex: string, pageSize: string, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
   //   try {

@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver, LocationPlace, RejectOfferDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver, LocationPlace, RejectOfferDto, OrderQueryDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -231,7 +231,7 @@ export class ClientsService {
   //   }
   // }
 
-  async getClientOrderByUserId(query: any, user: User): Promise<BpmResponse> {
+  async getClientOrderByUserId(query: OrderQueryDto, user: User): Promise<BpmResponse> {
     try {
       const size = +query.pageSize || 10; // Number of items per page
       const index = +query.pageIndex || 1
@@ -260,7 +260,7 @@ export class ClientsService {
         filter.transportKinds = { id: query.transportKindId }
       }
       if(query.statusCode) {
-        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: query.statusCode } });
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: query.statusCode } });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {
