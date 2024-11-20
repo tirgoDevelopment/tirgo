@@ -43,7 +43,7 @@ export { Order } from "./entites/orders/entities/order.entity";
 export { LocationPlace } from "./entites/orders/entities/location.entity";
 export { OrderOffer } from "./entites/orders/entities/offer.entity";
 export { RejectOfferDto } from "./entites/orders/dtos/reject-offer.dto";
-export { OrderDto, AdminOrderDto, AppendOrderDto } from "./entites/orders/dtos/order.dto";
+export { OrderDto, OrderQueryDto, AdminOrderDto, AppendOrderDto } from "./entites/orders/dtos/order.dto";
 export { OrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
 export { CargoLoadMethod } from "./entites/references/entities/cargo-load-method.entity";
 export { CargoPackage } from "./entites/references/entities/cargo-package.entity";

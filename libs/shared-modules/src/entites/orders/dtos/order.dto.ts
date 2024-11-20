@@ -106,6 +106,44 @@ export class OrderDto {
   offeredPriceCurrencyId: string;
 }
 
+export class OrderQueryDto {
+  @ApiProperty({ required: false })
+  pageSize: number;
+
+  @ApiProperty({ required: false })
+  pageIndex: number;
+
+  @ApiProperty({ required: false })
+  sortBy: string;
+
+  @ApiProperty({ required: false })
+  sortType: string;
+
+  @ApiProperty({ required: false })
+  transportKindId: string;
+
+  @ApiProperty({ required: false })
+  cargoTypeId: string;
+
+  @ApiProperty({ required: false })
+  transportTypeId: string;
+
+  @ApiProperty({ required: false })
+  orderId: number;
+
+  @ApiProperty({ required: false })
+  statusCode: number;
+
+  @ApiProperty({ required: false })
+  loadingLocationName: string;
+
+  @ApiProperty({ required: false })
+  deliveryLocationName: string;
+
+  @ApiProperty({ required: false })
+  createdAt: Date;
+}
+
 export class AppendOrderDto {
 
   @ApiProperty({ required: false })

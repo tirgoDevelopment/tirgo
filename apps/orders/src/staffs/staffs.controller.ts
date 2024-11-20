@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
-import { AdminOrderDto, AppendOrderDto, OrderDto } from '..';
+import { AdminOrderDto, AppendOrderDto, OrderDto, OrderQueryDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Staffs orders')
@@ -9,9 +9,10 @@ export class StaffsController {
   constructor(private readonly staffsService: StaffsService) {}
   
   @ApiOperation({ summary: 'Get all orders' })
+  @UsePipes(ValidationPipe)
   @Get('staffs')
   async getAllMerchantOrders(
-    @Query() query: any
+    @Query() query: OrderQueryDto
   ) {
     return this.staffsService.getOrders(query);
   }
