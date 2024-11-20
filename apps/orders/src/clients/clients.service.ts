@@ -231,95 +231,82 @@ export class ClientsService {
   //   }
   // }
 
-  // async getClientOrderByUserId(user: User, sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, statusId: string, loadingLocation: string, deliveryLocation: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
-  //   try {
-  //     const size = +pageSize || 10; // Number of items per page
-  //     const index = +pageIndex || 1
-  //     if (!user) {
-  //       throw new BadRequestException(ResponseStauses.IdIsRequired);
-  //     }
-  //     const filter: any = { deleted: false };
-  //     const sort: any = {};
-  //     if(sortBy && sortType) {
-  //       sort[sortBy] = sortType; 
-  //     } else {
-  //       sort['id'] = 'DESC'
-  //     }
+  async getClientOrderByUserId(query: any, user: User): Promise<BpmResponse> {
+    try {
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 1
+      if (!user) {
+        throw new BadRequestException(ResponseStauses.IdIsRequired);
+      }
+      if(user.userType != UserTypes.Client) { 
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
 
-  //     // managing access to orders according to userType
-  //     if (user.userType == UserTypes.ClientMerchantUser) {
-      
-  //       // check if requesting user is Super admin then give merchant's all orders
-  //       // if it is not give orders only ones created by him
+      const filter: any = { deleted: false, createdBy: { id: user.client.id } };
+      const sort: any = {};
+      if(query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType; 
+      } else {
+        sort['id'] = 'DESC'
+      }
 
-  //       if( user.role.name == UsersRoleNames.SuperAdmin) {
-  //         filter.clientMerchant = { id: user.clientMerchantUser.clientMerchant?.id }; 
-  //       } else {
-  //         filter.createdBy = user.id;
-  //       }
-  //     } else if(user.userType == UserTypes.Staff || user.userType == UserTypes.Client) {
-  //       filter.createdBy = { id: userId }
-  //     } else {
-  //       throw new BadRequestException(ResponseStauses.AccessDenied);
-  //     }
-
-  //     if(transportTypeId) {
-  //       filter.transportTypes = { id: transportTypeId }
-  //     }
-  //     if(orderId) {
-  //       filter.id = orderId;
-  //     }
-  //     if(transportKindId) {
-  //       filter.transportKinds = { id: transportKindId }
-  //     }
-  //     if(statusId) {
-  //       const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: statusId } });
-  //       if(status.code == CargoStatusCodes.Closed)  {
-  //         filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
-  //       } else {
-  //         filter.cargoStatus = { code: status.code };
-  //       }
-  //     }
-  //     if(loadingLocation) {
-  //       filter.loadingLocation = { name: loadingLocation }
-  //     }
-  //     if(deliveryLocation) {
-  //       filter.deliveryLocation = { name: deliveryLocation }
-  //     }
-  //     if(createdAt) {
-  //       filter.createdAt = createdAt
-  //     }
-  //     if(sendDate) {
-  //       filter.sendDate = sendDate
-  //     }
-  //     const orders = await this.ordersRepository.find({ 
-  //       order: sort, 
-  //       where: filter,
-  //       skip: (index - 1) * size, // Skip the number of items based on the page number
-  //       take: size, 
-  //       relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
-  //       'additionalLoadingLocation',
-  //       'additionalDeliveryLocation', 'driverOffers', 'driverOffers.currency', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
+      if(query.transportTypeId) {
+        filter.transportTypes = { id: query.transportTypeId }
+      }
+      if(query.orderId) {
+        filter.id = query.orderId;
+      }
+      if(query.transportKindId) {
+        filter.transportKinds = { id: query.transportKindId }
+      }
+      if(query.statusId) {
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: query.statusId } });
+        if(status.code == CargoStatusCodes.Closed)  {
+          filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
+        } else {
+          filter.cargoStatus = { code: status.code };
+        }
+      }
+      if(query.loadingLocation) {
+        filter.loadingLocation = { name: query.loadingLocation }
+      }
+      if(query.deliveryLocation) {
+        filter.deliveryLocation = { name: query.deliveryLocation }
+      }
+      if(query.createdAt) {
+        filter.createdAt = query.createdAt
+      }
+      if(query.sendDate) {
+        filter.sendDate = query.sendDate
+      }
+      const orders = await this.ordersRepository.find({ 
+        order: sort, 
+        where: filter,
+        skip: (index - 1) * size, // Skip the number of items based on the page number
+        take: size, 
+        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        'additionalLoadingLocation',
+        'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
         
-  //       const ordersCount = await this.ordersRepository.count({ where : filter });
-  //       const totalPagesCount = Math.ceil(ordersCount / size);
+        const ordersCount = await this.ordersRepository.count({ where : filter });
+        const totalPagesCount = Math.ceil(ordersCount / size);
 
-  //       if(orders.length) {
-  //       return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
-  //     } else {
-  //       throw new NoContentException();
-  //     }
-  //   } catch (err: any) {
-  //     console.log(err)
-  //     if(err instanceof HttpException) {
-  //       throw err
-  //     }else if (err.name == 'EntityNotFoundError') {
-  //       throw new NoContentException();
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-  //     }
-  //   }
-  // }
+        if(orders.length) {
+        return new BpmResponse(true, { content: orders, totalPagesCount: totalPagesCount, pageIndex: index, pageSize: size }, null);
+      } else {
+        throw new NoContentException();
+      }
+    } catch (err: any) {
+      console.log(err)
+      if(err instanceof HttpException) {
+        throw err
+      }else if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
 
   // async getClientArchiveOrderByUserId(user: User, sortBy: string, sortType: string, pageIndex: string, pageSize: string, userId: number, orderId: number, loadingLocationId: string, deliveryLocationId: string, transportKindId: string, transportTypeId: string, createdAt: string, sendDate: string): Promise<BpmResponse> {
   //   try {

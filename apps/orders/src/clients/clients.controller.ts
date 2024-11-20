@@ -16,26 +16,14 @@ export class ClientsController {
     return this.clientsService.createOrder(createOrderDto, req['user']);
   }
 
-  // @ApiOperation({ summary: 'Client get all orders' })
-  // @Get('all-orders')
-  // async getAllMerchantOrders(
-  //   @Req() req: Request,
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   @Query('userId') userId: number,
-  //   @Query('orderId') orderId: number,
-  //   @Query('statusId') statusId: string,
-  //   @Query('loadingLocation') loadingLocation: string,
-  //   @Query('deliveryLocation') deliveryLocation: string,
-  //   @Query('transportKindId') transportKindId: string,
-  //   @Query('transportTypeId') transportTypeId: string,
-  //   @Query('createdAt') createdAt: string,
-  //   @Query('sendDate') sendDate: string
-  // ) {
-  //   return this.clientsService.getClientOrderByUserId(req['user'], sortBy, sortType, pageIndex, pageSize, userId, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
-  // }
+  @ApiOperation({ summary: 'Client get all orders' })
+  @Get()
+  async getAllMerchantOrders(
+    @Req() req: Request,
+    @Query() query: any
+  ) {
+    return this.clientsService.getClientOrderByUserId(query, req['user']);
+  }
 
   // @ApiOperation({ summary: 'Get order by orderId' })
   // @Get('order-by-id')
