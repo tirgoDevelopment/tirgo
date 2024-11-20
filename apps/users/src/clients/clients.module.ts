@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
-import { AwsService, Client, Order, SundryService, User, ClientPhoneNumber } from "..";
+import { AwsService, Client, Order, SundryService, User, ClientPhoneNumber, CustomJwtService } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ClientsController } from "./client.controller";
 import { ClientsService } from "./client.service";
 import { ClientsRepository } from "./repositories/client.repository";
+import { JwtService } from "@nestjs/jwt";
 
 
 @Module({
@@ -17,7 +18,9 @@ import { ClientsRepository } from "./repositories/client.repository";
         SundryService,
         AwsService,
         ClientsService,
-        ClientsRepository
+        ClientsRepository,
+        CustomJwtService,
+        JwtService
       ],
       exports: [
         ClientsService,

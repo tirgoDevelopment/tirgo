@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AwsS3BucketKeyNames, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, GetClientsDto, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, UpdateClientBirthDayDto, UpdateClientPhoneDto, User, UserDocumentTypes, UserStates, UserTypes } from '..';
+import { AwsS3BucketKeyNames, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Client, ClientDto, ClientPhoneNumber, CustomJwtService, GetClientsDto, InternalErrorException, NoContentException, NotFoundException, Order, ResponseStauses, SundryService, UpdateClientBirthDayDto, UpdateClientPhoneDto, User, UserDocumentTypes, UserStates, UserTypes } from '..';
 import { ClientsRepository } from './repositories/client.repository';
 import { ClientDocuments } from '..';
 
@@ -14,7 +14,8 @@ export class ClientsService {
     @InjectRepository(ClientPhoneNumber) private readonly clientPhoneNumberRepository: Repository<ClientPhoneNumber>,
     private awsService: AwsService,
     private readonly clientRepository: ClientsRepository,
-    private sundriesService: SundryService
+    private sundriesService: SundryService,
+    private customJwtService: CustomJwtService
   ) { }
 
   async createClient(files: any, createClientDto: ClientDto, user: User): Promise<BpmResponse> {
@@ -25,7 +26,8 @@ export class ClientsService {
       await queryRunner.startTransaction();
 
       const client: Client = queryRunner.manager.create(Client);
-      client.user = await this.usersRepository.save({ userType: UserTypes.Client });
+      const newUser = await this.usersRepository.save({ userType: UserTypes.Client });
+      client.user = newUser;
       client.firstName = createClientDto.firstName;
       client.lastName = createClientDto.lastName;
 
@@ -75,7 +77,9 @@ export class ClientsService {
 
       await queryRunner.commitTransaction();
 
-      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+      const payload: any = { sub: newClient.id, userId: newUser.id, userType: UserTypes.Client };
+      const token: string = await this.customJwtService.generateToken(payload);
+      return new BpmResponse(true, { token }, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
       await queryRunner.rollbackTransaction();
