@@ -100,11 +100,9 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
-        'additionalLoadingLocation',
-        'additionalDeliveryLocation','clientMerchant', 'inAdvancePriceCurrency', 
-        'driverOffers', 'createdBy', 'driverOffers.createdBy', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers',
-        'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
+        relations:  ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+          'additionalLoadingLocation',
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds']
       });
 
       const merchantsCount = await this.ordersRepository.count({ where: filter });
@@ -115,6 +113,27 @@ export class DriversService {
       } else {
         throw new NoContentException();
       }
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
+
+  async getOrderById(id: number): Promise<BpmResponse> {
+    try {
+      const order = await this.ordersRepository.findOneOrFail({
+        where: { isDeleted: false, id },
+        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+          'additionalLoadingLocation',
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds']
+      });
+      return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
       if (err instanceof HttpException) {
@@ -260,31 +279,6 @@ export class DriversService {
   //     } else {
   //       throw new NoContentException();
   //     }
-  //   } catch (err: any) {
-  //     console.log(err)
-  //     if (err instanceof HttpException) {
-  //       throw err
-  //     } else if (err.name == 'EntityNotFoundError') {
-  //       throw new NoContentException();
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-  //     }
-  //   }
-  // }
- 
-  // async getActiveOrderByDriverId(id: number): Promise<BpmResponse> {
-  //   try {
-  //     if (!id) {
-  //       throw new BadRequestException(ResponseStauses.IdIsRequired);
-  //     }
-  //     // const order = await this.ordersRepository.findOneOrFail({
-  //     //   where: { isDeleted: false, driverOffers: { driver: { id }, accepted: true }, cargoStatus: { code: In([CargoStatusCodes.Active, CargoStatusCodes.Accepted]) } },
-  //     //   relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
-  //     //   'additionalLoadingLocation',
-  //     //   'additionalDeliveryLocation','driverOffers', 'driverOffers.currency', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds']
-  //     // });
-
-  //     return new BpmResponse(true, {}, null);
   //   } catch (err: any) {
   //     console.log(err)
   //     if (err instanceof HttpException) {

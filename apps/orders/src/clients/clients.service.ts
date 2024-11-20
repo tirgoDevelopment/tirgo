@@ -242,7 +242,7 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
-      const filter: any = { deleted: false, createdBy: { id: user.client.id } };
+      const filter: any = { isDeleted: false, createdBy: { id: user.client.id } };
       const sort: any = {};
       if(query.sortBy && query.sortType) {
         sort[query.sortBy] = query.sortType; 
