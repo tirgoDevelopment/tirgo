@@ -100,7 +100,7 @@ export class Order {
   
   @ManyToMany(() => CargoLoadMethod, { nullable: true })
   @JoinTable()
-  cargoLoadMethods?: CargoLoadMethod
+  cargoLoadMethods?: CargoLoadMethod[]
   
   @ManyToOne(() => CargoType, cargoType => cargoType.orders, { nullable: false })
   @JoinColumn({ name: 'cargo_type_id' })

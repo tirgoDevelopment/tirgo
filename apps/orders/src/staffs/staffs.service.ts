@@ -47,7 +47,8 @@ export class StaffsService {
           order.offeredPriceCurrency = offeredCurrency;
         }
         if(dto.cargoLoadMethodIds) {
-          order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: In(dto.cargoLoadMethodIds) } });
+          const asd =await this.cargoLoadingMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
+          order.cargoLoadMethods =  asd;
         }
         if(dto.customsOutClearanceLocation) {
           order.customsOutClearanceLocation = await this.locationsRepository.save({ name: dto.customsOutClearanceLocation.name, latitude: dto.customsOutClearanceLocation.latitude, longitude: dto.customsOutClearanceLocation.longitude });
@@ -61,7 +62,6 @@ export class StaffsService {
         if(dto.additionalDeliveryLocation) { 
           order.additionalDeliveryLocation = await this.locationsRepository.save({ name: dto.additionalDeliveryLocation.name, latitude: dto.additionalDeliveryLocation.latitude, longitude: dto.additionalDeliveryLocation.longitude });;
         }
-  
         order.loadingLocation =  await queryRunner.manager.save(LocationPlace, { name: dto.loadingLocation.name, latitude: dto.loadingLocation.latitude, longitude: dto.loadingLocation.longitude })
         order.deliveryLocation = await queryRunner.manager.save(LocationPlace, { name: dto.deliveryLocation.name, latitude: dto.deliveryLocation.latitude, longitude: dto.deliveryLocation.longitude });
         order.isAdr = dto.isAdr;
@@ -84,10 +84,10 @@ export class StaffsService {
         await queryRunner.commitTransaction();
         return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
       } catch (err: any) {
-        await queryRunner.rollbackTransaction();
         console.log(err)
+        await queryRunner.rollbackTransaction();
         if (err.name == 'EntityNotFoundError') {
-          if (err.message.includes('ClientMerchant')) {
+          if (err.message.includes('Client')) {
             throw new BadRequestException(ResponseStauses.UserNotFound);
           } else if (err.message.includes('Currency')) {
             throw new BadRequestException(ResponseStauses.CurrencyNotFound);
@@ -95,12 +95,14 @@ export class StaffsService {
             throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
           } else if (err.message.includes('TransportKind')) {
             throw new BadRequestException(ResponseStauses.TransportKindNotfound);
+          } else if (err.message.includes('TransportType')) {
+            throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
           } else if (err.message.includes('CargoTyepe')) {
             throw new BadRequestException(ResponseStauses.CargoTypeNotFound);
           } else if (err.message.includes('CargoLoadMethod')) {
             throw new BadRequestException(ResponseStauses.CargoLoadingMethodNotFound);
-          } else if (err.message.includes('CargoPackage')) {
-            throw new BadRequestException(ResponseStauses.CargoPackageNotFound);
+          } else if (err.message.includes('CargoType')) {
+            throw new BadRequestException(ResponseStauses.CargoTypeNotFound);
           } else if (err.message.includes('CargoStatus')) {
             throw new BadRequestException(ResponseStauses.CargoStatusNotFound);
           }
@@ -134,7 +136,7 @@ export class StaffsService {
           order.offeredPriceCurrency = offeredCurrency;
         }
         if(dto.cargoLoadMethodIds) {
-          order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: In(dto.cargoLoadMethodIds) } });
+          order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
         }
         if(dto.customsOutClearanceLocation) {
           order.customsOutClearanceLocation = await this.locationsRepository.save({ name: dto.customsOutClearanceLocation.name, latitude: dto.customsOutClearanceLocation.latitude, longitude: dto.customsOutClearanceLocation.longitude });
