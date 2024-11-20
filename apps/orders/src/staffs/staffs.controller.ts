@@ -31,7 +31,7 @@ export class StaffsController {
 
   @ApiOperation({ summary: 'Staff cancel order' })
   @Post(':id/staffs/cancel')
-  async cancelOrder(@Body('id') id: number, @Req() req: Request) {
+  async cancelOrder(@Param('id') id: number, @Req() req: Request) {
     return this.staffsService.cancelOrder(id, req['user']);
   }
 

@@ -48,7 +48,7 @@ export class ClientsService {
         order.offeredPriceCurrency = offeredCurrency;
       }
       if(dto.cargoLoadMethodIds) {
-        order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: In(dto.cargoLoadMethodIds) } });
+        order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
       }
 
       order.loadingLocation =  await queryRunner.manager.save(LocationPlace, { name: dto.loadingLocation.name, latitude: dto.loadingLocation.latitude, longitude: dto.loadingLocation.longitude })
