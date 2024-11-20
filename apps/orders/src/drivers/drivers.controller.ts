@@ -5,17 +5,23 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @ApiTags('Drivers orders')
-@Controller('drivers')
+@Controller()
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
   
   @ApiOperation({ summary: 'Get all orders' })
-  @Get()
+  @Get('drivers')
   async getAllMerchantOrders(
     @Query() query: OrderQueryDto,
     @Req() req: Request
   ) {
     return this.driversService.getOrders(req['user'], query);
+  }
+
+  @ApiOperation({ summary: 'Get order by order id' })
+  @Get(':id/drivers')
+  async getActiveOrder(@Param('id') id: number) {
+    return this.driversService.getOrderById(id)
   }
 
   // @ApiOperation({ summary: 'Get all driver orders' })
@@ -54,12 +60,6 @@ export class DriversController {
   //   @Query('sendDate') sendDate: string
   // ) {
   //   return this.driversService.getWaitingOrders(sortBy, sortType, pageIndex, pageSize, orderId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
-  // }
-
-  // @ApiOperation({ summary: 'Get order by order id' })
-  // @Get('active-order-by')
-  // async getActiveOrder(@Query('driverId') id: number) {
-  //   return this.driversService.getActiveOrderByDriverId(id)
   // }
 
   // @ApiOperation({ summary: 'Get order by order id' })
