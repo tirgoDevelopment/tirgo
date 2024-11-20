@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { ILike, In, Repository } from 'typeorm';
 import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver, LocationPlace, RejectOfferDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
@@ -259,19 +259,19 @@ export class ClientsService {
       if(query.transportKindId) {
         filter.transportKinds = { id: query.transportKindId }
       }
-      if(query.statusId) {
-        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: query.statusId } });
+      if(query.statusCode) {
+        const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { id: query.statusCode } });
         if(status.code == CargoStatusCodes.Closed)  {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
         } else {
           filter.cargoStatus = { code: status.code };
         }
       }
-      if(query.loadingLocation) {
-        filter.loadingLocation = { name: query.loadingLocation }
+      if(query.loadingLocationName) {
+        filter.loadingLocation = { name: ILike(`%${query.loadingLocationName}%`) }
       }
-      if(query.deliveryLocation) {
-        filter.deliveryLocation = { name: query.deliveryLocation }
+      if(query.deliveryLocationName) {
+        filter.deliveryLocation = { name: ILike(`%${query.deliveryLocationName}%`) }
       }
       if(query.createdAt) {
         filter.createdAt = query.createdAt

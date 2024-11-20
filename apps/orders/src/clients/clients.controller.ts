@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ClientsService } from './clients.service';
-import { OrderDto, OrderOfferDto, RejectOfferDto } from '..';
+import { OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -17,10 +17,11 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Client get all orders' })
+  @UsePipes(ValidationPipe)
   @Get()
   async getAllMerchantOrders(
     @Req() req: Request,
-    @Query() query: any
+    @Query() query: OrderQueryDto
   ) {
     return this.clientsService.getClientOrderByUserId(query, req['user']);
   }
