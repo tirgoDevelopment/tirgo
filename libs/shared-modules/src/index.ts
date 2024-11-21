@@ -130,7 +130,7 @@ export enum ResponseStauses {
   AlreadyActive = 'alreadyActive',
   AlreadyVerified = 'alreadyVerified',
   AlreadyAssigned = 'alreadyAssigned',
-  AlreadyRejecteed = 'alreadyRejecteed',
+  AlreadyRejected = 'alreadyRejecteed',
   AlreadyAccepted = 'alreadyAccepted',
   AlreadyCanceled = 'alreadyCanceled',
   OrderIsClosed = 'orderIsClosed',

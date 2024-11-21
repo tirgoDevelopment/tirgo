@@ -86,7 +86,7 @@ export class ClientsService {
           throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
         } else if (err.message.includes('TransportKind')) {
           throw new BadRequestException(ResponseStauses.TransportKindNotfound);
-        } else if (err.message.includes('CargoTyepe')) {
+        } else if (err.message.includes('CargoType')) {
           throw new BadRequestException(ResponseStauses.CargoTypeNotFound);
         } else if (err.message.includes('CargoLoadMethod')) {
           throw new BadRequestException(ResponseStauses.CargoLoadingMethodNotFound);
