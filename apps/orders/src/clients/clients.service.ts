@@ -94,9 +94,11 @@ export class ClientsService {
           throw new BadRequestException(ResponseStauses.CargoPackageNotFound);
         } else if (err.message.includes('CargoStatus')) {
           throw new BadRequestException(ResponseStauses.CargoStatusNotFound);
+        } else {
+          throw new InternalErrorException(ResponseStauses.CreateDataFailed);
         }
       } else {
-        throw new InternalErrorException(ResponseStauses.CreateDataFailed);
+        throw new InternalErrorException(err.toString());
       }
     } finally {
       await queryRunner.release();
