@@ -31,7 +31,7 @@ export class DriversService {
       const index = +query.pageIndex || 1
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { user: { id: user.id } }, 
-                  relations: ['driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
+                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
 
       const driverTransportTypeIds: string[] = driver.driverTransports.map((driverTransport) => driverTransport.transportType.id);
 
@@ -78,7 +78,7 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations:  ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations:  ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds']
       });
@@ -107,7 +107,7 @@ export class DriversService {
     try {
       const order = await this.ordersRepository.findOneOrFail({
         where: { isDeleted: false, id },
-        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds',
         'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer']
@@ -235,6 +235,82 @@ export class DriversService {
       }
     }
   }
+
+  // async cancelOfferPriceToOrder(orderId: number, driverOfferId: number, user: User): Promise<BpmResponse> {
+  //   try {
+
+  //     const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: user.driver?.id, isDeleted: true} });
+  //     if(isDriverBlocked) {
+  //       throw new BadRequestException(ResponseStauses.DriverBlocked)
+  //     }
+
+  //     const isAlreadyAccepted: boolean = await this.orderOffersRepository.exists({ where: { order: { id: orderId }, isAccepted: true } });
+  //     if (isAlreadyAccepted) {
+  //       throw new BadRequestException(ResponseStauses.AlreadyAccepted)
+  //     }
+
+  //     const offered: boolean = await this.orderOffersRepository.exists({ 
+  //         where: {
+  //           isAccepted: false,
+  //           isCanceled: false,
+  //           isRejected: false, 
+  //           order: { id: orderId }, 
+  //           driver: { id: user.driver?.id }
+  //         } 
+  //     });
+
+  //     if (offered) {
+  //       throw new BadRequestException(ResponseStauses.AlreadyOffered);
+  //     }
+
+  //     const isLimitExceed: boolean = await this.orderOffersRepository.exists({ 
+  //       where: {
+  //         requestIndex: 3,
+  //         order: { id: orderId }, 
+  //         driver: { id: user.driver?.id }
+  //       } 
+  //     });
+  //     if (isLimitExceed) {
+  //       throw new BadRequestException(ResponseStauses.OfferLimit);
+  //     }
+
+  //     const createOfferDto: DriverOrderOffers = new DriverOrderOffers();
+
+  //     // const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } });
+  //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId }, relations: ['client'] });
+  //     const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: dto.curencyId } });
+  //     const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: user.driver?.id } });
+     
+  //     let count: number = await this.orderOffersRepository.count({ 
+  //       where: {
+  //         order: { id: orderId }, 
+  //         driver: { id: user.driver?.id }
+  //       } 
+  //     });
+      
+  //     createOfferDto.requestIndex = count += 1;
+  //     createOfferDto.amount = dto.amount;
+  //     createOfferDto.driver = driver;
+  //     createOfferDto.order = order;
+  //     createOfferDto.currency = currency;
+  //     createOfferDto.createdBy = user;
+
+  //     // create new offfer
+  //     await this.orderOffersRepository.save(createOfferDto);
+  //     await this.rmqService.sendOrderOfferMessageToClient({ userId: order.client?.id, orderId: order.id });
+
+  //     return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+  //   } catch (err: any) {
+  //     console.log(err)
+  //     if (err instanceof HttpException) {
+  //       throw err
+  //     } else if (err.name == 'EntityNotFoundError') {
+  //       throw new BadRequestException(ResponseStauses.NotFound);
+  //     } else {
+  //       throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+  //     }
+  //   }
+  // }
 
   // async acceptClientOffer(offerId: number): Promise<BpmResponse> {
   //   try {

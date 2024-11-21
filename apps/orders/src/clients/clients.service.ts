@@ -184,8 +184,8 @@ export class ClientsService {
   
   async getOrderById(id: number, user: User): Promise<BpmResponse> {
     try {
-      const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, createdBy: user },
-         relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+      const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, client: { id: user.client.id } },
+         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
         'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
@@ -211,7 +211,7 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
-      const filter: any = { isDeleted: false, createdBy: { id: user.client.id } };
+      const filter: any = { isDeleted: false, client: { id: user.client.id } };
       const sort: any = {};
       if(query.sortBy && query.sortType) {
         sort[query.sortBy] = query.sortType; 
@@ -253,7 +253,7 @@ export class ClientsService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 
-        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
         'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
         
