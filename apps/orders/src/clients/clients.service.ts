@@ -190,7 +190,7 @@ export class ClientsService {
          relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
-        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
+        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.driver.phoneNumbers', 'driverOrderOffers.clientReplyOrderOffer'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
@@ -256,7 +256,7 @@ export class ClientsService {
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
-        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
+        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.driver.phoneNumbers', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
         
         const ordersCount = await this.ordersRepository.count({ where : filter });

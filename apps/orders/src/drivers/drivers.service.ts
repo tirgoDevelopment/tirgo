@@ -1,9 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, DriverOrderOffers, Driver, RejectOfferDto, OrderQueryDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, DriverOrderOffers, Driver, RejectOfferDto, CancelOfferDto, OrderQueryDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
-import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @Injectable()
 export class DriversService {
@@ -153,7 +152,8 @@ export class DriversService {
         throw new BadRequestException(ResponseStauses.OrderIsNotWaiting)
       }
 
-      const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: user.driver?.id }, isAccepted: true } });
+      // further might be needed cases
+      const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: user.driver?.id }, isAccepted: true, isFinished: false } });
       if (isDriverBusy) {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
       }
@@ -221,7 +221,6 @@ export class DriversService {
 
       // create new offfer
       await this.orderOffersRepository.save(createOfferDto);
-      await this.rmqService.sendOrderOfferMessageToClient({ userId: order.client?.id, orderId: order.id });
 
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {

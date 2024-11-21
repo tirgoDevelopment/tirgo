@@ -84,4 +84,14 @@ export class DriverOrderOffers {
   @Column({ nullable: true, name: 'accept_reason' })
   acceptReason: string;
 
+  @Column({ name: 'is_finished', default: false })
+  isFinished: boolean;
+
+  @Column({ type: 'timestamp', name: 'finished_at', nullable: true })
+  finishedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.finishedDriverOrderOffers, { nullable: true })
+  @JoinColumn({ name: 'finished_by_id' })
+  finishedBy: User;
+  
 }

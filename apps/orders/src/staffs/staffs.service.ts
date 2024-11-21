@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, DriverOrderOffers, Driver, AdminOrderDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CancelOfferDto, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, DriverOrderOffers, Driver, AdminOrderDto, OrderOfferDto, AdminOrderOfferDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -207,7 +207,7 @@ export class StaffsService {
       }
       const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false }, 
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
-        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
+        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.driver.phoneNumbers', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'client', 
         'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
       return new BpmResponse(true, order, null);
@@ -277,7 +277,7 @@ export class StaffsService {
         relations: [ 'createdBy',
           'loadingLocation', 'deliveryLocation', 'additionalLoadingLocation', 'additionalDeliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation', 'offeredPriceCurrency', 
         'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds', 'client',
-      'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
+      'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.driver.phoneNumbers', 'driverOrderOffers.clientReplyOrderOffer'] });
         if(orders.length) {
         const ordersCount = await this.ordersRepository.count({ where: filter });
         const totalPagesCount = Math.ceil(ordersCount / size);
@@ -324,6 +324,125 @@ export class StaffsService {
     }
   }
 
+  async offerPriceToOrder(orderId: number, dto: AdminOrderOfferDto, user: User): Promise<BpmResponse> {
+    try {
+      const isOrderWaiting: boolean = await this.ordersRepository.exists({ where: { id: orderId, cargoStatus: { code: CargoStatusCodes.Waiting } }});
+      if(!isOrderWaiting) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotWaiting)
+      }
+      // further might be needed cases
+      const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: dto.driverId }, isAccepted: true, isFinished: false } });
+      if (isDriverBusy) {
+        throw new BadRequestException(ResponseStauses.DriverHasOrder)
+      }
+
+      const isDriverArchived: boolean = await this.driversRepository.exists({ where: { id: dto.driverId, isDeleted: true} });
+      if(isDriverArchived) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: dto.driverId, isDeleted: true} });
+      if(isDriverBlocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
+      }
+
+      const isAlreadyAccepted: boolean = await this.orderOffersRepository.exists({ where: { order: { id: orderId }, isAccepted: true } });
+      if (isAlreadyAccepted) {
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted)
+      }
+
+      const offered: boolean = await this.orderOffersRepository.exists({ 
+          where: {
+            isAccepted: false,
+            isCanceled: false,
+            isRejected: false, 
+            order: { id: orderId }, 
+            driver: { id: dto.driverId }
+          } 
+      });
+
+      if (offered) {
+        throw new BadRequestException(ResponseStauses.AlreadyOffered);
+      }
+
+      const isLimitExceed: boolean = await this.orderOffersRepository.exists({ 
+        where: {
+          requestIndex: 3,
+          order: { id: orderId }, 
+          driver: { id: dto.driverId }
+        } 
+      });
+      if (isLimitExceed) {
+        throw new BadRequestException(ResponseStauses.OfferLimit);
+      }
+
+      const createOfferDto: DriverOrderOffers = new DriverOrderOffers();
+
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId }, relations: ['client'] });
+      const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: dto.curencyId } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: dto.driverId } });
+     
+      let count: number = await this.orderOffersRepository.count({ 
+        where: {
+          order: { id: orderId }, 
+          driver: { id: dto.driverId }
+        } 
+      });
+      
+      createOfferDto.requestIndex = count += 1;
+      createOfferDto.amount = dto.amount;
+      createOfferDto.driver = driver;
+      createOfferDto.order = order;
+      createOfferDto.currency = currency;
+      createOfferDto.createdBy = user;
+
+      // create new offfer
+      await this.orderOffersRepository.save(createOfferDto);
+
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async cancelOfferPriceToOrder(orderId: number, driverOfferId: number, dto: CancelOfferDto, user: User): Promise<BpmResponse> {
+    try {
+
+      const offer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: driverOfferId, order: { id: orderId } } });
+
+      if (offer.isAccepted) {
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      } else if(offer.isCanceled) {
+        throw new BadRequestException(ResponseStauses.AlreadyCanceled);
+      } else if(offer.isRejected) {
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
+      }
+
+      offer.isCanceled = true;
+      offer.canceledAt = new Date();
+      offer.canceledBy = user;
+      offer.cancelReason = dto.cancelReason;
+      await this.orderOffersRepository.save(offer);
+
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
   // async appendOrderoDriver(appendOrderDto: AppendOrderDto, user: User): Promise<BpmResponse> {
   //   const queryRunner = this.dataSource.createQueryRunner();
   //   await queryRunner.connect();
