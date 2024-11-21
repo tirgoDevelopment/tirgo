@@ -147,10 +147,12 @@ export class DriversService {
   // }
 
   async offerPriceToOrder(orderId: number, dto: OrderOfferDto, user: User): Promise<BpmResponse> {
-    const queryRunner = await this.ordersRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
     try {
-      await queryRunner.startTransaction();
+      const isOrderWaiting: boolean = await this.ordersRepository.exists({ where: { id: orderId, cargoStatus: { code: CargoStatusCodes.Waiting } }});
+      if(!isOrderWaiting) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotWaiting)
+      }
+
       const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: user.driver?.id }, isAccepted: true } });
       if (isDriverBusy) {
         throw new BadRequestException(ResponseStauses.DriverHasOrder)
@@ -217,20 +219,12 @@ export class DriversService {
       createOfferDto.currency = currency;
       createOfferDto.createdBy = user;
 
-      // reject other offfers
-      const rejectOtherOffersRes = await queryRunner.manager.update(DriverOrderOffers, { order: { id: order.id, driver: { id: driver.id } } }, { isRejected: true })
-      if(!rejectOtherOffersRes.affected) {
-        throw new InternalErrorException(ResponseStauses.UpdateDataFailed)
-      }
-
-      // then create new offfer
-      await await queryRunner.manager.save(DriverOrderOffers, createOfferDto);
+      // create new offfer
+      await this.orderOffersRepository.save(createOfferDto);
       await this.rmqService.sendOrderOfferMessageToClient({ userId: order.client?.id, orderId: order.id });
 
-      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
-      await queryRunner.rollbackTransaction();
       console.log(err)
       if (err instanceof HttpException) {
         throw err
@@ -239,8 +233,6 @@ export class DriversService {
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
       }
-    } finally {
-      queryRunner.release();
     }
   }
 
