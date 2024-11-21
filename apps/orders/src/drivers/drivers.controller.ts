@@ -1,8 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { DriversService } from './drivers.service';
-import { OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
+import { OrderOfferDto, OrderQueryDto, RejectOfferDto, CancelOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @ApiTags('Drivers orders')
 @Controller()
@@ -25,12 +24,14 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Driver offer price for order' })
+  @UsePipes(ValidationPipe)
   @Post(':id/drivers/offers')
   async offerPrice(@Param('id') id: number, @Body() dto: OrderOfferDto, @Req() req: Request) {
     return this.driversService.offerPriceToOrder(id, dto, req['user'])
   }
 
   @ApiOperation({ summary: 'Driver cancel offer for order' })
+  @UsePipes(ValidationPipe)
   @Post(':id/drivers/offers/:offerId/cancel')
   async cancelOffer(
     @Param('id') id: number, 

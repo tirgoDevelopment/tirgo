@@ -7,29 +7,43 @@ export class OrderOfferDto {
   @ApiProperty({ required: false })
   id?: number;
   
-  
   @ApiProperty({ required: true })
   @IsNumber()
   @IsNotEmpty()
-  orderId: number;
-
+  amount: number;
   
-  @ApiProperty({ required: false })
-  driverId: number;
+  @ApiProperty({ required: true })
+  @IsUUID()
+  @IsNotEmpty()
+  curencyId: string;
+}
 
-  
-  @ApiProperty({ required: false })
-  offerIndex: number;
+export class AdminOrderOfferDto {
 
+ 
+  @ApiProperty({ required: false })
+  id?: number;
   
   @ApiProperty({ required: true })
   @IsNumber()
   @IsNotEmpty()
   amount: number;
 
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  driverId: number;
   
   @ApiProperty({ required: true })
   @IsUUID()
   @IsNotEmpty()
   curencyId: string;
+}
+
+export class CancelOfferDto {
+  @ApiProperty({ required: false })
+  id?: number;
+  
+  @ApiProperty({ required: false })
+  cancelReason: string;
 }
