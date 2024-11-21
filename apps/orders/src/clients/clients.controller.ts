@@ -1,36 +1,43 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @ApiTags('Clients orders')
-@Controller('clients')
+@Controller('')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
 
   @ApiOperation({ summary: 'Client create order' })
   @UsePipes(ValidationPipe)
-  @Post()
-  async createOrder(@Body() createOrderDto: OrderDto, @Req() req: Request) {
-    return this.clientsService.createOrder(createOrderDto, req['user']);
+  @Post('clients')
+  async createOrder(@Body() dto: OrderDto, @Req() req: Request) {
+    return this.clientsService.createOrder(dto, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Client update order' })
+  @UsePipes(ValidationPipe)
+  @Put(':id/clients')
+  async updateOrder(@Param('id') id: number, @Body() dto: OrderDto, @Req() req: Request) {
+    return this.clientsService.updateOrder(id, dto, req['user']);
   }
 
   @ApiOperation({ summary: 'Client get all orders' })
   @UsePipes(ValidationPipe)
-  @Get()
+  @Get('clients')
   async getAllMerchantOrders(
     @Req() req: Request,
     @Query() query: OrderQueryDto
   ) {
-    return this.clientsService.getClientOrderByUserId(query, req['user']);
+    return this.clientsService.getClientsOrders(query, req['user']);
   }
 
-  // @ApiOperation({ summary: 'Get order by orderId' })
-  // @Get('order-by-id')
-  // async getOrderById(@Query('orderId') id: number) {
-  //   return this.clientsService.getOrderById(id)
-  // }
+  @ApiOperation({ summary: 'Get order by orderId' })
+  @Get(':id/clients')
+  async getOrderById(@Param('id') id: number, @Req() req: Request) {
+    return this.clientsService.getOrderById(id, req['user']);
+  }
 
   // @ApiOperation({ summary: 'Client accept driver offer to order' })
   // @Post('accept-offer')

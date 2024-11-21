@@ -78,9 +78,11 @@ export class ClientsService {
       if (err.name == 'EntityNotFoundError') {
         if (err.message.includes('ClientMerchant')) {
           throw new BadRequestException(ResponseStauses.UserNotFound);
+        } else if (err.message.includes('Order')) {
+          throw new BadRequestException(ResponseStauses.OrderNotFound);
         } else if (err.message.includes('Currency')) {
           throw new BadRequestException(ResponseStauses.CurrencyNotFound);
-        } else if (err.message.includes('Currency')) {
+        } else if (err.message.includes('TransportType')) {
           throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
         } else if (err.message.includes('TransportKind')) {
           throw new BadRequestException(ResponseStauses.TransportKindNotfound);
@@ -102,136 +104,98 @@ export class ClientsService {
 
   }
 
-  // async updateOrder(updateOrderDto: OrderDto): Promise<BpmResponse> {
-  //   try {
+  async updateOrder(orderId: number, dto: OrderDto, user: User): Promise<BpmResponse> {
 
-  //     const order: Order = new Order();
-  //     order.loadingLocation =  await this.locationsRepository.save({ name: updateOrderDto.loadingLocation.name, latitude: updateOrderDto.loadingLocation.latitude, longitude: updateOrderDto.loadingLocation.longitude })
-  //     order.deliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.deliveryLocation.name, latitude: updateOrderDto.deliveryLocation.latitude, longitude: updateOrderDto.deliveryLocation.longitude });
-  //     if(updateOrderDto.customsPlaceLocation) {
-  //       order.customsPlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsPlaceLocation.name, latitude: updateOrderDto.customsPlaceLocation.latitude, longitude: updateOrderDto.customsPlaceLocation.longitude });
-  //     }
-  //     if(updateOrderDto.customsClearancePlaceLocation) {
-  //       order.customsClearancePlaceLocation = await this.locationsRepository.save({ name: updateOrderDto.customsClearancePlaceLocation.name, latitude: updateOrderDto.customsClearancePlaceLocation.latitude, longitude: updateOrderDto.customsClearancePlaceLocation.longitude });
-  //     }
-  //     if(updateOrderDto.additionalLoadingLocation) {
-  //       order.additionalLoadingLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalLoadingLocation.name, latitude: updateOrderDto.additionalLoadingLocation.latitude, longitude: updateOrderDto.additionalLoadingLocation.longitude });
-  //     } 
-  //     if(updateOrderDto.additionalDeliveryLocation) { 
-  //       order.additionalDeliveryLocation = await this.locationsRepository.save({ name: updateOrderDto.additionalDeliveryLocation.name, latitude: updateOrderDto.additionalDeliveryLocation.latitude, longitude: updateOrderDto.additionalDeliveryLocation.longitude });;
-  //     }
-  //     if(updateOrderDto.isHighCube) {
-  //       order.isHighCube = updateOrderDto.isHighCube;
-  //     }
-  //     order.isAdr = updateOrderDto.isAdr || order.isAdr;
-  //     order.isCarnetTir = updateOrderDto.isCarnetTir || order.isCarnetTir;
-  //     order.isGlonas = updateOrderDto.isGlonas || order.isGlonas;
-  //     order.isParanom = updateOrderDto.isParanom || order.isParanom;
-  //     order.offeredPrice = updateOrderDto.offeredPrice || order.offeredPrice;
-  //     order.paymentMethod = updateOrderDto.paymentMethod || order.paymentMethod;
-  //     order.inAdvancePrice = updateOrderDto.inAdvancePrice || order.inAdvancePrice;
-  //     order.sendDate = updateOrderDto.sendDate || order.sendDate;
-  //     order.isSafeTransaction = updateOrderDto.isSafeTransaction || order.isSafeTransaction;
-  //     order.cargoWeight = updateOrderDto.cargoWeight || order.cargoWeight;
-  //     order.cargoLength = updateOrderDto.cargoLength || order.cargoLength;
-  //     order.cargoWidth = updateOrderDto.cargoWidth || order.cargoWidth;
-  //     order.cargoHeight = updateOrderDto.cargoHeight || order.cargoHeight;
-  //     order.volume = updateOrderDto.volume || order.volume;
-  //     order.refrigeratorFrom = updateOrderDto.refrigeratorFrom || order.refrigeratorFrom;
-  //     order.refrigeratorTo = updateOrderDto.refrigeratorTo || order.refrigeratorTo;
-  //     order.refrigeratorCount = updateOrderDto.refrigeratorCount || order.refrigeratorCount;
-  //     order.isUrgent = updateOrderDto.isUrgent || order.isUrgent;
-  //     order.isTwoDays = updateOrderDto.isTwoDays || order.isTwoDays;
-  //     order.isHook = updateOrderDto.isHook || order.isHook;
-  //     order.cisternVolume = updateOrderDto.cisternVolume || order.cisternVolume;
-  //     order.containerVolume = updateOrderDto.containerVolume || order.containerVolume;
-  //     order.capacity = updateOrderDto.capacity || order.capacity;
-
-  //     if (updateOrderDto.merchantId) {
-  //       order.clientMerchant = await this.clientMerchantsRepository.findOneOrFail({ where: { id: updateOrderDto.merchantId } });
-  //     }
-  //     if (updateOrderDto.clientId) {
-  //       order.client = await this.clientsRepository.findOneOrFail({ where: { id: updateOrderDto.clientId } });
-  //     }
-  //     if (updateOrderDto.additionalClientId) {
-  //       order.additionalClient = await this.clientsRepository.findOneOrFail({ where: { id: updateOrderDto.additionalClientId } });
-  //     }
-  //     if (updateOrderDto.offeredPriceCurrencyId) {
-  //       order.offeredPriceCurrency = await this.curreniesRepository.findOneOrFail({ where: { id: updateOrderDto.offeredPriceCurrencyId } });
-
-  //     }
-  //     if (updateOrderDto.inAdvancePriceCurrencyId) {
-  //       order.inAdvancePriceCurrency = await this.curreniesRepository.findOneOrFail({ where: { id: updateOrderDto.inAdvancePriceCurrencyId } });
-
-  //     }
-  //     if (updateOrderDto.transportTypeIds) {
-  //       order.transportTypes = await this.transportTypesRepository.find({ where: { id: In(updateOrderDto.transportTypeIds) } });
-
-  //     }
-  //     if (updateOrderDto.transportKindIds.length) {
-  //       order.transportKinds = await this.transportKindsRepository.find({ where: { id: In(updateOrderDto.transportKindIds) } });
-
-  //     }
-  //     if (updateOrderDto.cargoTypeId) {
-  //       order.cargoType = await this.cargoTyepesRepository.findOneOrFail({ where: { id: updateOrderDto.cargoTypeId } });
-
-  //     }
-  //     if (updateOrderDto.loadingMethodId) {
-  //       order.loadingMethod = await this.cargoLoadingMethodsRepository.findOneOrFail({ where: { id: updateOrderDto.loadingMethodId } });
-
-  //     }
-  //     if (updateOrderDto.cargoPackageId) {
-  //       order.cargoPackage = await this.cargoPackagesRepository.findOneOrFail({ where: { id: updateOrderDto.cargoPackageId } });
-
-  //     }
-
-  //     await this.ordersRepository.save(order);
-  //     return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
-  //   } catch (err: any) {
-  //     if (err.name == 'EntityNotFoundError') {
-  //       if (err.message.includes('merchantsRepository')) {
-  //         throw new BadRequestException(ResponseStauses.UserNotFound);
-  //       } else if (err.message.includes('curreniesRepository')) {
-  //         throw new BadRequestException(ResponseStauses.CurrencyNotFound);
-  //       } else if (err.message.includes('transportTypesRepository')) {
-  //         throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
-  //       } else if (err.message.includes('transportKindsRepository')) {
-  //         throw new BadRequestException(ResponseStauses.TransportKindNotfound);
-  //       } else if (err.message.includes('cargoTyepesRepository')) {
-  //         throw new BadRequestException(ResponseStauses.CargoTypeNotFound);
-  //       } else if (err.message.includes('cargoLoadingMethodsRepository')) {
-  //         throw new BadRequestException(ResponseStauses.CargoLoadingMethodNotFound);
-  //       } else if (err.message.includes('cargoPackagesRepository')) {
-  //         throw new BadRequestException(ResponseStauses.CargoPackageNotFound);
-  //       }
-  //       throw new BadRequestException(ResponseStauses.NotFound);
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
-  //     }
-  //   }
-  // }
+    const queryRunner = this.ordersRepository.manager.connection.createQueryRunner();
+      queryRunner.connect();
+      try {
+        queryRunner.startTransaction();
   
-  // async getOrderById(id: number): Promise<BpmResponse> {
-  //   try {
-  //     if (!id) {
-  //       throw new BadRequestException(ResponseStauses.IdIsRequired);
-  //     }
-  //     const order = await this.ordersRepository.findOneOrFail({ where: { id, deleted: false },
-  //        relations: ['loadingLocation', 'deliveryLocation', 'customsPlaceLocation', 'customsClearancePlaceLocation',
-  //       'additionalLoadingLocation',
-  //       'additionalDeliveryLocation', 'driverOffers.currency', 'driverOffers', 'driverOffers.createdBy', 'driverOffers.driver', 'driverOffers.driver.phoneNumbers', 'cargoStatus', 'clientMerchant', 'inAdvancePriceCurrency', 'offeredPriceCurrency', 'cargoType', 'cargoPackage', 'transportTypes', 'loadingMethod', 'transportKinds'] });
-  //     return new BpmResponse(true, order, null);
-  //   } catch (err: any) {
-  //     console.log(err)
-  //     if (err.name == 'EntityNotFoundError') {
-  //       throw new NoContentException();
-  //     } else {
-  //       throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
-  //     }
-  //   }
-  // }
+        const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId, isDeleted: false, createdBy: user },});
+  
+        order.transportKinds = await this.transportKindsRepository.find({ where: { id: In(dto.transportKindIds) } });
+        order.transportType = await this.transportTypesRepository.findOneOrFail({ where: { id: dto.transportTypeId } });
+        order.cargoType = await this.cargoTyepesRepository.findOneOrFail({ where: { id: dto.cargoTypeId } });
+        order.cargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Waiting } });
+        
+        if(dto.offeredPriceCurrencyId) {
+          const offeredCurrency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: dto.offeredPriceCurrencyId } });
+          order.offeredPriceCurrency = offeredCurrency;
+        }
+        if(dto.cargoLoadMethodIds) {
+          order.cargoLoadMethods = await this.cargoLoadingMethodsRepository.find({ where: { id: In(dto.cargoLoadMethodIds) } });
+        }
+  
+        order.loadingLocation =  await queryRunner.manager.save(LocationPlace, { name: dto.loadingLocation.name, latitude: dto.loadingLocation.latitude, longitude: dto.loadingLocation.longitude })
+        order.deliveryLocation = await queryRunner.manager.save(LocationPlace, { name: dto.deliveryLocation.name, latitude: dto.deliveryLocation.latitude, longitude: dto.deliveryLocation.longitude });
+        order.isAdr = dto.isAdr;
+        order.offeredPrice = dto.offeredPrice;
+        order.isCashlessPayment = dto.isCashlessPayment;
+        order.sendDate = dto.sendDate;
+        order.isSecureTransaction = dto.isSecureTransaction;
+        order.cargoWeight = dto.cargoWeight;
+        order.cargoDimension = dto.cargoDimension;
+        order.isBorderCrossing = dto.isBorderCrossing;
+        order.isRefrigerator = dto.isRefrigerator;
+        order.refrigeratorFromCount = dto.refrigeratorFromCount;
+        order.refrigeratorToCount = dto.refrigeratorToCount;
+        order.isHook = dto.isHook;
+        order.cisternVolume = dto.cisternVolume;
+        order.loadCapacity = dto.loadCapacity;
+        order.createdBy = user;
+  
+        await queryRunner.manager.save(Order, order);
+        await queryRunner.commitTransaction();
+        return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
+      } catch (err: any) {
+        await queryRunner.rollbackTransaction();
+        console.log(err)
+        if (err.name == 'EntityNotFoundError') {
+          if (err.message.includes('ClientMerchant')) {
+            throw new BadRequestException(ResponseStauses.UserNotFound);
+          } else if (err.message.includes('Order')) {
+            throw new BadRequestException(ResponseStauses.OrderNotFound);
+          } else if (err.message.includes('Currency')) {
+            throw new BadRequestException(ResponseStauses.CurrencyNotFound);
+          } else if (err.message.includes('TransportType')) {
+            throw new BadRequestException(ResponseStauses.TransportTypeNotfound);
+          } else if (err.message.includes('TransportKind')) {
+            throw new BadRequestException(ResponseStauses.TransportKindNotfound);
+          } else if (err.message.includes('CargoTyepe')) {
+            throw new BadRequestException(ResponseStauses.CargoTypeNotFound);
+          } else if (err.message.includes('CargoLoadMethod')) {
+            throw new BadRequestException(ResponseStauses.CargoLoadingMethodNotFound);
+          } else if (err.message.includes('CargoPackage')) {
+            throw new BadRequestException(ResponseStauses.CargoPackageNotFound);
+          } else if (err.message.includes('CargoStatus')) {
+            throw new BadRequestException(ResponseStauses.CargoStatusNotFound);
+          }
+        } else {
+          throw new InternalErrorException(ResponseStauses.CreateDataFailed);
+        }
+      } finally {
+        await queryRunner.release();
+      }
+  }
+  
+  async getOrderById(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, createdBy: user },
+         relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+          'additionalLoadingLocation',
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
+      return new BpmResponse(true, order, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NoContentException();
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError, err.message)
+      }
+    }
+  }
 
-  async getClientOrderByUserId(query: OrderQueryDto, user: User): Promise<BpmResponse> {
+  async getClientsOrders(query: OrderQueryDto, user: User): Promise<BpmResponse> {
     try {
       const size = +query.pageSize || 10; // Number of items per page
       const index = +query.pageIndex || 1
