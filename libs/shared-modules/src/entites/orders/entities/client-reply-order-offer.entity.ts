@@ -35,7 +35,7 @@ export class ClientRepliesOrderOffer {
   @Column({ name: 'is_canceled', default: false })
   isCanceled: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'canceled_at', nullable: true })
+  @Column({ type: 'timestamp', name: 'canceled_at', nullable: true })
   canceledAt: Date;
 
   @ManyToOne(() => User, (user) => user.canceledDriverOrderOffers, { nullable: true })
@@ -48,7 +48,7 @@ export class ClientRepliesOrderOffer {
   @Column({ name: 'is_rejected', default: false })
   isRejected: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'rejected_at', nullable: true })
+  @Column({ type: 'timestamp', name: 'rejected_at', nullable: true })
   rejectedAt: Date;
 
   @ManyToOne(() => User, (user) => user.rejectedDriverOrderOffers, { nullable: true })
@@ -61,7 +61,7 @@ export class ClientRepliesOrderOffer {
   @Column({ name: 'is_accepted', default: false })
   isAccepted: boolean;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'accepted_at', nullable: true })
+  @Column({ type: 'timestamp', name: 'accepted_at', nullable: true })
   acceptedAt: Date;
 
   @ManyToOne(() => User, (user) => user.acceptedDriverOrderOffers, { nullable: true })
