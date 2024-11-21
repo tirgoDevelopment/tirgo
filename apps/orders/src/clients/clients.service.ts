@@ -184,7 +184,7 @@ export class ClientsService {
   
   async getOrderById(id: number, user: User): Promise<BpmResponse> {
     try {
-      const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, createdBy: user },
+      const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, client: { id: user.client.id } },
          relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
@@ -211,7 +211,7 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
-      const filter: any = { isDeleted: false, createdBy: { id: user.client.id } };
+      const filter: any = { isDeleted: false, client: { id: user.client.id } };
       const sort: any = {};
       if(query.sortBy && query.sortType) {
         sort[query.sortBy] = query.sortType; 

@@ -236,6 +236,82 @@ export class DriversService {
     }
   }
 
+  // async cancelOfferPriceToOrder(orderId: number, driverOfferId: number, user: User): Promise<BpmResponse> {
+  //   try {
+
+  //     const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: user.driver?.id, isDeleted: true} });
+  //     if(isDriverBlocked) {
+  //       throw new BadRequestException(ResponseStauses.DriverBlocked)
+  //     }
+
+  //     const isAlreadyAccepted: boolean = await this.orderOffersRepository.exists({ where: { order: { id: orderId }, isAccepted: true } });
+  //     if (isAlreadyAccepted) {
+  //       throw new BadRequestException(ResponseStauses.AlreadyAccepted)
+  //     }
+
+  //     const offered: boolean = await this.orderOffersRepository.exists({ 
+  //         where: {
+  //           isAccepted: false,
+  //           isCanceled: false,
+  //           isRejected: false, 
+  //           order: { id: orderId }, 
+  //           driver: { id: user.driver?.id }
+  //         } 
+  //     });
+
+  //     if (offered) {
+  //       throw new BadRequestException(ResponseStauses.AlreadyOffered);
+  //     }
+
+  //     const isLimitExceed: boolean = await this.orderOffersRepository.exists({ 
+  //       where: {
+  //         requestIndex: 3,
+  //         order: { id: orderId }, 
+  //         driver: { id: user.driver?.id }
+  //       } 
+  //     });
+  //     if (isLimitExceed) {
+  //       throw new BadRequestException(ResponseStauses.OfferLimit);
+  //     }
+
+  //     const createOfferDto: DriverOrderOffers = new DriverOrderOffers();
+
+  //     // const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } });
+  //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId }, relations: ['client'] });
+  //     const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: dto.curencyId } });
+  //     const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: user.driver?.id } });
+     
+  //     let count: number = await this.orderOffersRepository.count({ 
+  //       where: {
+  //         order: { id: orderId }, 
+  //         driver: { id: user.driver?.id }
+  //       } 
+  //     });
+      
+  //     createOfferDto.requestIndex = count += 1;
+  //     createOfferDto.amount = dto.amount;
+  //     createOfferDto.driver = driver;
+  //     createOfferDto.order = order;
+  //     createOfferDto.currency = currency;
+  //     createOfferDto.createdBy = user;
+
+  //     // create new offfer
+  //     await this.orderOffersRepository.save(createOfferDto);
+  //     await this.rmqService.sendOrderOfferMessageToClient({ userId: order.client?.id, orderId: order.id });
+
+  //     return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+  //   } catch (err: any) {
+  //     console.log(err)
+  //     if (err instanceof HttpException) {
+  //       throw err
+  //     } else if (err.name == 'EntityNotFoundError') {
+  //       throw new BadRequestException(ResponseStauses.NotFound);
+  //     } else {
+  //       throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+  //     }
+  //   }
+  // }
+
   // async acceptClientOffer(offerId: number): Promise<BpmResponse> {
   //   try {
 

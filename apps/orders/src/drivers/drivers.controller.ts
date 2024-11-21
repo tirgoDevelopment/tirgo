@@ -25,9 +25,15 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Driver offer price for order' })
-  @Post(':id/drivers/offer-price')
+  @Post(':id/drivers/offers')
   async offerPrice(@Param('id') id: number, @Body() dto: OrderOfferDto, @Req() req: Request) {
     return this.driversService.offerPriceToOrder(id, dto, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Driver cancel offer for order' })
+  @Post(':id/drivers/offers/:offerId/cancel')
+  async cancelOffer(@Param('id') id: number, @Param('offerId') offerId: number, @Req() req: Request) {
+    // return this.driversService.cancelOfferPriceToOrder(id, offerId, req['user'])
   }
 
   // @ApiOperation({ summary: 'Driver accept client\'s offer' })
