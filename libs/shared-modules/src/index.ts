@@ -45,7 +45,7 @@ export { DriverOrderOffers } from "./entites/orders/entities/offer.entity";
 export { ClientRepliesOrderOffer } from "./entites/orders/entities/client-reply-order-offer.entity";
 export { RejectOfferDto } from "./entites/orders/dtos/reject-offer.dto";
 export { OrderDto, OrderQueryDto, AdminOrderDto, AppendOrderDto } from "./entites/orders/dtos/order.dto";
-export { OrderOfferDto, AdminOrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
+export { OrderOfferDto, AdminOrderOfferDto, CancelOfferDto } from './entites/orders/dtos/order-price-offer.dto'
 export { CargoLoadMethod } from "./entites/references/entities/cargo-load-method.entity";
 export { CargoPackage } from "./entites/references/entities/cargo-package.entity";
 export { TransportKind } from "./entites/references/entities/transport-kind.entity";
