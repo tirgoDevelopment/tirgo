@@ -24,78 +24,11 @@ export class DriversController {
     return this.driversService.getOrderById(id)
   }
 
-  // @ApiOperation({ summary: 'Get all driver orders' })
-  // @Get('orders')
-  // async getOrders(
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,
-  //   @Query('orderId') orderId: number,
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   @Query('statusId') statusId: string,
-  //   @Query('loadingLocation') loadingLocation: string,
-  //   @Query('deliveryLocation') deliveryLocation: string,
-  //   @Query('transportKindId') transportKindId: string,
-  //   @Query('transportTypeId') transportTypeId: string,
-  //   @Query('createdAt') createdAt: string,
-  //   @Query('sendDate') sendDate: string,
-  //   @Req() req: Request
-  // ) {
-  //   return this.driversService.getDriverOrders(req['user'], sortBy, sortType, pageIndex, pageSize, orderId, statusId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
-  // }
-
-  // @ApiOperation({ summary: 'Get all waiting orders' })
-  // @Get('all-waiting-orders')
-  // async getAllWaitginOrders(
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,
-  //   @Query('orderId') orderId: number,
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   @Query('loadingLocation') loadingLocation: string,
-  //   @Query('deliveryLocation') deliveryLocation: string,
-  //   @Query('transportKindId') transportKindId: string,
-  //   @Query('transportTypeId') transportTypeId: string,
-  //   @Query('createdAt') createdAt: string,
-  //   @Query('sendDate') sendDate: string
-  // ) {
-  //   return this.driversService.getWaitingOrders(sortBy, sortType, pageIndex, pageSize, orderId, loadingLocation, deliveryLocation, transportKindId, transportTypeId, createdAt, sendDate);
-  // }
-
-  // @ApiOperation({ summary: 'Get order by order id' })
-  // @Get('merchant-active-orders')
-  // async getMerchantOrders(
-  //   @Query('merchantId') id: number,
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   ) {
-  //   return this.driversService.getMerchantActiveOrders(id, sortBy, sortType, pageIndex, pageSize)
-  // }
-
-  // @ApiOperation({ summary: 'Get order by order id' })
-  // @Get('archive-orders-by')
-  // async getArchiveOrders(
-  //   @Query('sortBy') sortBy: string,
-  //   @Query('sortType') sortType: string,
-  //   @Query('driverId') id: number,
-  //   @Query('pageIndex') pageIndex: string,
-  //   @Query('pageSize') pageSize: string,) {
-  //   return this.driversService.getArchiveOrdersByDriverId(id, sortBy, sortType, pageIndex, pageSize)
-  // }
-
-  // @ApiOperation({ summary: 'Get order by order id' })
-  // @Get('order-by-id')
-  // async getOrderById(@Query('orderId') id: number) {
-  //   return this.driversService.getOrderById(id)
-  // }
-
-  // @ApiOperation({ summary: 'Driver offer price for order' })
-  // @Post('offer-price')
-  // async offerPrice(@Body() offerPriceDto: OrderOfferDto, @Req() req: Request) {
-  //   return this.driversService.offerPriceToOrder(offerPriceDto, req['user']?.id)
-  // }
+  @ApiOperation({ summary: 'Driver offer price for order' })
+  @Post(':id/drivers/offer-price')
+  async offerPrice(@Param('id') id: number, @Body() dto: OrderOfferDto, @Req() req: Request) {
+    return this.driversService.offerPriceToOrder(id, dto, req['user'])
+  }
 
   // @ApiOperation({ summary: 'Driver accept client\'s offer' })
   // @Post('accept-offer')

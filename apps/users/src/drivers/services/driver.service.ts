@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDocuments, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, OrderOffer, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserDocumentTypes, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDocuments, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, DriverOrderOffers, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserDocumentTypes, UserStates, UserTypes } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
 import { GetDriversDto, UpdateDriverBirthDayDto, UpdateDriverPhoneDto, AwsS3BucketKeyNames } from '../../';
 
@@ -9,7 +9,7 @@ import { GetDriversDto, UpdateDriverBirthDayDto, UpdateDriverPhoneDto, AwsS3Buck
 export class DriversService {
 
   constructor(
-    @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
+    @InjectRepository(DriverOrderOffers) private readonly orderOffersRepository: Repository<DriverOrderOffers>,
     @InjectRepository(DriverMerchant) private readonly driverMerchantsRepository: Repository<DriverMerchant>,
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,

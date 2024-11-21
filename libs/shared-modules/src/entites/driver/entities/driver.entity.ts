@@ -3,7 +3,7 @@ import { DriverTransport } from './driver-transport.entity';
 import { User } from '../../users/user.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { DriverPhoneNumber } from './driver-phone-number.entity';
-import { OrderOffer } from '../../orders/entities/offer.entity';
+import { DriverOrderOffers } from '../../orders/entities/offer.entity';
 import { Agent } from '../../agents/entites/agent.entity';
 import { Subscription } from '../../references/entities/subscription.entity';
 import { Transaction } from '../../transactions/transaction.entity';
@@ -92,8 +92,8 @@ export class Driver {
   @OneToMany(() => Order, order => order.client)
   orders: Order[];
 
-  @OneToMany(() => OrderOffer, orderOffer => orderOffer.driver)
-  orderOffers: OrderOffer[];
+  @OneToMany(() => DriverOrderOffers, orderOffer => orderOffer.driver)
+  orderOffers: DriverOrderOffers[];
 
   @ManyToOne(() => Agent, Agent => Agent.drivers)
   @JoinColumn({ name: 'agent_id' })

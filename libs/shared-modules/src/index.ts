@@ -41,7 +41,8 @@ export { TransportVerification } from "./entites/driver/entities/transport-verif
 export { Config } from "./entites/config/config.entity";
 export { Order } from "./entites/orders/entities/order.entity";
 export { LocationPlace } from "./entites/orders/entities/location.entity";
-export { OrderOffer } from "./entites/orders/entities/offer.entity";
+export { DriverOrderOffers } from "./entites/orders/entities/offer.entity";
+export { ClientRepliesOrderOffer } from "./entites/orders/entities/client-reply-order-offer.entity";
 export { RejectOfferDto } from "./entites/orders/dtos/reject-offer.dto";
 export { OrderDto, OrderQueryDto, AdminOrderDto, AppendOrderDto } from "./entites/orders/dtos/order.dto";
 export { OrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'

@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, OrderOffer, OrderOfferDto, Driver, LocationPlace, RejectOfferDto, OrderQueryDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, ClientMerchantUser, DriverOrderOffers, OrderOfferDto, Driver, LocationPlace, RejectOfferDto, OrderQueryDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -20,7 +20,7 @@ export class ClientsService {
     @InjectRepository(TransportType) private readonly transportTypesRepository: Repository<TransportType>,
     @InjectRepository(ClientMerchant) private readonly clientMerchantsRepository: Repository<ClientMerchant>,
     @InjectRepository(CargoLoadMethod) private readonly cargoLoadingMethodsRepository: Repository<CargoLoadMethod>,
-    @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
+    @InjectRepository(DriverOrderOffers) private readonly orderOffersRepository: Repository<DriverOrderOffers>,
     @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
     private rmqService: RabbitMQSenderService
   ) { }
@@ -187,7 +187,8 @@ export class ClientsService {
       const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false, createdBy: user },
          relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
-          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
+        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)
@@ -253,7 +254,7 @@ export class ClientsService {
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size, 
         relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
-        'additionalLoadingLocation',
+        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
         
         const ordersCount = await this.ordersRepository.count({ where : filter });
@@ -445,7 +446,7 @@ export class ClientsService {
   //       throw new BadRequestException(ResponseStauses.DriverBlocked)
   //     }
 
-  //     const offered: OrderOffer[] = await this.orderOffersRepository.find({ where: { order: { id: offerDto.orderId }, driver: { id: offerDto.driverId }, createdBy: { id: userId }} });
+  //     const offered: DriverOrderOffers[] = await this.orderOffersRepository.find({ where: { order: { id: offerDto.orderId }, driver: { id: offerDto.driverId }, createdBy: { id: userId }} });
   //     if((offered.filter((el: any) => !el.rejected && !el.canceled)).length) {
   //       throw new BadRequestException(ResponseStauses.AlreadyOffered);
   //     }
@@ -453,7 +454,7 @@ export class ClientsService {
   //       throw new BadRequestException(ResponseStauses.OfferLimit);
   //     }
 
-  //     const createOfferDto: OrderOffer = new OrderOffer();
+  //     const createOfferDto: DriverOrderOffers = new DriverOrderOffers();
 
   //     const user: User = await this.usersRepository.findOneOrFail({ where: { id: userId } });  
   //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offerDto.orderId }, relations: ['createdBy'] });
@@ -490,7 +491,7 @@ export class ClientsService {
 
   // async acceptDriverOffer(offerId: number): Promise<BpmResponse> {
   //   try { 
-  //     const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
+  //     const offer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
   //     const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Accepted } });
   //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id } })
   //     if(offer.rejected) {
@@ -526,7 +527,7 @@ export class ClientsService {
   // async rejectDriverOffer(offerId: number, rejectOfferDto: RejectOfferDto, user: any): Promise<BpmResponse> {
   //   try {
 
-  //     const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
+  //     const offer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
   //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['client'] })
   //     const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Canceled } });
 
@@ -554,7 +555,7 @@ export class ClientsService {
   // async cancelDriverOffer(offerId: number, cancelOfferDto: CancelOfferDto, user: any): Promise<BpmResponse> {
   //   try {
 
-  //     const offer: OrderOffer = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
+  //     const offer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId }, relations: ['driver', 'order'] });
   //     const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: offer.order?.id }, relations: ['client'] })
   //     const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Canceled } });
 

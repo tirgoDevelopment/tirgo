@@ -14,7 +14,7 @@ import { DriverMerchant } from '../driver-merchant/entites/driver-merchant.entit
 import { Order } from '../orders/entities/order.entity';
 import { UserFile } from '../files/file.entity';
 import { Agent } from '../agents/entites/agent.entity';
-import { OrderOffer } from '../orders/entities/offer.entity';
+import { DriverOrderOffers } from '../orders/entities/offer.entity';
 import { DriverDocuments } from '../driver/entities/driver-documents.entity';
 import { ClientPhoneNumber } from '../clients/client-phonenumber.entity';
 
@@ -76,8 +76,8 @@ export class User {
     @OneToMany(() => Order, (order) => order.createdBy)
     createdOrders: Order[];
 
-    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.createdBy)
-    createdOrderOffers: OrderOffer[];
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.createdBy)
+    createdDriverOrderOffers: DriverOrderOffers[];
 
     @OneToMany(() => Driver, (driver) => driver.createdBy)
     createdDrivers: Driver[];
@@ -105,8 +105,11 @@ export class User {
     @OneToMany(() => ClientMerchant, (clientMerchant) => clientMerchant.rejectedBy)
     rejectedClientMerchants: ClientMerchant[];
 
-    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
-    rejectedOrderOffers: OrderOffer[];
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.rejectedBy)
+    rejectedOrderOffers: DriverOrderOffers[];
+
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.rejectedBy)
+    rejectedDriverOrderOffers: DriverOrderOffers[];
 
     // relations belongs to verified by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.verifiedBy)
@@ -166,14 +169,21 @@ export class User {
     deletedOrders: Order[];
 
     // canceltedrelations belongs to  by user
-    @OneToMany(() => OrderOffer, (orderOffer) => orderOffer.rejectedBy)
-    canceledOrderOffers: OrderOffer[];
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.rejectedBy)
+    canceledOrderOffers: DriverOrderOffers[];
 
     @OneToMany(() => Order, (order) => order.canceledBy)
     canceledOrders: Order[];
 
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.canceledBy)
+    canceledDriverOrderOffers: DriverOrderOffers[];
+
     // relations belongs to updated by user
     @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.updatedBy)
     updatedDriverDocuments: DriverDocuments[];
+
+    // relations belongs to accepted by user
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.acceptedBy)
+    acceptedDriverOrderOffers: DriverOrderOffers[];
 }
 
