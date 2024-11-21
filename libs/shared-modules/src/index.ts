@@ -155,7 +155,8 @@ export enum ResponseStauses {
   TokenExpired = 'tokenExpired',
   OtpExpired = 'otpExpired',
   InvalidCode = 'invalidCode',
-  IsMainFieldIsReuqired = 'IsMainFieldIsReuqired'
+  IsMainFieldIsReuqired = 'IsMainFieldIsReuqired',
+  OrderStatusNotWaiting = 'orderStatusNotWaiting'
 }
 
 export enum CargoStatusCodes {

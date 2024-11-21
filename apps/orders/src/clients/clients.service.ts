@@ -113,6 +113,10 @@ export class ClientsService {
   
         const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId, isDeleted: false, createdBy: user },});
   
+        if(order.cargoStatus.code != CargoStatusCodes.Waiting) {
+          throw new BadRequestException(ResponseStauses.OrderStatusNotWaiting);
+        }
+
         order.transportKinds = await this.transportKindsRepository.find({ where: { id: In(dto.transportKindIds) } });
         order.transportType = await this.transportTypesRepository.findOneOrFail({ where: { id: dto.transportTypeId } });
         order.cargoType = await this.cargoTyepesRepository.findOneOrFail({ where: { id: dto.cargoTypeId } });
