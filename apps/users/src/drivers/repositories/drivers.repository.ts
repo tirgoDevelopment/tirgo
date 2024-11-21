@@ -108,13 +108,13 @@ export class DriversRepository extends Repository<Driver> {
         queryBuilder.addSelect(subQuery => {
             return subQuery
                 .select('COUNT(oo.id)', 'isBusy')
-                .from('order_offer', 'oo')
+                .from('driver_order_offers', 'oo')
                 .innerJoin('oo.order', 'o')
                 .innerJoin('o.cargoStatus', 'cs')
-                .where('oo.accepted = TRUE')
+                .where('oo.is_accepted = TRUE')
                 .andWhere('oo.driver_id = d.id')
-                .andWhere('(o.isSafeTransaction = FALSE AND cs.code = :acceptedCode)')
-                .orWhere('(o.isSafeTransaction = TRUE AND cs.code IN (:...safeCodes))')
+                .andWhere('(o.is_secure_transaction = FALSE AND cs.code = :acceptedCode)')
+                .orWhere('(o.is_secure_transaction = TRUE AND cs.code IN (:...safeCodes))')
                 .setParameters({
                     acceptedCode: CargoStatusCodes.Accepted,
                     safeCodes: [CargoStatusCodes.Accepted, CargoStatusCodes.Completed]
@@ -192,13 +192,13 @@ export class DriversRepository extends Repository<Driver> {
         queryBuilder.addSelect(subQuery => {
             return subQuery
                 .select('COUNT(oo.id)', 'isBusy')
-                .from('order_offer', 'oo')
+                .from('driver_order_offers', 'oo')
                 .innerJoin('oo.order', 'o')
                 .innerJoin('o.cargoStatus', 'cs')
-                .where('oo.accepted = TRUE')
+                .where('oo.is_accepted = TRUE')
                 .andWhere('oo.driver_id = d.id')
-                .andWhere('(o.isSafeTransaction = FALSE AND cs.code = :acceptedCode)')
-                .orWhere('(o.isSafeTransaction = TRUE AND cs.code IN (:...safeCodes))')
+                .andWhere('(o.is_secure_transaction = FALSE AND cs.code = :acceptedCode)')
+                .orWhere('(o.is_secure_transaction = TRUE AND cs.code IN (:...safeCodes))')
                 .setParameters({
                     acceptedCode: CargoStatusCodes.Accepted,
                     safeCodes: [CargoStatusCodes.Accepted, CargoStatusCodes.Completed]
@@ -301,13 +301,13 @@ export class DriversRepository extends Repository<Driver> {
         queryBuilder.addSelect(subQuery => {
             return subQuery
                 .select('COUNT(oo.id)', 'isBusy')
-                .from('order_offer', 'oo')
+                .from('driver_order_offers', 'oo')
                 .innerJoin('oo.order', 'o')
                 .innerJoin('o.cargoStatus', 'cs')
-                .where('oo.accepted = TRUE')
+                .where('oo.is_accepted = TRUE')
                 .andWhere('oo.driver_id = d.id')
-                .andWhere('(o.isSafeTransaction = FALSE AND cs.code = :acceptedCode)')
-                .orWhere('(o.isSafeTransaction = TRUE AND cs.code IN (:...safeCodes))')
+                .andWhere('(o.is_secure_transaction = FALSE AND cs.code = :acceptedCode)')
+                .orWhere('(o.is_secure_transaction = TRUE AND cs.code IN (:...safeCodes))')
                 .setParameters({
                     acceptedCode: CargoStatusCodes.Accepted,
                     safeCodes: [CargoStatusCodes.Accepted, CargoStatusCodes.Completed]
