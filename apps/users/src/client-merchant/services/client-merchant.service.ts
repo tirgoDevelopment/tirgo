@@ -239,7 +239,7 @@ export class ClientMerchantsService {
         if (merchant.verified) {
           throw new BadRequestException(ResponseStauses.MerchantAlreadyVerified)
         } else if(merchant.rejected) {
-          throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
+          throw new BadRequestException(ResponseStauses.AlreadyRejected);
         }
 
         merchant.verified = true;
@@ -294,7 +294,7 @@ export class ClientMerchantsService {
       if(merchant.verified) {
         throw new BadRequestException(ResponseStauses.AlreadyVerified);
       } else if(merchant.rejected) {
-        throw new BadRequestException(ResponseStauses.AlreadyRejecteed);
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
       }
 
       merchant.rejected = true;

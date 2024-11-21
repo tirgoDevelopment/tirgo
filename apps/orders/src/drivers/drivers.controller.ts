@@ -32,8 +32,12 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Driver cancel offer for order' })
   @Post(':id/drivers/offers/:offerId/cancel')
-  async cancelOffer(@Param('id') id: number, @Param('offerId') offerId: number, @Req() req: Request) {
-    // return this.driversService.cancelOfferPriceToOrder(id, offerId, req['user'])
+  async cancelOffer(
+    @Param('id') id: number, 
+    @Param('offerId') offerId: number, 
+    @Body() dto: CancelOfferDto,
+    @Req() req: Request) {
+    return this.driversService.cancelOfferPriceToOrder(id, offerId, dto, req['user'])
   }
 
   // @ApiOperation({ summary: 'Driver accept client\'s offer' })

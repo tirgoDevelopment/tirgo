@@ -5,7 +5,6 @@ export class CancelOfferDto {
   @ApiProperty({ required: false })
   id?: number;
   
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
   cancelReason: string;
 }

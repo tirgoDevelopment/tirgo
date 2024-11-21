@@ -534,7 +534,7 @@ if (err instanceof HttpException) {
         throw new BadRequestException(ResponseStauses.AlreadyVerified)
       }
       if(transaction.rejected) {
-        throw new BadRequestException(ResponseStauses.AlreadyRejecteed)
+        throw new BadRequestException(ResponseStauses.AlreadyRejected)
       }
       transaction.verified = true;
       await this.transactionsRepository.save(transaction);
@@ -564,7 +564,7 @@ if (err instanceof HttpException) {
         throw new BadRequestException(ResponseStauses.AlreadyVerified)
       }
       if(transaction.rejected) {
-        throw new BadRequestException(ResponseStauses.AlreadyRejecteed)
+        throw new BadRequestException(ResponseStauses.AlreadyRejected)
       }
       transaction.rejected = true;
       await this.transactionsRepository.save(transaction);
