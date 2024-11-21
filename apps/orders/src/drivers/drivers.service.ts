@@ -31,7 +31,7 @@ export class DriversService {
       const index = +query.pageIndex || 1
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { user: { id: user.id } }, 
-                  relations: ['driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
+                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
 
       const driverTransportTypeIds: string[] = driver.driverTransports.map((driverTransport) => driverTransport.transportType.id);
 
@@ -78,7 +78,7 @@ export class DriversService {
         where: filter,
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,
-        relations:  ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations:  ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds']
       });
@@ -107,7 +107,7 @@ export class DriversService {
     try {
       const order = await this.ordersRepository.findOneOrFail({
         where: { isDeleted: false, id },
-        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds',
         'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer']

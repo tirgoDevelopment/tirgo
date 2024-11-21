@@ -206,7 +206,7 @@ export class StaffsService {
         throw new BadRequestException(ResponseStauses.IdIsRequired);
       }
       const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false }, 
-        relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
         'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'client', 
         'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
@@ -274,7 +274,7 @@ export class StaffsService {
         where: filter, 
         skip: (index - 1) * size, // Skip the number of items based on the page number
         take: size,  
-        relations: [
+        relations: [ 'createdBy',
           'loadingLocation', 'deliveryLocation', 'additionalLoadingLocation', 'additionalDeliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation', 'offeredPriceCurrency', 
         'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds', 'client',
       'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
