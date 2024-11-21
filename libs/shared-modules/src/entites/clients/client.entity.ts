@@ -3,6 +3,7 @@ import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/user.entity';
 import { ClientPhoneNumber } from './client-phonenumber.entity';
 import { ClientDocuments } from './clients-documents.entity';
+import { ClientRepliesOrderOffer } from '../orders/entities/client-reply-order-offer.entity';
 
 @Entity()
 export class Client {
@@ -54,6 +55,9 @@ export class Client {
 
   @OneToMany(() => Order, order => order.client)
   orders: Order[];
+
+  @OneToMany(() => ClientRepliesOrderOffer, clientRepliesOrderOffer => clientRepliesOrderOffer.client)
+  clientReplyOrderOffer: ClientRepliesOrderOffer[];
 
   @OneToMany(() => Order, order => order.client)
   additionalOrders: Order[];

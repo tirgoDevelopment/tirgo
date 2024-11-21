@@ -1,38 +1,25 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Currency } from '../../references/entities/currency.entity';
 import { User } from '../../users/user.entity';
-import { Driver } from '../../driver/entities/driver.entity';
 import { Order } from './order.entity';
-import { ClientRepliesOrderOffer } from './client-reply-order-offer.entity';
+import { Client } from '../../clients/client.entity';
+import { DriverOrderOffers } from './offer.entity';
 
 @Entity()
-export class DriverOrderOffers {
+export class ClientRepliesOrderOffer {
   @PrimaryGeneratedColumn('increment')
   id?: number;
+
+  @ManyToOne(() => Client, client => client.orders, { nullable: false })
+  client: Client;
 
   @Column({ nullable: false })
   amount: number;
 
-  @ManyToOne(() => Currency, currency => currency.orderOffer, { nullable: false })
-  @JoinColumn({ name: 'currency_id' })
-  currency: Currency;
-
   @Column({ nullable: true, name: 'description' })
   description: string;
 
-  @Column({ nullable: true, name: 'request_index', default: 1 })
-  requestIndex: number;
-
-  @Column({ nullable: true, name: 'is_replied', default: false })
-  isReplied: boolean;
-
-  @OneToOne(() => ClientRepliesOrderOffer, (clientReplyOrderOffer) => clientReplyOrderOffer.driverOrderOffer, { cascade: true, onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'client_reply_id' })
-  clientReplyOrderOffer: ClientRepliesOrderOffer;
-
-  @ManyToOne(() => Driver, driver => driver.orderOffers)
-  @JoinColumn({ name: 'driver_id' })
-  driver: Driver;
+  @OneToOne(() => DriverOrderOffers, (driverOrderOffers) => driverOrderOffers.clientReplyOrderOffer)
+  driverOrderOffer: DriverOrderOffers;
 
   @ManyToOne(() => Order, order => order.driverOrderOffers)
   @JoinColumn({ name: 'order_id' })

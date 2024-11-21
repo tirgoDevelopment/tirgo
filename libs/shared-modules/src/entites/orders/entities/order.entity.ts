@@ -9,6 +9,7 @@ import { TransportKind } from '../../references/entities/transport-kind.entity';
 import { CargoStatus } from '../../references/entities/cargo-status.entity';
 import { User } from '../../users/user.entity';
 import { LocationPlace } from './location.entity';
+import { DriverOrderOffers } from './offer.entity';
 
 @Entity()
 export class Order {
@@ -146,4 +147,7 @@ export class Order {
 
   @Column({ nullable: true })
   cancelReason: string;
+
+  @OneToMany(() => DriverOrderOffers, orderOffer => orderOffer.order)
+  driverOrderOffers: DriverOrderOffers[];
 }

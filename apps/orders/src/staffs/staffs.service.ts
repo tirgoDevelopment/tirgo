@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, OrderOffer, Driver, AdminOrderDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AppendOrderDto, DriverOrderOffers, Driver, AdminOrderDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class StaffsService {
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     @InjectRepository(CargoStatus) private readonly cargoStatusesRepository: Repository<CargoStatus>,
     @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
-    @InjectRepository(OrderOffer) private readonly orderOffersRepository: Repository<OrderOffer>,
+    @InjectRepository(DriverOrderOffers) private readonly orderOffersRepository: Repository<DriverOrderOffers>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     private rmqService: RabbitMQSenderService,
     private dataSource: DataSource
@@ -207,7 +207,7 @@ export class StaffsService {
       }
       const order = await this.ordersRepository.findOneOrFail({ where: { id, isDeleted: false }, 
         relations: ['loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
-        'additionalLoadingLocation',
+        'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'client', 
         'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
       return new BpmResponse(true, order, null);
@@ -276,7 +276,8 @@ export class StaffsService {
         take: size,  
         relations: [
           'loadingLocation', 'deliveryLocation', 'additionalLoadingLocation', 'additionalDeliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation', 'offeredPriceCurrency', 
-        'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds', 'client'] });
+        'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds', 'client',
+      'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] });
         if(orders.length) {
         const ordersCount = await this.ordersRepository.count({ where: filter });
         const totalPagesCount = Math.ceil(ordersCount / size);
@@ -347,7 +348,7 @@ export class StaffsService {
   //     const currency: Currency = await this.curreniesRepository.findOneOrFail({ where: { id: appendOrderDto.currencyId } });
   //     const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Accepted } });
 
-  //     const offer = new OrderOffer();
+  //     const offer = new DriverOrderOffers();
 
   //     offer.amount = appendOrderDto.amount;
   //     offer.accepted = true;
@@ -356,7 +357,7 @@ export class StaffsService {
   //     offer.driver = driver;
   //     offer.currency = currency;
 
-  //     await queryRunner.manager.save(OrderOffer, offer);
+  //     await queryRunner.manager.save(DriverOrderOffers, offer);
 
   //     order.cargoStatus = cargoStatus;
   //     await queryRunner.manager.save(Order, order);

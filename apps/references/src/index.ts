@@ -15,7 +15,7 @@ import {
     DriverMerchant,
     DriverMerchantUser,
     DriverBankAccount,
-    OrderOffer,
+    DriverOrderOffers,
     RoleDto,
     Staff, Config, DriverTransport, TransportType, TransportVerification, Transaction, User, Order, CargoType, CargoLoadMethod,
     CargoPackage, TransportKind, SubscriptionPayment, ClientPhoneNumber, AuthModule, Account,
@@ -27,7 +27,7 @@ export { AwsService, SundryService, CustomJwtService, DatabaseModule, CustomSwag
 export { CargoStatusDto, CargoPackageDto, CargoTypeGroupDto, CargoTypeDto, CurrencyDto, SubscriptionDto, TransportKindDto, TransportTypeDto, AccountDto } from '@app/shared-modules';
 
 export {
-    CargoType, CargoTypeGroup, OrderOffer,
+    CargoType, CargoTypeGroup, DriverOrderOffers,
     Currency, Subscription, Role, Permission, RoleDto,
     DriverService,
     DriverServiceDto,

@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 import { Transaction } from '../../transactions/transaction.entity';
 import { ClientBankAccount } from '../../client-merchant/entites/bank-account.entity';
-import { OrderOffer } from '../../orders/entities/offer.entity';
+import { DriverOrderOffers } from '../../orders/entities/offer.entity';
 import { Subscription } from './subscription.entity';
 
 @Entity()
@@ -25,8 +25,8 @@ export class Currency {
   @Column({ default: false })
   deleted: boolean;
 
-  @OneToMany(() => OrderOffer, order => order.currency  )
-  orderOffer: OrderOffer[];
+  @OneToMany(() => DriverOrderOffers, order => order.currency  )
+  orderOffer: DriverOrderOffers[];
 
   @OneToMany(() => ClientBankAccount, bankAccount => bankAccount.currency)
   bankAccounts: ClientBankAccount[];
