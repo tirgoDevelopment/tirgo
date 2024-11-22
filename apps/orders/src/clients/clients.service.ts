@@ -426,6 +426,48 @@ export class ClientsService {
   //   }
   // }
 
+  async getOfferedDrivers(orderId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      const drivers = await this.driversRepository.find({ where: { orderOffers: { id: orderId } } });
+
+      if(!drivers.length) {
+        throw new NoContentException();
+      }
+
+      return new BpmResponse(true, drivers);
+    } catch(err: any) {
+      console.log(err)
+      if(err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async getOffersByDriver(orderId: number, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency'] });
+
+      if(!offers.length) {
+        throw new NoContentException();
+      }
+      return new BpmResponse(true, offers);
+    } catch(err: any) {
+      console.log(err)
+      if(err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
   async replyDriverOrderOffer(orderId:number, offerId: number, offerDto: ReplyDriverOrderOfferDto, user: User): Promise<BpmResponse> {
     try {
 

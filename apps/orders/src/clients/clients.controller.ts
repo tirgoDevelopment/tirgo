@@ -38,6 +38,18 @@ export class ClientsController {
     return this.clientsService.getOrderById(id, req['user']);
   }
 
+  @ApiOperation({ summary: 'Get order by orderId' })
+  @Get(':id/clients/offers/drivers')
+  async getOfferedDrivers(@Param('id') id: number, @Req() req: Request) {
+    return this.clientsService.getOfferedDrivers(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Get order by orderId' })
+  @Get(':id/clients/offers/drivers/:driverId')
+  async getOffersByDriver(@Param('id') id: number, @Param('driverId') driverId: number, @Req() req: Request) {
+    return this.clientsService.getOffersByDriver(id, driverId, req['user']);
+  }
+
   @ApiOperation({ summary: 'Client reply driver\'s offer' })
   @UsePipes(ValidationPipe)
   @Post(':id/clients/offers/:offerId/reply')
