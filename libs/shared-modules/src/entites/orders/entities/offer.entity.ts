@@ -26,6 +26,10 @@ export class DriverOrderOffers {
   @Column({ nullable: true, name: 'is_replied', default: false })
   isReplied: boolean;
 
+  @ManyToOne(() => User, (user) => user.canceledDriverOrderOffers, { nullable: true })
+  @JoinColumn({ name: 'replied_by_id' })
+  repliedBy: User;
+
   @OneToOne(() => ClientRepliesOrderOffer, (clientReplyOrderOffer) => clientReplyOrderOffer.driverOrderOffer, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_reply_id' })
   clientReplyOrderOffer: ClientRepliesOrderOffer;

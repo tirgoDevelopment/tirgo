@@ -190,5 +190,8 @@ export class User {
     // relations belongs to finished by user
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.finishedBy)
     finishedDriverOrderOffers: DriverOrderOffers[];
+
+    @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.repliedBy)
+    repliedDriverOrderOffers: DriverOrderOffers[];
 }
 
