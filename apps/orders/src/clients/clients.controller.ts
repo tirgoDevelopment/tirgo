@@ -41,7 +41,7 @@ export class ClientsController {
   @ApiOperation({ summary: 'Client create order' })
   @UsePipes(ValidationPipe)
   @Post(':id/clients/offers/:offerId/reply')
-  async replyDriverOffer(@Param('orderId') orderId: number, @Param('offerId') offerId: number, @Body() dto: ClientRepliesOrderOffer, @Req() req: Request) {
+  async replyDriverOffer(@Param('orderId') orderId: number, @Param('offerId') offerId: number, @Body() dto: ReplyDriverOrderOfferDto, @Req() req: Request) {
     return this.clientsService.replyDriverOrderOffer(orderId, offerId, dto, req['user']);
   }
 
