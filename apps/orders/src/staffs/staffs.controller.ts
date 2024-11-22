@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
-import { AdminOrderDto, AdminOrderOfferDto, AppendOrderDto, OrderDto, OrderOfferDto, OrderQueryDto } from '..';
+import { AdminOrderDto, AdminOrderOfferDto, AssignOrderDto, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -45,14 +45,14 @@ export class StaffsController {
   }
 
 
-  @ApiOperation({ summary: 'Driver offer price for order' })
+  @ApiOperation({ summary: 'Admin offer driver price for order' })
   @UsePipes(ValidationPipe)
   @Post(':id/staffs/offers')
   async offerPrice(@Param('id') id: number, @Body() dto: AdminOrderOfferDto, @Req() req: Request) {
     return this.staffsService.offerPriceToOrder(id, dto, req['user'])
   }
 
-  @ApiOperation({ summary: 'Driver cancel offer for order' })
+  @ApiOperation({ summary: 'Admin cancel driver offer for order' })
   @UsePipes(ValidationPipe)
   @Post(':id/staffs/offers/:offerId/cancel')
   async cancelOffer(
@@ -63,9 +63,33 @@ export class StaffsController {
     return this.staffsService.cancelOfferPriceToOrder(id, offerId, dto, req['user'])
   }
 
-  // @ApiOperation({ summary: 'Staff append order to driver' })
-  // @Post('append-order')
-  // async appendOrder(@Body() appendOrderDto: AppendOrderDto, @Req() req: Request) {
-  //   return this.staffsService.appendOrderoDriver(appendOrderDto, req['user']);
-  // }
+  @ApiOperation({ summary: 'Admin reject driver offer for order' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/staffs/offers/:offerId/reject')
+  async rejectOffer(
+    @Param('id') id: number, 
+    @Param('offerId') offerId: number, 
+    @Body() dto: RejectOfferDto,
+    @Req() req: Request) {
+    return this.staffsService.rejectOfferPriceToOrder(id, offerId, dto, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Staff append order to driver' })
+  @Post(':id/staffs/assign')
+  async assignOrder(
+    @Param('id') id: number, 
+    @Body() dto: AssignOrderDto, 
+    @Req() req: Request) {
+    return this.staffsService.assingOrderoDriver(id, dto, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff append order to driver' })
+  @Post(':id/staffs/offers/:offerId/accept')
+  async acceptOrder(
+    @Param('id') id: number, 
+    @Param('offerId') offerId: number, 
+    @Body() dto: AssignOrderDto, 
+    @Req() req: Request) {
+    return this.staffsService.acceptDriverOffer(id, offerId, dto, req['user']);
+  }
 }

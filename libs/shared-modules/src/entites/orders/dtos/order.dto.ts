@@ -147,12 +147,7 @@ export class OrderQueryDto {
   createdAt: Date;
 }
 
-export class AppendOrderDto {
-
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsNotEmpty()
-  orderId: number;
+export class AssignOrderDto {
 
   @ApiProperty({ required: false })
   @IsUUID()
@@ -160,7 +155,6 @@ export class AppendOrderDto {
   currencyId: string;
 
   @ApiProperty({ required: false })
-  @IsNumber()
   @IsNotEmpty()
   driverId: number;
 
