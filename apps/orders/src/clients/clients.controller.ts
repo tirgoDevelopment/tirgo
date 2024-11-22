@@ -1,8 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ClientsService } from './clients.service';
-import { OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
+import { ClientRepliesOrderOffer, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto, ReplyDriverOrderOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
 @ApiTags('Clients orders')
 @Controller('')
@@ -37,6 +36,13 @@ export class ClientsController {
   @Get(':id/clients')
   async getOrderById(@Param('id') id: number, @Req() req: Request) {
     return this.clientsService.getOrderById(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Client create order' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/clients/offers/:offerId/reply')
+  async replyDriverOffer(@Param('orderId') orderId: number, @Param('offerId') offerId: number, @Body() dto: ClientRepliesOrderOffer, @Req() req: Request) {
+    return this.clientsService.replyDriverOrderOffer(orderId, offerId, dto, req['user']);
   }
 
   // @ApiOperation({ summary: 'Client accept driver offer to order' })

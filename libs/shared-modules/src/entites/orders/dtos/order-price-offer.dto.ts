@@ -2,8 +2,6 @@ import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, IsUUID } from "class
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderOfferDto {
-
-  
   @ApiProperty({ required: false })
   id?: number;
   
@@ -46,4 +44,14 @@ export class CancelOfferDto {
   
   @ApiProperty({ required: false })
   cancelReason: string;
+}
+
+export class ReplyDriverOrderOfferDto {
+  @ApiProperty({ required: false })
+  id?: number;
+  
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
 }
