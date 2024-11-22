@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CancelOfferDto, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AssignOrderDto, DriverOrderOffers, Driver, AdminOrderDto, OrderOfferDto, AdminOrderOfferDto, RejectOfferDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CancelOfferDto, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AssignOrderDto, DriverOrderOffers, Driver, AdminOrderDto, OrderOfferDto, AdminOrderOfferDto, RejectOfferDto, ClientRepliesOrderOffer, ReplyDriverOrderOfferDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class StaffsService {
     @InjectRepository(LocationPlace) private readonly locationsRepository: Repository<LocationPlace>,
     @InjectRepository(DriverOrderOffers) private readonly orderOffersRepository: Repository<DriverOrderOffers>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+    @InjectRepository(ClientRepliesOrderOffer) private readonly clientReplyOrderOfferRepository: Repository<ClientRepliesOrderOffer>,
     private rmqService: RabbitMQSenderService,
     private dataSource: DataSource
   ) { }
@@ -403,6 +404,61 @@ export class StaffsService {
     } catch (err: any) {
       console.log(err)
       if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async replyDriverOrderOffer(orderId:number, offerId: number, offerDto: ReplyDriverOrderOfferDto, user: User): Promise<BpmResponse> {
+    try {
+
+      const driverOrderOffer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId, order: { id: orderId} }, relations: ['driver', 'order'] });
+      if(driverOrderOffer.isCanceled) {
+        throw new BadRequestException(ResponseStauses.AlreadyCanceled);
+      } else if(driverOrderOffer.isAccepted) {
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      } else if(driverOrderOffer.isRejected) {
+        throw new BadRequestException(ResponseStauses.AlreadyRejected)
+      }
+
+      const isDriverBusy: boolean = await this.orderOffersRepository.exists({ where: { driver: { id: driverOrderOffer.driver?.id } , isAccepted: true, isFinished: false } });
+      if(isDriverBusy) {
+        throw new BadRequestException(ResponseStauses.DriverHasOrder)
+      }
+
+      const isDriverArchived: boolean = await this.driversRepository.exists({ where: { id: driverOrderOffer.driver?.id, isDeleted: true} });
+      if(isDriverArchived) {
+        throw new BadRequestException(ResponseStauses.DriverArchived)
+      }
+
+      const isDriverBlocked: boolean = await this.driversRepository.exists({ where: { id: driverOrderOffer.driver?.id, isBlocked: true} });
+      if(isDriverBlocked) {
+        throw new BadRequestException(ResponseStauses.DriverBlocked)
+      }
+
+      const createReplyOfferDto: ClientRepliesOrderOffer = new ClientRepliesOrderOffer();
+
+      createReplyOfferDto.amount = offerDto.amount;
+      createReplyOfferDto.client = user.client;
+      createReplyOfferDto.order = driverOrderOffer.order;
+      createReplyOfferDto.driverOrderOffer = driverOrderOffer;
+      createReplyOfferDto.createdBy = user;
+
+      //save offer as replied  
+      driverOrderOffer.isReplied = true;
+      driverOrderOffer.repliedBy = user;
+      await this.orderOffersRepository.save(driverOrderOffer);
+
+      //then create new offer
+      await this.clientReplyOrderOfferRepository.save(createReplyOfferDto);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch(err: any) {
+      console.log(err)
+      if(err instanceof HttpException) {
         throw err
       } else if (err.name == 'EntityNotFoundError') {
         throw new BadRequestException(ResponseStauses.NotFound);
