@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
-import { AdminOrderDto, AdminOrderOfferDto, AssignOrderDto, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto } from '..';
+import { AdminOrderDto, AdminOrderOfferDto, AssignOrderDto, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto, ReplyDriverOrderOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -50,6 +50,13 @@ export class StaffsController {
   @Post(':id/staffs/offers')
   async offerPrice(@Param('id') id: number, @Body() dto: AdminOrderOfferDto, @Req() req: Request) {
     return this.staffsService.offerPriceToOrder(id, dto, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Admin reply driver\'s offer' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/staffs/offers/:offerId/reply')
+  async replyDriverOffer(@Param('orderId') orderId: number, @Param('offerId') offerId: number, @Body() dto: ReplyDriverOrderOfferDto, @Req() req: Request) {
+    return this.staffsService.replyDriverOrderOffer(orderId, offerId, dto, req['user']);
   }
 
   @ApiOperation({ summary: 'Admin cancel driver offer for order' })
