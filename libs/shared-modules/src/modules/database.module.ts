@@ -86,10 +86,10 @@ const entities = [
     imports: [
         TypeOrmModule.forRoot({
             type: 'postgres',
-            host: 'localhost',
+            host: '13.233.208.188',
             port: 5432,
             password: 'tirgo_test',
-            username: 'tirgo_user',
+            username: 'tirgo_test',
             entities: entities,
             database: 'tirgo_test',
             synchronize: true,
