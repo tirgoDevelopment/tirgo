@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 import { Client } from "../../clients/client.entity";
 import { Driver } from "../../driver/entities/driver.entity";
@@ -163,6 +163,21 @@ export class AssignOrderDto {
   @IsNotEmpty()
   amount: number;
 }
+
+export enum AcceptOrderOfferTypes {
+  Offer = 'offer',
+  Reply = 'reply'
+}
+
+export class AdminAcceptOrderDto {
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsEnum(AcceptOrderOfferTypes)
+  @IsNotEmpty()
+  type: AcceptOrderOfferTypes;
+}
+
 
 export class AdminOrderDto {
 
