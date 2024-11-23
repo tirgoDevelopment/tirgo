@@ -151,7 +151,7 @@ export class DriversController {
     return this.driversService.activateDriver(id, req['user']);
   }
 
-  @ApiOperation({ summary: 'Admin append driver to agent' })
+  @ApiOperation({ summary: 'Admin assign driver to agent' })
   @Post(':driverId/agents/:agentId')
   async assignToAgent(@Param('driverId') driverId: number, @Param('agentId') agentId: number, @Req() req: Request) {
     return this.driversService.assignDriverToAgent(driverId, agentId, req['user']?.id)

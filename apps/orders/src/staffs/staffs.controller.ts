@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { StaffsService } from './staffs.service';
-import { AdminOrderDto, AdminOrderOfferDto, AssignOrderDto, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto, ReplyDriverOrderOfferDto } from '..';
+import { AdminAcceptOrderDto, AdminOrderDto, AdminOrderOfferDto, AssignOrderDto, OrderDto, OrderOfferDto, OrderQueryDto, RejectOfferDto, ReplyDriverOrderOfferDto } from '..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CancelOfferDto } from '@app/shared-modules/entites/orders/dtos/cancel-offer.dto';
 
@@ -81,7 +81,18 @@ export class StaffsController {
     return this.staffsService.rejectOfferPriceToOrder(id, offerId, dto, req['user'])
   }
 
-  @ApiOperation({ summary: 'Staff append order to driver' })
+  @ApiOperation({ summary: 'Admin reject client reply for driver offer' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/staffs/offers/replies/:replyId/reject')
+  async rejectOfferReply(
+    @Param('id') id: number, 
+    @Param('replyId') replyId: number, 
+    @Body() dto: RejectOfferDto,
+    @Req() req: Request) {
+    return this.staffsService.rejectClientReply(id, replyId, dto, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Staff assign order to driver' })
   @Post(':id/staffs/assign')
   async assignOrder(
     @Param('id') id: number, 
@@ -90,13 +101,21 @@ export class StaffsController {
     return this.staffsService.assingOrderoDriver(id, dto, req['user']);
   }
 
-  @ApiOperation({ summary: 'Staff append order to driver' })
+  @ApiOperation({ summary: 'Staff accepet driver offer' })
   @Post(':id/staffs/offers/:offerId/accept')
   async acceptOrder(
     @Param('id') id: number, 
     @Param('offerId') offerId: number, 
-    @Body() dto: AssignOrderDto, 
     @Req() req: Request) {
-    return this.staffsService.acceptDriverOffer(id, offerId, dto, req['user']);
+    return this.staffsService.acceptDriverOffer(id, offerId, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff accept client reply' })
+  @Post(':id/staffs/offers/replies/:replyId/accept')
+  async acceptReplyOrder(
+    @Param('id') id: number, 
+    @Param('replyId') replyId: number, 
+    @Req() req: Request) {
+    return this.staffsService.acceptClientReply(id, replyId, req['user']);
   }
 }
