@@ -14,6 +14,6 @@ async function bootstrap() {
   app.enableCors(corsOptions);
   await CustomSwaggerModule.setup(app, 'users', 'Users'); 
   app.setGlobalPrefix('api/v2/users')
-  await app.listen(3000);
+  await app.listen(3009);
 }
 bootstrap();
