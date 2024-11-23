@@ -30,7 +30,7 @@ export class DriversService {
       const index = +query.pageIndex || 1
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { user: { id: user.id } }, 
-                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
+                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType', 'orderOffers', 'orderOffers.order', 'orderOffers.driver', 'orderOffers.clientReplyOrderOffer'] })
 
       const driverTransportTypeIds: string[] = driver.driverTransports.map((driverTransport) => driverTransport.transportType.id);
 
@@ -109,7 +109,7 @@ export class DriversService {
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds',
-        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer']
+        'orderOffers', 'orderOffers.order', 'orderOffers.driver', 'orderOffers.clientReplyOrderOffer']
       });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
