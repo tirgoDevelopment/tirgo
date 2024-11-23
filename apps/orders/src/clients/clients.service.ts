@@ -429,7 +429,7 @@ export class ClientsService {
   async getOfferedDrivers(orderId: number, user: User): Promise<BpmResponse> {
     try {
 
-      const drivers = await this.driversRepository.find({ where: { orderOffers: { id: orderId } } });
+      const drivers = await this.driversRepository.find({ where: { orderOffers: { id: orderId } }, relations: ['orderOffers', 'orderOffers.currency', 'orderOffers.createdBy'] });
 
       if(!drivers.length) {
         throw new NoContentException();
@@ -450,7 +450,7 @@ export class ClientsService {
 
   async getOffersByDriver(orderId: number, driverId: number, user: User): Promise<BpmResponse> {
     try {
-      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency'] });
+      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency', 'createdBy'] });
 
       if(!offers.length) {
         throw new NoContentException();
