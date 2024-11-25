@@ -108,7 +108,7 @@ export class DriversService {
     try {
       const order = await this.ordersRepository.findOneOrFail({
         where: { isDeleted: false, id },
-        relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
+        relations: ['createdBy', 'client', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
         'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.createdBy','driverOrderOffers.clientReplyOrderOffer']
