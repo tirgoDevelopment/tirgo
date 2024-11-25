@@ -111,7 +111,7 @@ export class DriversService {
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
           'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
-        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer']
+        'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.createdBy','driverOrderOffers.clientReplyOrderOffer']
       });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
@@ -225,6 +225,31 @@ export class DriversService {
       await this.orderOffersRepository.save(createOfferDto);
 
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async getDriverOrderOffers(orderId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      const offers: DriverOrderOffers[] = await this.orderOffersRepository.find({ 
+        where: { order: { id: orderId }, createdBy: { id: user.id } }, 
+        relations: ['driver', 'client', 'currency', 'createdBy', 'canceledBy', 'rejectedBy', 'clientReplyOrderOffer', 'clientReplyOrderOffer.client'] 
+      });
+
+      if(!offers.length) {
+        throw new NoContentException();
+      }
+
+      return new BpmResponse(true, offers);
     } catch (err: any) {
       console.log(err)
       if (err instanceof HttpException) {

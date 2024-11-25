@@ -32,6 +32,15 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Driver cancel offer for order' })
   @UsePipes(ValidationPipe)
+  @Post(':id/drivers/offers')
+  async getOffer(
+    @Param('id') id: number, 
+    @Req() req: Request) {
+    return this.driversService.getDriverOrderOffers(id, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Driver cancel offer for order' })
+  @UsePipes(ValidationPipe)
   @Post(':id/drivers/offers/:offerId/cancel')
   async cancelOffer(
     @Param('id') id: number, 
