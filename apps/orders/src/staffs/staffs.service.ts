@@ -210,7 +210,7 @@ export class StaffsService {
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
         'additionalLoadingLocation', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.driver.phoneNumbers', 'driverOrderOffers.clientReplyOrderOffer',
         'additionalDeliveryLocation', 'client', 
-        'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
+        'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds'] });
       return new BpmResponse(true, order, null);
     } catch (err: any) {
       console.log(err)

@@ -79,7 +79,7 @@ export class DriversService {
         take: size,
         relations:  ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
-          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds']
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds']
       });
 
       const merchantsCount = await this.ordersRepository.count({ where: filter });
@@ -108,7 +108,7 @@ export class DriversService {
         where: { isDeleted: false, id },
         relations: ['createdBy', 'loadingLocation', 'deliveryLocation', 'customsOutClearanceLocation', 'customsInClearanceLocation',
           'additionalLoadingLocation',
-          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'transportType', 'cargoLoadMethods', 'transportKinds',
+          'additionalDeliveryLocation', 'offeredPriceCurrency', 'cargoType', 'cargoStatus', 'transportType', 'cargoLoadMethods', 'transportKinds',
         'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer']
       });
       return new BpmResponse(true, order, null);
