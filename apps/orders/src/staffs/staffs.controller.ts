@@ -54,7 +54,7 @@ export class StaffsController {
 
   @ApiOperation({ summary: 'Admin reply driver\'s offer' })
   @UsePipes(ValidationPipe)
-  @Post(':id/staffs/offers/:offerId/reply')
+  @Post(':orderId/staffs/offers/:offerId/reply')
   async replyDriverOffer(@Param('orderId') orderId: number, @Param('offerId') offerId: number, @Body() dto: ReplyDriverOrderOfferDto, @Req() req: Request) {
     return this.staffsService.replyDriverOrderOffer(orderId, offerId, dto, req['user']);
   }
