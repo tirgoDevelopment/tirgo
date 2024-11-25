@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CargoLoadMethod, CargoPackage, CargoStatus, CargoType, Client, ClientMerchant, Currency, CustomJwtService, Driver, LocationPlace, Order, DriverOrderOffers, Staff, TransportKind, TransportType, User } from '..';
+import { CargoLoadMethod, CargoPackage, CargoStatus, CargoType, Client, ClientMerchant, Currency, CustomJwtService, Driver, LocationPlace, Order, DriverOrderOffers, Staff, TransportKind, TransportType, User, ClientRepliesOrderOffer } from '..';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DriversController } from './drivers.controller';
 import { DriversService } from './drivers.service';
@@ -21,7 +21,8 @@ import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
       ClientMerchant,
       CargoLoadMethod,
       DriverOrderOffers,
-      LocationPlace
+      LocationPlace,
+      ClientRepliesOrderOffer
     ]),
   ],
   controllers: [
