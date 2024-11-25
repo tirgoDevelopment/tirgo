@@ -37,6 +37,24 @@ export class StaffsController {
     return this.staffsService.cancelOrder(id, req['user']);
   }
 
+  @ApiOperation({ summary: 'Staff activate order' })
+  @Post(':id/staffs/activate')
+  async activateOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.staffsService.activateOrder(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff complete order' })
+  @Post(':id/staffs/complete')
+  async completeOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.staffsService.completeOrder(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff finish order' })
+  @Post(':id/staffs/finish')
+  async finishOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.staffsService.finishOrder(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Staff update order' })
   @UsePipes(ValidationPipe)
   @Put(':id/staffs')

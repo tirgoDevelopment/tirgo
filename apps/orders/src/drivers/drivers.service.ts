@@ -126,6 +126,58 @@ export class DriversService {
     }
   }
 
+  async activateOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Accepted) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotAccepted);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Active } });
+      order.cargoStatus = cargoStatus;
+      order.activatedAt = new Date();
+      order.activatedBy = user;
+
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyActivated]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async completeOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Active) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotActivated);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Completed } });
+      order.cargoStatus = cargoStatus;
+      order.completedAt = new Date();
+      order.completedBy = user;
+
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCompleted]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
   // async cancelOrder(id: number): Promise<BpmResponse> {
   //   try {
   //     if (!id || isNaN(id)) {

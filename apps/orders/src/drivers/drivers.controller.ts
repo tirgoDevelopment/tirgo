@@ -23,6 +23,18 @@ export class DriversController {
     return this.driversService.getOrderById(id)
   }
 
+  @ApiOperation({ summary: 'Driver activate order' })
+  @Post(':id/drivers/activate')
+  async activateOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.driversService.activateOrder(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Driver complete order' })
+  @Post(':id/drivers/complete')
+  async completeOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.driversService.completeOrder(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Driver offer price for order' })
   @UsePipes(ValidationPipe)
   @Post(':id/drivers/offers')

@@ -111,6 +111,8 @@ export enum ResponseStauses {
   SuccessfullyRejected = 'successfullyRejected',
   SuccessfullyBlocked = 'successfullyBlocked',
   SuccessfullyActivated = 'successfullyActivated',
+  SuccessfullyCompleted = 'successfullyCompleted',
+  SuccessfullyFinished = 'successfullyFinished',
   SuccessfullyAssigned = 'successfullyAssigned',
   SuccessfullyAccepted = 'successfullyAccepted',
   SuccessfullyVerified = 'successfullyVerified',
@@ -160,7 +162,10 @@ export enum ResponseStauses {
   OtpExpired = 'otpExpired',
   InvalidCode = 'invalidCode',
   IsMainFieldIsReuqired = 'IsMainFieldIsReuqired',
-  OrderStatusNotWaiting = 'orderStatusNotWaiting'
+  OrderStatusNotWaiting = 'orderStatusNotWaiting',
+  OrderIsNotAccepted = 'orderIsNotAccepted',
+  OrderIsNotActivated = 'orderIsNotActivated',
+  OrderIsNotCompleted = 'orderIsNotCompleted',
 }
 
 export enum CargoStatusCodes {
