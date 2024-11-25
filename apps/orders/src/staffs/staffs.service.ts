@@ -311,6 +311,86 @@ export class StaffsService {
       }
       const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Canceled } });
       order.cargoStatus = cargoStatus;
+      order.canceledBy = user;
+      order.canceledAt = new Date();
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+  
+  async activateOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Accepted) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotAccepted);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Active } });
+      order.cargoStatus = cargoStatus;
+      order.activatedAt = new Date();
+      order.activatedBy = user;
+
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async completeOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Active) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotActivated);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Completed } });
+      order.cargoStatus = cargoStatus;
+      order.completedAt = new Date();
+      order.completedBy = user;
+
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async finishOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Completed) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotCompleted);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Closed } });
+      order.cargoStatus = cargoStatus;
+      order.finishedAt = new Date();
+      order.finishedBy = user;
+
       await this.ordersRepository.save(order);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
     } catch (err: any) {

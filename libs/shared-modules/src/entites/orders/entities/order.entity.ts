@@ -122,6 +122,27 @@ export class Order {
   @JoinColumn({ name: 'created_by' })
   createdBy: User;
 
+  @Column({ type: 'timestamp', name: 'activated_at', nullable: true })
+  activatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.activatedOrders, { nullable: true })
+  @JoinColumn({ name: 'activated_by' })
+  activatedBy: User;
+
+  @Column({ type: 'timestamp', name: 'completed_at', nullable: true })
+  completedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.completedOrders, { nullable: true })
+  @JoinColumn({ name: 'completed_by' })
+  completedBy: User;
+
+  @Column({ type: 'timestamp', name: 'finished_at', nullable: true })
+  finishedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.finishedOrders, { nullable: true })
+  @JoinColumn({ name: 'finished_by' })
+  finishedBy: User;
+
   @Column({ default: false, name: 'is_deleted' })
   isDeleted: boolean;
 

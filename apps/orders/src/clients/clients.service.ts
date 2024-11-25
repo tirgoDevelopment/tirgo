@@ -203,6 +203,32 @@ export class ClientsService {
     }
   }
 
+  async finishOrder(id: number, user: User): Promise<BpmResponse> {
+    try {
+      const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
+      if(order.cargoStatus?.code != CargoStatusCodes.Completed) {
+        throw new BadRequestException(ResponseStauses.OrderIsNotCompleted);
+      }
+
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Closed } });
+      order.cargoStatus = cargoStatus;
+      order.finishedAt = new Date();
+      order.finishedBy = user;
+
+      await this.ordersRepository.save(order);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyFinished]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
   async getClientsOrders(query: OrderQueryDto, user: User): Promise<BpmResponse> {
     try {
       const size = +query.pageSize || 10; // Number of items per page
@@ -450,7 +476,7 @@ export class ClientsService {
 
   async getOffersByDriver(orderId: number, driverId: number, user: User): Promise<BpmResponse> {
     try {
-      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency', 'createdBy', 'order', 'order.client'] });
+      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency', 'createdBy', 'rejectedBy', 'acceptedBy', 'canceledBy', 'order', 'order.client'] });
 
       if(!offers.length) {
         throw new NoContentException();

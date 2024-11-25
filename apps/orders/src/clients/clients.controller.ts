@@ -38,6 +38,12 @@ export class ClientsController {
     return this.clientsService.getOrderById(id, req['user']);
   }
 
+  @ApiOperation({ summary: 'Staff finish order' })
+  @Post(':id/staffs/finish')
+  async finishOrder(@Param('id') id: number, @Req() req: Request) {
+    return this.clientsService.finishOrder(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Get order by orderId' })
   @Get(':id/clients/offers/drivers')
   async getOfferedDrivers(@Param('id') id: number, @Req() req: Request) {

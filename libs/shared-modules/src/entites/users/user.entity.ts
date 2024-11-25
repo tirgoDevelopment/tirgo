@@ -193,5 +193,17 @@ export class User {
 
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.repliedBy)
     repliedDriverOrderOffers: DriverOrderOffers[];
+
+    // relations belongs to activated by user
+    @OneToMany(() => Order, (order) => order.activatedBy)
+    activatedOrders: Order[];
+
+    // relations belongs to completed by user
+    @OneToMany(() => Order, (order) => order.completedBy)
+    completedOrders: Order[];
+
+    // relations belongs to finished by user
+    @OneToMany(() => Order, (order) => order.finishedBy)
+    finishedOrders: Order[];
 }
 
