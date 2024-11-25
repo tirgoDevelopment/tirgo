@@ -294,7 +294,7 @@ export class DriversService {
 
       const offers: DriverOrderOffers[] = await this.orderOffersRepository.find({ 
         where: { order: { id: orderId }, createdBy: { id: user.id } }, 
-        relations: ['driver', 'client', 'currency', 'createdBy', 'canceledBy', 'rejectedBy', 'clientReplyOrderOffer', 'clientReplyOrderOffer.client'] 
+        relations: ['driver', 'order', 'order.client', 'currency', 'createdBy', 'canceledBy', 'rejectedBy', 'clientReplyOrderOffer', 'clientReplyOrderOffer.client'] 
       });
 
       if(!offers.length) {
