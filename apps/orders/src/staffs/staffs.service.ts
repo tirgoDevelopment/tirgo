@@ -1,7 +1,7 @@
 import { HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CancelOfferDto, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AssignOrderDto, DriverOrderOffers, Driver, AdminOrderDto, OrderOfferDto, AdminOrderOfferDto, RejectOfferDto, ClientRepliesOrderOffer, ReplyDriverOrderOfferDto } from '..';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CancelOfferDto, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, LocationPlace, AssignOrderDto, DriverOrderOffers, Driver, AdminOrderDto, OrderOfferDto, AdminOrderOfferDto, RejectOfferDto, ClientRepliesOrderOffer, ReplyDriverOrderOfferDto, AdminReplyDriverOrderOfferDto } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -413,7 +413,7 @@ export class StaffsService {
     }
   }
 
-  async replyDriverOrderOffer(orderId:number, offerId: number, offerDto: ReplyDriverOrderOfferDto, user: User): Promise<BpmResponse> {
+  async replyDriverOrderOffer(orderId:number, offerId: number, offerDto: AdminReplyDriverOrderOfferDto, user: User): Promise<BpmResponse> {
     try {
 
       const driverOrderOffer: DriverOrderOffers = await this.orderOffersRepository.findOneOrFail({ where: { id: offerId, order: { id: orderId} }, relations: ['driver', 'order'] });
@@ -443,7 +443,7 @@ export class StaffsService {
       const createReplyOfferDto: ClientRepliesOrderOffer = new ClientRepliesOrderOffer();
 
       createReplyOfferDto.amount = offerDto.amount;
-      createReplyOfferDto.client = user.client;
+      createReplyOfferDto.client = await this.clientsRepository.findOneOrFail({ where: { id: offerDto.clientId } });
       createReplyOfferDto.order = driverOrderOffer.order;
       createReplyOfferDto.driverOrderOffer = driverOrderOffer;
       createReplyOfferDto.createdBy = user;
@@ -554,7 +554,7 @@ export class StaffsService {
       clientReply.rejectedAt = new Date();
       clientReply.rejectedBy = user;
       clientReply.rejectReason = dto.rejectReason;
-      
+
       await this.clientReplyOrderOfferRepository.save(clientReply);
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
     } catch (err: any) {
