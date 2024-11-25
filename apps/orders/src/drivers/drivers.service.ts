@@ -41,7 +41,7 @@ export class DriversService {
         sort['id'] = 'DESC'
       }
 
-      const filter: any = { deleted: false };
+      const filter: any = { isDeleted: false };
       if (query.transportTypeId) {
         filter.transportType = { id: In(driverTransportTypeIds) }
       }
