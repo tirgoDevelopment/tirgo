@@ -30,7 +30,7 @@ export class DriversService {
       const index = +query.pageIndex || 1
 
       const driver: Driver = await this.driversRepository.findOneOrFail({ where: { user: { id: user.id } }, 
-                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType', 'driverOrderOffers', 'driverOrderOffers.order', 'driverOrderOffers.driver', 'driverOrderOffers.clientReplyOrderOffer'] })
+                  relations: ['createdBy', 'driverTransports', 'driverTransports.transportType']})
 
       const driverTransportTypeIds: string[] = driver.driverTransports.map((driverTransport) => driverTransport.transportType.id);
 
