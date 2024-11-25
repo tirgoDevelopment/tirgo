@@ -55,3 +55,18 @@ export class ReplyDriverOrderOfferDto {
   @IsNotEmpty()
   amount: number;
 }
+
+export class AdminReplyDriverOrderOfferDto {
+  @ApiProperty({ required: false })
+  id?: number;
+  
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
+
+  @ApiProperty({ required: true })
+  @IsNumber()
+  @IsNotEmpty()
+  clientId: number;
+}
