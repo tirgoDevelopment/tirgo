@@ -44,7 +44,7 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Driver cancel offer for order' })
   @UsePipes(ValidationPipe)
-  @Post(':id/drivers/offers')
+  @Get(':id/drivers/offers')
   async getOffer(
     @Param('id') id: number, 
     @Req() req: Request) {
