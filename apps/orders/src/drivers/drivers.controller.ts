@@ -41,6 +41,27 @@ export class DriversController {
     return this.driversService.cancelOfferPriceToOrder(id, offerId, dto, req['user'])
   }
 
+  @ApiOperation({ summary: 'Driver reject reply for order' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/drivers/offers/replies/:replyId/reject')
+  async rejectOffer(
+    @Param('id') id: number, 
+    @Param('replyId') replyId: number, 
+    @Body() dto: RejectOfferDto,
+    @Req() req: Request) {
+    return this.driversService.rejectReplyToOffer(id, replyId, dto, req['user'])
+  }
+
+  @ApiOperation({ summary: 'Driver accept reply for order' })
+  @UsePipes(ValidationPipe)
+  @Post(':id/drivers/offers/replies/:replyId/accept')
+  async acceptOffer(
+    @Param('id') id: number, 
+    @Param('replyId') replyId: number, 
+    @Req() req: Request) {
+    return this.driversService.acceptClientReply(id, replyId, req['user']);
+  }
+
   // @ApiOperation({ summary: 'Driver accept client\'s offer' })
   // @Post('accept-offer')
   // async acceptOffer(@Query('id') id: number, @Req() req: Request) {

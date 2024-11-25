@@ -537,8 +537,7 @@ export class StaffsService {
       const clientReply: ClientRepliesOrderOffer = await this.clientReplyOrderOfferRepository.findOneOrFail({ 
           where: { 
             id: replyId, 
-            order: { id: orderId }, 
-            isAccepted: true
+            order: { id: orderId }
           }
         });
   
@@ -700,8 +699,7 @@ export class StaffsService {
       const clientReply: ClientRepliesOrderOffer = await this.clientReplyOrderOfferRepository.findOneOrFail({ 
           where: { 
             id: replyId, 
-            order: { id: orderId }, 
-            isAccepted: true
+            order: { id: orderId }
           }, 
           relations: ['driverOrderOffer', 'driverOrderOffer.driver']
         });

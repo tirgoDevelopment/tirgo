@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Not, Repository } from 'typeorm';
-import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, DriverOrderOffers, Driver, RejectOfferDto, CancelOfferDto, OrderQueryDto } from '..';
+import { DataSource, In, Not, Repository } from 'typeorm';
+import { UsersRoleNames, BpmResponse, CargoLoadMethod, Order, CargoPackage, CargoStatus, CargoStatusCodes, CargoType, Currency, ResponseStauses, TransportKind, TransportType, BadRequestException, InternalErrorException, OrderDto, ClientMerchant, NoContentException, User, UserTypes, Client, OrderOfferDto, DriverOrderOffers, Driver, RejectOfferDto, CancelOfferDto, OrderQueryDto, ClientRepliesOrderOffer } from '..';
 import { RabbitMQSenderService } from '../services/rabbitmq-sender.service';
 
 @Injectable()
@@ -20,7 +20,9 @@ export class DriversService {
     @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
     @InjectRepository(CargoStatus) private readonly cargoStatusesRepository: Repository<CargoStatus>,
     @InjectRepository(DriverOrderOffers) private readonly orderOffersRepository: Repository<DriverOrderOffers>,
-    private rmqService: RabbitMQSenderService
+    @InjectRepository(ClientRepliesOrderOffer) private readonly clientReplyOrderOfferRepository: Repository<ClientRepliesOrderOffer>,
+    private rmqService: RabbitMQSenderService,
+    private dataSource: DataSource
   ) { }
 
   async getOrders(user: User, query: OrderQueryDto): Promise<BpmResponse> {
@@ -264,6 +266,94 @@ export class DriversService {
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
       }
+    }
+  }
+
+  async rejectReplyToOffer(orderId: number, replyId: number, dto: RejectOfferDto, user: User): Promise<BpmResponse> {
+    try {
+      const clientReply: ClientRepliesOrderOffer = await this.clientReplyOrderOfferRepository.findOneOrFail({ 
+          where: { 
+            id: replyId, 
+            order: { id: orderId }
+          }
+        });
+  
+      if(clientReply.isAccepted) { 
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      } else if(clientReply.isCanceled) { 
+        throw new BadRequestException(ResponseStauses.AlreadyCanceled);
+      } else if(clientReply.isRejected) { 
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
+      }
+  
+      clientReply.isRejected = true;
+      clientReply.rejectedAt = new Date();
+      clientReply.rejectedBy = user;
+      clientReply.rejectReason = dto.rejectReason;
+
+      await this.clientReplyOrderOfferRepository.save(clientReply);
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyRejected]);
+    } catch (err: any) {
+      console.log(err)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    }
+  }
+
+  async acceptClientReply(orderId: number, replyId: number, user: User): Promise<BpmResponse> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+
+      const clientReply: ClientRepliesOrderOffer = await this.clientReplyOrderOfferRepository.findOneOrFail({ 
+          where: { 
+            id: replyId, 
+            order: { id: orderId }
+          }, 
+          relations: ['driverOrderOffer', 'driverOrderOffer.driver']
+        });
+  
+      if(clientReply.isAccepted) { 
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      } else if(clientReply.isCanceled) { 
+        throw new BadRequestException(ResponseStauses.AlreadyCanceled);
+      } else if(clientReply.isRejected) { 
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
+      }
+  
+      const order: Order = await this.ordersRepository.findOneOrFail({ where: { id: orderId }, relations: ['client'] });
+      const cargoStatus: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: CargoStatusCodes.Accepted } });
+
+      order.cargoStatus = cargoStatus;
+      order.driver = clientReply.driverOrderOffer.driver;
+
+      await queryRunner.manager.save(Order, order);
+
+      clientReply.isAccepted = true;
+      clientReply.acceptedAt = new Date();
+      clientReply.acceptedBy = user;
+      await queryRunner.manager.save(ClientRepliesOrderOffer, clientReply);
+
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyAccepted]);
+    } catch (err: any) {
+      console.log(err)
+      await queryRunner.rollbackTransaction();
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err.name == 'EntityNotFoundError') {
+        throw new BadRequestException(ResponseStauses.NotFound);
+      } else {
+        throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    } finally {
+      await queryRunner.release();
     }
   }
 
