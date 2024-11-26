@@ -113,7 +113,7 @@ export class StaffsService {
       } finally {
         await queryRunner.release();
       }
-    }
+  }
 
   async updateOrder(id: number, dto: AdminOrderDto): Promise<BpmResponse> {
     const queryRunner = this.ordersRepository.manager.connection.createQueryRunner();
@@ -245,6 +245,12 @@ export class StaffsService {
       }
       if(query.orderId) {
         filter.id = query.orderId;
+      }
+      if(query.clientId) {
+        filter.client = {id: query.clientId};
+      }
+      if(query.driverId) {
+        filter.driver = {id: query.driverId};
       }
       if(query.transportKindId) {
         filter.transportKinds = { id: query.transportKindId }
