@@ -15,8 +15,11 @@ export class DriverServicesService {
         try {
             const driverService: DriverService = new DriverService();
             driverService.name = createDriverServiceDto.name;
+            driverService.type = createDriverServiceDto.type;
             driverService.amount = createDriverServiceDto.amount;
             driverService.code = createDriverServiceDto.code;
+            driverService.withoutSubscription = createDriverServiceDto.withoutSubscription;
+            driverService.isLegalEntity = createDriverServiceDto.isLegalEntity;
 
             await this.driverServicesRepository.save(driverService);
 
@@ -27,13 +30,17 @@ export class DriverServicesService {
         }
     }
 
-    async updateDriverService(updateDriverServiceDto: DriverServiceDto): Promise<BpmResponse> {
+    async updateDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
 
         try {
-            const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: updateDriverServiceDto.id } });
-            driverService.name = updateDriverServiceDto.name;
-            driverService.amount = updateDriverServiceDto.amount;
-            driverService.code = updateDriverServiceDto.code;
+            const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
+            driverService.name = dto.name;
+            driverService.type = dto.type;
+            driverService.amount = dto.amount;
+            driverService.code = dto.code;
+            driverService.withoutSubscription = dto.withoutSubscription;
+            driverService.isLegalEntity = dto.isLegalEntity;
+
 
             await this.driverServicesRepository.save(driverService);
 

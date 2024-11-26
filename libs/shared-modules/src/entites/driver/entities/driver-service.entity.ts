@@ -14,8 +14,14 @@ export class DriverService {
   @Column({ nullable: false })
   code: string;
 
+  @Column({ nullable: false })
+  type: string;
+
   @Column({ nullable: false, name: 'without_subscription' })
   withoutSubscription: boolean;
+
+  @Column({ nullable: false, name: 'is_legal_entity' })
+  isLegalEntity: boolean;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
