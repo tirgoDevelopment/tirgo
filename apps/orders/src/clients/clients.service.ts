@@ -476,7 +476,11 @@ export class ClientsService {
 
   async getOffersByDriver(orderId: number, driverId: number, user: User): Promise<BpmResponse> {
     try {
-      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency', 'createdBy', 'rejectedBy', 'acceptedBy', 'canceledBy', 'order', 'order.client'] });
+      const offers = await this.orderOffersRepository.find({ 
+        where: { driver: { id: driverId }, order: { id: orderId } }, 
+        relations: ['driver', 'currency', 'createdBy', 'rejectedBy', 
+          'acceptedBy', 'canceledBy', 'order', 'order.client', 
+          'clientReplyOrderOffer', 'clientReplyOrderOffer.createdBy', 'clientReplyOrderOffer.rejectedBy', 'clientReplyOrderOffer.acceptedBy'] });
 
       if(!offers.length) {
         throw new NoContentException();
