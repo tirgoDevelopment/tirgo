@@ -17,10 +17,20 @@ export class DriverServiceDto {
   @IsNotEmpty()
   code: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+
+  @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsBoolean()
-  withoutSubscription?: string;
+  withoutSubscription?: boolean;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isLegalEntity?: boolean;
 
   @ApiProperty({ required: false })
   id?: number;
