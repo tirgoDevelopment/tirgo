@@ -39,7 +39,7 @@ export class ClientsController {
   }
 
   @ApiOperation({ summary: 'Staff finish order' })
-  @Post(':id/staffs/finish')
+  @Post(':id/clients/finish')
   async finishOrder(@Param('id') id: number, @Req() req: Request) {
     return this.clientsService.finishOrder(id, req['user']);
   }

@@ -71,4 +71,14 @@ export class ClientRepliesOrderOffer {
   @Column({ nullable: true, name: 'accept_reason' })
   acceptReason: string;
 
+  @Column({ name: 'is_finished', default: false })
+  isFinished: boolean;
+
+  @Column({ type: 'timestamp', name: 'finished_at', nullable: true })
+  finishedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.finishedClientOrderOfferReplies, { nullable: true })
+  @JoinColumn({ name: 'finished_by_id' })
+  finishedBy: User;
+
 }
