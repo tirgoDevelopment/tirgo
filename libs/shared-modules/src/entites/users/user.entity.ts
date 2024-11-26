@@ -17,6 +17,7 @@ import { Agent } from '../agents/entites/agent.entity';
 import { DriverOrderOffers } from '../orders/entities/offer.entity';
 import { DriverDocuments } from '../driver/entities/driver-documents.entity';
 import { ClientPhoneNumber } from '../clients/client-phonenumber.entity';
+import { ClientRepliesOrderOffer } from 'apps/orders/src';
 
 @Entity()
 export class User {
@@ -190,6 +191,9 @@ export class User {
     // relations belongs to finished by user
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.finishedBy)
     finishedDriverOrderOffers: DriverOrderOffers[];
+
+    @OneToMany(() => ClientRepliesOrderOffer, (reply) => reply.finishedBy)
+    finishedClientOrderOfferReplies: ClientRepliesOrderOffer[];
 
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.repliedBy)
     repliedDriverOrderOffers: DriverOrderOffers[];

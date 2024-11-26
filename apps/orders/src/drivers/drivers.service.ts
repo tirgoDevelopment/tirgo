@@ -57,6 +57,8 @@ export class DriversService {
         const status: CargoStatus = await this.cargoStatusesRepository.findOneOrFail({ where: { code: query.statusCode } });
         if (status.code == CargoStatusCodes.Closed) {
           filter.cargoStatus = { code: In([CargoStatusCodes.Closed, CargoStatusCodes.Canceled]) };
+        } else if(status.code == CargoStatusCodes.Active) {
+          filter.cargoStatus = { code: In([CargoStatusCodes.Active, CargoStatusCodes.Completed]) };
         } else {
           filter.cargoStatus = { code: query.statusCode };
         }
