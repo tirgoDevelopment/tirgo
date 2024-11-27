@@ -82,9 +82,16 @@ export class DriverServicesService {
         }
     }
 
-    async getAllDriverServices(): Promise<BpmResponse> {
+    async getAllDriverServices(isSubscription: boolean, isLegalEntity: boolean): Promise<BpmResponse> {
         try {
-            const driverSevices = await this.driverServicesRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
+            let filter = { deleted: false };
+            if(isSubscription == true || isSubscription == false) {
+                filter['withoutSubscription'] = isSubscription;
+            }
+            if(isLegalEntity == true || isLegalEntity == false) {
+                filter['isLegalEntity'] = isLegalEntity;
+            }
+            const driverSevices = await this.driverServicesRepository.find({ where: filter, order: { createdAt: 'DESC' } });
             if (!driverSevices.length) {
                 throw new NoContentException();
             }

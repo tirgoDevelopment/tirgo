@@ -31,8 +31,11 @@ export class DriverServicesController {
 
   @ApiOperation({ summary: 'Get all drive service' })
   @Get()
-  async getAllDriverServices() {
-    return this.driverServicesService.getAllDriverServices();
+  async getAllDriverServices(
+    @Query('isSubscription') isSubscription: boolean,
+    @Query('isLegalEntity') isLegalEntity: boolean
+  ) {
+    return this.driverServicesService.getAllDriverServices(isSubscription, isLegalEntity);
   }
 
   @ApiOperation({ summary: 'Delete drive service' })
