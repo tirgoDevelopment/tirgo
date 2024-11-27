@@ -11,7 +11,17 @@ export class DriverServiceDto {
   @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
-  amount: string;
+  tirAmount: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  uzsAmount: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @IsNotEmpty()
+  kztAmount: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
