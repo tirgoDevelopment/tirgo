@@ -510,7 +510,7 @@ export class DriversService {
     }
   }
 
-  async getDriverByPhone(phone: number): Promise<BpmResponse> {
+  async getDriverByPhone(phone: string, code: string): Promise<BpmResponse> {
     try {
         // Query to retrieve driver by phone number
         const driver = await this.driverRepository
@@ -528,7 +528,8 @@ export class DriversService {
             .addSelect('user.id')
             .addSelect('user.userType')
             .addSelect('user.lastLogin')
-            .where('phoneNumber.phoneNumber = :phone', { phone: phone.toString().replaceAll('+', '').trim() })
+            .where('phoneNumber.number ILIKE :phone', { phone: phone.toString().replaceAll('+', '').trim() })
+            .andWhere('phoneNumber.code = :code', { code: code.toString().replaceAll('+', '').trim() })
             .getOneOrFail();
 
         return new BpmResponse(true, driver, null);

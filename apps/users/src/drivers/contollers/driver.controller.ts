@@ -110,9 +110,9 @@ export class DriversController {
   }
 
   @ApiOperation({ summary: 'Get driver by phone number' })
-  @Get('phone-number/:phoneNumber')
-  async getDriverByPhone(@Param('phoneNumber') phoneNumber: number) {
-    return this.driversService.getDriverByPhone(phoneNumber);
+  @Get('phone-number/:phoneNumber/:code')
+  async getDriverByPhone(@Param('phoneNumber') phoneNumber: string, @Param('code') code: string) {
+    return this.driversService.getDriverByPhone(phoneNumber, code);
   }
 
   @ApiOperation({ summary: 'Get all drivers' })
