@@ -84,6 +84,7 @@ export class DriverServicesService {
             }
             return new BpmResponse(true, driverSevices, null);
         } catch (err: any) {
+            console.log(err)
             if (err.name == 'EntityNotFoundError') {
                 // Client not found
                 throw new NoContentException();
