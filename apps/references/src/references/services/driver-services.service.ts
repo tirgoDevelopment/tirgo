@@ -10,16 +10,18 @@ export class DriverServicesService {
         private readonly httpService: HttpService,
         @InjectRepository(DriverService) private readonly driverServicesRepository: Repository<DriverService>) {}
 
-    async createDriverService(createDriverServiceDto: DriverServiceDto): Promise<BpmResponse> {
+    async createDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
 
         try {
             const driverService: DriverService = new DriverService();
-            driverService.name = createDriverServiceDto.name;
-            driverService.type = createDriverServiceDto.type;
-            driverService.amount = createDriverServiceDto.amount;
-            driverService.code = createDriverServiceDto.code;
-            driverService.withoutSubscription = createDriverServiceDto.withoutSubscription;
-            driverService.isLegalEntity = createDriverServiceDto.isLegalEntity;
+            driverService.name = dto.name;
+            driverService.type = dto.type;
+            driverService.tirAmount = dto.tirAmount;
+            driverService.uzsAmount = dto.uzsAmount;
+            driverService.kztAmount = dto.kztAmount;
+            driverService.code = dto.code;
+            driverService.withoutSubscription = dto.withoutSubscription;
+            driverService.isLegalEntity = dto.isLegalEntity;
 
             await this.driverServicesRepository.save(driverService);
 
@@ -36,7 +38,9 @@ export class DriverServicesService {
             const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
             driverService.name = dto.name;
             driverService.type = dto.type;
-            driverService.amount = dto.amount;
+            driverService.tirAmount = dto.tirAmount;
+            driverService.uzsAmount = dto.uzsAmount;
+            driverService.kztAmount = dto.kztAmount;
             driverService.code = dto.code;
             driverService.withoutSubscription = dto.withoutSubscription;
             driverService.isLegalEntity = dto.isLegalEntity;

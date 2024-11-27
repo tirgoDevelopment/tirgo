@@ -9,7 +9,13 @@ export class DriverService {
   name: string;
 
   @Column({ nullable: false })
-  amount: string;
+  tirAmount: string;
+
+  @Column({ nullable: false })
+  uzsAmount: string;
+
+  @Column({ nullable: false })
+  kztAmount: string;
 
   @Column({ nullable: false })
   code: string;
