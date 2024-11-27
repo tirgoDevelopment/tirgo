@@ -3,7 +3,7 @@ import { DriverServiceDto } from '../..';
 import { DriverServicesService } from '../services/driver-services.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Transactions')
+@ApiTags('Driver services')
 @Controller('driver-services')
 export class DriverServicesController {
 
