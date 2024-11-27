@@ -15,6 +15,7 @@ export class DriverServicesService {
         try {
             const driverService: DriverService = new DriverService();
             driverService.name = dto.name;
+            driverService.description = dto.description;
             driverService.type = dto.type;
             driverService.tirAmount = dto.tirAmount;
             driverService.uzsAmount = dto.uzsAmount;
@@ -37,6 +38,7 @@ export class DriverServicesService {
         try {
             const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
             driverService.name = dto.name;
+            driverService.description = dto.description;
             driverService.type = dto.type;
             driverService.tirAmount = dto.tirAmount;
             driverService.uzsAmount = dto.uzsAmount;
