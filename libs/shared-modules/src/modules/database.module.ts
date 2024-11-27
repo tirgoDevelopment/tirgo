@@ -39,6 +39,7 @@ import { LocationPlace } from '../entites/orders/entities/location.entity';
 import { TelegramBotUser } from '../entites/bot/bot.entity';
 import { DriverDocuments } from '../entites/driver/entities/driver-documents.entity';
 import { ClientDocuments } from '../entites/clients/clients-documents.entity';
+import { DriverService } from '../entites/driver/entities/driver-service.entity';
 
 const entities = [
     TransportType,
@@ -79,7 +80,8 @@ const entities = [
     Agent,
     AgentBankAccount,
     LocationPlace,
-    TelegramBotUser
+    TelegramBotUser,
+    DriverService
 ];
 
 @Module({
