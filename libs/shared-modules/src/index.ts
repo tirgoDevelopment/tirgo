@@ -22,7 +22,7 @@ export { Subscription } from "./entites/references/entities/subscription.entity"
 export { Role } from "./entites/role/entities/role.entity";
 export { Permission } from "./entites/role/entities/permission.entity";
 export { Staff } from "./entites/staffs/staff.entity";
-export { CreateStaffDto,AppendDriversToTmsDto } from "./entites/staffs/staff.dto";
+export { CreateStaffDto, AppendDriversToTmsDto } from "./entites/staffs/staff.dto";
 export { Transaction } from "./entites/transactions/transaction.entity";
 export { User } from "./entites/users/user.entity";
 export { Client } from "./entites/clients/client.entity";
@@ -30,11 +30,16 @@ export { ClientPhoneNumber } from "./entites/clients/client-phonenumber.entity";
 export { ClientDto, UpdateClientDto, GetClientsDto, UpdateClientPhoneDto, UpdateClientBirthDayDto } from "./entites/clients/client.dto";
 export { ClientDocuments } from "./entites/clients/clients-documents.entity";
 export { Driver } from "./entites/driver/entities/driver.entity";
-export { DriverService } from "./entites/driver/entities/driver-service.entity";
+export { DriversServicesRequestsStatuses } from "./entites/references/entities/drivers-services-requests-statuses.entity"
+export { DriversServicesRequests } from "./entites/driver/entities/drivers-services-requests.entity"
+export { DriversServicesRequestsDetails } from "./entites/driver/entities/drivers-services-requests-details.entity"
+export { DriversServicesRequestsStatusesDto } from "./entites/references/dtos/drviers-services-requests-statuses.dto"
+export { DriversServicesRequestsDto, DriversServicesRequestsQueryDto } from "./entites/driver/dtos/drivers-services-requests.dto"
+export { DriversServices } from "./entites/driver/entities/drivers-services.entity";
 export { DriverPhoneNumber } from "./entites/driver/entities/driver-phone-number.entity";
 export { DriverDocuments } from "./entites/driver/entities/driver-documents.entity";
 export { DriverDto, UpdateDriverDto, GetDriversDto, UpdateDriverPhoneDto, UpdateDriverBirthDayDto } from "./entites/driver/dtos/driver.dto";
-export { DriverServiceDto } from "./entites/driver/dtos/driver-service.dto";
+export { DriversServicesDto } from "./entites/driver/dtos/drivers-services.dto";
 export { DriverTransport } from "./entites/driver/entities/driver-transport.entity";
 export { DriverTransportDto, RemoveDriverTransportDto, ChangeStatusDriverTransportDto } from "./entites/driver/dtos/driver-transport.dto";
 export { TransportVerification } from "./entites/driver/entities/transport-verification.entity";
@@ -45,7 +50,7 @@ export { DriverOrderOffers } from "./entites/orders/entities/offer.entity";
 export { ClientRepliesOrderOffer } from "./entites/orders/entities/client-reply-order-offer.entity";
 export { RejectOfferDto } from "./entites/orders/dtos/reject-offer.dto";
 export { OrderDto, OrderQueryDto, AdminOrderDto, AssignOrderDto, AdminAcceptOrderDto, AcceptOrderOfferTypes } from "./entites/orders/dtos/order.dto";
-export { OrderOfferDto, AdminOrderOfferDto, CancelOfferDto,  ReplyDriverOrderOfferDto, AdminReplyDriverOrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
+export { OrderOfferDto, AdminOrderOfferDto, CancelOfferDto, ReplyDriverOrderOfferDto, AdminReplyDriverOrderOfferDto } from './entites/orders/dtos/order-price-offer.dto'
 export { CargoLoadMethod } from "./entites/references/entities/cargo-load-method.entity";
 export { CargoPackage } from "./entites/references/entities/cargo-package.entity";
 export { TransportKind } from "./entites/references/entities/transport-kind.entity";
@@ -166,6 +171,7 @@ export enum ResponseStauses {
   OrderIsNotAccepted = 'orderIsNotAccepted',
   OrderIsNotActivated = 'orderIsNotActivated',
   OrderIsNotCompleted = 'orderIsNotCompleted',
+  ServiceNotFound = 'serviceNotFound'
 }
 
 export enum CargoStatusCodes {
@@ -176,6 +182,13 @@ export enum CargoStatusCodes {
   Closed = 4,  //Завершенный
   Canceled = 5, //Отменено
   Archive = 6
+}
+
+export enum ServicesRequestsStatusesCodes {
+  Waiting = 0,
+  Working = 1,
+  Priced = 2,
+  Completed = 3
 }
 
 export enum UserTypes {

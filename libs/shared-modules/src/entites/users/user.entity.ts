@@ -18,6 +18,8 @@ import { DriverOrderOffers } from '../orders/entities/offer.entity';
 import { DriverDocuments } from '../driver/entities/driver-documents.entity';
 import { ClientPhoneNumber } from '../clients/client-phonenumber.entity';
 import { ClientRepliesOrderOffer } from 'apps/orders/src';
+import { DriversServicesRequestsDetails } from '../driver/entities/drivers-services-requests-details.entity';
+import { DriversServicesRequests } from '../driver/entities/drivers-services-requests.entity';
 
 @Entity()
 export class User {
@@ -30,7 +32,7 @@ export class User {
     @Column({ nullable: true })
     password: string;
 
-    @Column({ nullable: true,  type: 'timestamp', name: 'last_login' })
+    @Column({ nullable: true, type: 'timestamp', name: 'last_login' })
     lastLogin: Date;
 
     @ManyToOne(() => Role, role => role.users)
@@ -65,14 +67,14 @@ export class User {
 
     @OneToOne(() => SubscriptionPayment, (subscriptionPayment) => subscriptionPayment.user)
     subscriptionPayment: SubscriptionPayment;
-    
+
 
     // relations belongs to created by user
     @OneToMany(() => Transaction, (transaction) => transaction.createdBy)
     createdTransactions: Transaction[];
 
     @OneToMany(() => UserFile, (transaction) => transaction.createdBy)
-    createdFiles: UserFile [];
+    createdFiles: UserFile[];
 
     @OneToMany(() => Order, (order) => order.createdBy)
     createdOrders: Order[];
@@ -89,6 +91,12 @@ export class User {
     @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.createdBy)
     createdDriverTransports: DriverTransport[];
 
+    @OneToMany(() => DriversServicesRequestsDetails, (driverRequestDetail) => driverRequestDetail.createdBy)
+    servicesRequestsDetails: DriversServicesRequestsDetails[];
+
+    @OneToMany(() => DriversServicesRequests, (driverRequest) => driverRequest.createdBy)
+    servicesRequests: DriversServicesRequests[];
+
     @OneToMany(() => Client, (client) => client.createdBy)
     createdClients: Client[];
 
@@ -97,7 +105,7 @@ export class User {
 
     @ManyToOne(() => Agent, role => role.createdBy)
     createdAgents: Agent;
- 
+
 
     // relations belongs to rejected by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)

@@ -3,11 +3,11 @@ export {
   ClientDto,
   UpdateClientDto,
   DriverDto,
-  UpdateClientPhoneDto, 
+  UpdateClientPhoneDto,
   UpdateClientBirthDayDto,
   GetDriversDto,
   GetClientsDto,
-  UpdateDriverPhoneDto, 
+  UpdateDriverPhoneDto,
   UpdateDriverBirthDayDto,
   UpdateDriverDto,
   ClientMerchantDto,
@@ -28,9 +28,16 @@ export {
   AccountDto,
   AgentDto,
   RemoveDriverTransportDto,
-  ChangeStatusDriverTransportDto
+  ChangeStatusDriverTransportDto,
+  DriversServicesRequestsStatuses,
+  DriversServicesRequests,
+  DriversServicesRequestsDetails,
+  DriversServicesRequestsStatusesDto,
+  DriversServicesRequestsDto,
+  DriversServicesRequestsQueryDto,
+  DriversServices
 } from "@app/shared-modules";
-export { BpmResponse, UserTypes, UserStates, AwsS3BucketKeyNames, SendOtpTypes, UserDocumentTypes, ResponseStauses, CargoStatusCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
+export { BpmResponse, UserTypes, UserStates, AwsS3BucketKeyNames, SendOtpTypes, UserDocumentTypes, ResponseStauses, CargoStatusCodes, ServicesRequestsStatusesCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
 export { AwsService, SundryService, CustomJwtService, TelegramBotService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';
 
 export {
@@ -68,7 +75,7 @@ export {
   DriverMerchantUser,
   DriverOrderOffers,
   Account,
-  Agent, 
+  Agent,
   AgentBankAccount,
-  
+
 };
