@@ -1,5 +1,5 @@
 import { Controller, Get, Post, UsePipes, ValidationPipe, Body, Put, Query, Delete, Param } from '@nestjs/common';
-import { DriverServiceDto } from '../..';
+import { DriversServicesDto } from '../..';
 import { DriverServicesService } from '../services/driver-services.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -12,14 +12,14 @@ export class DriverServicesController {
   @ApiOperation({ summary: 'Create drive service' })
   @Post()
   @UsePipes(ValidationPipe)
-  async createDriverService(@Body() createDriverServiceDto: DriverServiceDto) {
+  async createDriverService(@Body() createDriverServiceDto: DriversServicesDto) {
     return this.driverServicesService.createDriverService(createDriverServiceDto);
   }
 
   @ApiOperation({ summary: 'Update drive service' })
   @Put()
   @UsePipes(ValidationPipe)
-  async updateDriverService(@Body() updateDriverServiceDto: DriverServiceDto) {
+  async updateDriverService(@Body() updateDriverServiceDto: DriversServicesDto) {
     return this.driverServicesService.updateDriverService(updateDriverServiceDto);
   }
 

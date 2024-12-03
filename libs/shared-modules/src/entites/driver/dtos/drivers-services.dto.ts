@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, MinLength, MaxLength, IsBoolean } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
-export class DriverServiceDto {
+export class DriversServicesDto {
 
   @ApiProperty({ required: true })
   @IsString()

@@ -9,6 +9,7 @@ import { Subscription } from '../../references/entities/subscription.entity';
 import { Transaction } from '../../transactions/transaction.entity';
 import { DriverMerchant } from '../../driver-merchant/entites/driver-merchant.entity';
 import { DriverDocuments } from './driver-documents.entity';
+import { DriversServicesRequests } from './drivers-services-requests.entity';
 
 @Entity()
 export class Driver {
@@ -91,6 +92,9 @@ export class Driver {
 
   @OneToMany(() => Order, order => order.client)
   orders: Order[];
+
+  @OneToMany(() => DriversServicesRequests, driversServicesRequests => driversServicesRequests.driver)
+  servicesRequests: DriversServicesRequests[];
 
   @OneToMany(() => DriverOrderOffers, orderOffer => orderOffer.driver)
   orderOffers: DriverOrderOffers[];

@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { BpmResponse, DriverService, DriverServiceDto, InternalErrorException, NoContentException, ResponseStauses } from '../..';
+import { BpmResponse, DriversServices, DriversServicesDto, InternalErrorException, NoContentException, ResponseStauses } from '../..';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, Repository } from 'typeorm';
@@ -8,12 +8,12 @@ import { EntityNotFoundError, Repository } from 'typeorm';
 export class DriverServicesService {
     constructor(
         private readonly httpService: HttpService,
-        @InjectRepository(DriverService) private readonly driverServicesRepository: Repository<DriverService>) {}
+        @InjectRepository(DriversServices) private readonly driverServicesRepository: Repository<DriversServices>) { }
 
-    async createDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
+    async createDriverService(dto: DriversServicesDto): Promise<BpmResponse> {
 
         try {
-            const driverService: DriverService = new DriverService();
+            const driverService: DriversServices = new DriversServices();
             driverService.name = dto.name;
             driverService.description = dto.description;
             driverService.type = dto.type;
@@ -33,10 +33,10 @@ export class DriverServicesService {
         }
     }
 
-    async updateDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
+    async updateDriverService(dto: DriversServicesDto): Promise<BpmResponse> {
 
         try {
-            const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
+            const driverService: DriversServices = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
             driverService.name = dto.name;
             driverService.description = dto.description;
             driverService.type = dto.type;
@@ -69,7 +69,7 @@ export class DriverServicesService {
             if (!id) {
                 throw new BadRequestException(ResponseStauses.IdIsRequired);
             }
-            const driverService = await this.driverServicesRepository.findOneOrFail({ where: { id, deleted: false } });
+            const driverService = await this.driverServicesRepository.findOneOrFail({ where: { id, isDeleted: false } });
             return new BpmResponse(true, driverService, null);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {
@@ -84,11 +84,11 @@ export class DriverServicesService {
 
     async getAllDriverServices(isSubscription: boolean, isLegalEntity: boolean): Promise<BpmResponse> {
         try {
-            let filter = { deleted: false };
-            if(isSubscription == true || isSubscription == false) {
+            let filter = { isDeleted: false };
+            if (isSubscription == true || isSubscription == false) {
                 filter['withoutSubscription'] = isSubscription;
             }
-            if(isLegalEntity == true || isLegalEntity == false) {
+            if (isLegalEntity == true || isLegalEntity == false) {
                 filter['isLegalEntity'] = isLegalEntity;
             }
             const driverSevices = await this.driverServicesRepository.find({ where: filter, order: { createdAt: 'DESC' } });
@@ -112,23 +112,23 @@ export class DriverServicesService {
 
     async deleteDriverService(id: number): Promise<BpmResponse> {
         try {
-          if(!id) {
-            throw new BadRequestException(ResponseStauses.IdIsRequired);
-          }
-          const driverService = await this.driverServicesRepository.findOneOrFail({ where: { id } });
-          driverService.deleted = true;
-          const updateResult = await this.driverServicesRepository.save(driverService);
+            if (!id) {
+                throw new BadRequestException(ResponseStauses.IdIsRequired);
+            }
+            const driverService = await this.driverServicesRepository.findOneOrFail({ where: { id } });
+            driverService.isDeleted = true;
+            const updateResult = await this.driverServicesRepository.save(driverService);
             return new BpmResponse(true, null, null);
         } catch (err: any) {
-          if (err instanceof EntityNotFoundError) {
-            // Subscription not found
-            throw new NoContentException();
-          } else if(err instanceof HttpException) {
-            throw err
-          } else {
-            throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
-          }
+            if (err instanceof EntityNotFoundError) {
+                // Subscription not found
+                throw new NoContentException();
+            } else if (err instanceof HttpException) {
+                throw err
+            } else {
+                throw new InternalErrorException(ResponseStauses.InternalServerError, err.message);
+            }
         }
-      }
+    }
 
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CargoType, CargoTypeGroup, Currency, Role, Permission, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService, DatabaseModule, DriverService } from '.';
+import { CargoType, CargoTypeGroup, DriversServicesRequestsStatuses, Currency, Role, Permission, Subscription, SubscriptionPayment, TransportType, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod, AuthModule, AwsService, DatabaseModule, DriversServices } from '.';
 import { TransportTypesController } from './references/controllers/transport-types.controller';
 import { CargoTypesController } from './references/controllers/cargo-type.controller';
 import { CargoTypeGroupsController } from './references/controllers/cargo-type-groups.controller';
@@ -27,12 +27,14 @@ import { RolesController } from './references/controllers/roles.controller';
 import { RolesService } from './references/services/roles.service';
 import { DriverServicesController } from './references/controllers/driver-service.controller';
 import { DriverServicesService } from './references/services/driver-services.service';
+import { ServicesRequestsStatusesController } from './references/controllers/drivers-services-requests-statuses.controller';
+import { ServicesRequestsStatusesService } from './references/services/drivers-services-requests-statuses.service';
 
 @Module({
   imports: [
     DatabaseModule,
     AuthModule,
-    TypeOrmModule.forFeature([Role, DriverService, Permission, TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
+    TypeOrmModule.forFeature([DriversServicesRequestsStatuses, Role, DriversServices, Permission, TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
     HttpModule
   ],
   controllers: [
@@ -48,7 +50,8 @@ import { DriverServicesService } from './references/services/driver-services.ser
     FilesController,
     CitiesController,
     RolesController,
-    DriverServicesController
+    DriverServicesController,
+    ServicesRequestsStatusesController
   ],
   providers: [
     TransportTypesService,
@@ -63,10 +66,11 @@ import { DriverServicesService } from './references/services/driver-services.ser
     AwsService,
     CitiesService,
     RolesService,
-    DriverServicesService
+    DriverServicesService,
+    ServicesRequestsStatusesService
   ],
   exports: [
-    TypeOrmModule.forFeature([TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
+    TypeOrmModule.forFeature([DriversServicesRequestsStatuses, TransportType, CargoType, CargoTypeGroup, Currency, Subscription, SubscriptionPayment, TransportKind, CargoStatus, User, CargoPackage, CargoLoadMethod]),
     TransportTypesService,
     CargoTypesService,
     CargoTypeGroupsService,
