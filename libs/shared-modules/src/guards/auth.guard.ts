@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
             token = request.query.token
         }
 
-        if(request.url.includes('login') || request.url.includes('webhook') || request.url.includes('register') || request.url.includes('send-otp') || request.url.includes('verify-otp')) {
+        if(request.url.includes('login') || request.url.includes('webhook') || request.url.includes('register') || request.url.includes('send-otp') || request.url.includes('verify-otp') || request.url.includes('currencies')) {
             return true
         }
 
