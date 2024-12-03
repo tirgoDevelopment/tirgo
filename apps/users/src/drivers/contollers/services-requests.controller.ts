@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DriversServicesRequestsDto, DriversServicesRequestsQueryDto } from '../..';
 import { ServicesRequestsService } from '../services/services-requests.service';
 
+@ApiTags('Drivers services requests')
 @Controller('services-requests')
 export class ServicesRequestsController {
 
