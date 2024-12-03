@@ -52,7 +52,7 @@ export class ServicesRequestsStatusesService {
             if (!id) {
                 throw new BadRequestException(ResponseStauses.IdIsRequired);
             }
-            const status = await this.driversServicesRequestsStatuses.findOneOrFail({ where: { id, deleted: false } });
+            const status = await this.driversServicesRequestsStatuses.findOneOrFail({ where: { id, isDeleted: false } });
             return new BpmResponse(true, status, null);
         } catch (err: any) {
             if (err.name == 'EntityNotFoundError') {
@@ -67,7 +67,7 @@ export class ServicesRequestsStatusesService {
 
     async getAllStatuses(): Promise<BpmResponse> {
         try {
-            const statuss = await this.driversServicesRequestsStatuses.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
+            const statuss = await this.driversServicesRequestsStatuses.find({ where: { isDeleted: false }, order: { createdAt: 'DESC' } });
             if (!statuss.length) {
                 throw new NoContentException();
             }
@@ -82,8 +82,8 @@ export class ServicesRequestsStatusesService {
             if (!id) {
                 return new BpmResponse(false, null, ['Id is required']);
             }
-            const status = await this.driversServicesRequestsStatuses.findOneOrFail({ where: { id, deleted: false } });
-            status.deleted = true;
+            const status = await this.driversServicesRequestsStatuses.findOneOrFail({ where: { id, isDeleted: false } });
+            status.isDeleted = true;
             await this.driversServicesRequestsStatuses.save(status);
             return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
         } catch (err: any) {
