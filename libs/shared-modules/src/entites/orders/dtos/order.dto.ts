@@ -132,6 +132,12 @@ export class OrderQueryDto {
   orderId: number;
 
   @ApiProperty({ required: false })
+  clientId: number;
+
+  @ApiProperty({ required: false })
+  driverId: number;
+
+  @ApiProperty({ required: false })
   statusCode: number;
 
   @ApiProperty({ required: false })

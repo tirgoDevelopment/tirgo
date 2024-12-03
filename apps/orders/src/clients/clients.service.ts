@@ -204,7 +204,10 @@ export class ClientsService {
   }
 
   async finishOrder(id: number, user: User): Promise<BpmResponse> {
+    const queryRunner = await this.ordersRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
     try {
+      await queryRunner.startTransaction();
       const order: Order = await this.ordersRepository.findOneOrFail({where: { id, isDeleted: false }, relations: ['cargoStatus']});
       if(order.cargoStatus?.code != CargoStatusCodes.Completed) {
         throw new BadRequestException(ResponseStauses.OrderIsNotCompleted);
@@ -215,9 +218,26 @@ export class ClientsService {
       order.finishedAt = new Date();
       order.finishedBy = user;
 
-      await this.ordersRepository.save(order);
+      await queryRunner.manager.save(Order, order);
+
+      const orderOffer = await this.orderOffersRepository.findOneOrFail({ where: { order: { id } }, relations: ['clientReplyOrderOffer'] })
+      if(orderOffer.isReplied) {
+        const reply = await this.clientReplyOrderOfferRepository.findOneOrFail({ where: { id: orderOffer.clientReplyOrderOffer?.id } });
+        orderOffer.isFinished = true;
+        orderOffer.finishedAt = new Date();
+        orderOffer.finishedBy = user;
+        await queryRunner.manager.save(ClientRepliesOrderOffer, reply);
+      } else {
+        orderOffer.isFinished = true;
+        orderOffer.finishedAt = new Date();
+        orderOffer.finishedBy = user;
+        await queryRunner.manager.save(DriverOrderOffers, orderOffer);
+      }
+
+      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyFinished]);
     } catch (err: any) {
+      await queryRunner.rollbackTransaction();
       console.log(err)
       if (err instanceof HttpException) {
         throw err
@@ -225,6 +245,10 @@ export class ClientsService {
         throw new BadRequestException(ResponseStauses.NotFound);
       } else {
         throw new InternalErrorException(ResponseStauses.UpdateDataFailed);
+      }
+    } finally {
+      if(queryRunner.isTransactionActive) {
+        await queryRunner.release();
       }
     }
   }
@@ -455,7 +479,7 @@ export class ClientsService {
   async getOfferedDrivers(orderId: number, user: User): Promise<BpmResponse> {
     try {
 
-      const drivers = await this.driversRepository.find({ where: { orderOffers: { id: orderId } }, relations: ['orderOffers', 'orderOffers.currency', 'orderOffers.createdBy'] });
+      const drivers = await this.driversRepository.find({ where: { orderOffers: { order: { id: orderId } } }, relations: ['orderOffers', 'orderOffers.currency', 'orderOffers.createdBy'] });
 
       if(!drivers.length) {
         throw new NoContentException();
@@ -476,7 +500,11 @@ export class ClientsService {
 
   async getOffersByDriver(orderId: number, driverId: number, user: User): Promise<BpmResponse> {
     try {
-      const offers = await this.orderOffersRepository.find({ where: { driver: { id: driverId }, order: { id: orderId } }, relations: ['driver', 'currency', 'createdBy', 'rejectedBy', 'acceptedBy', 'canceledBy', 'order', 'order.client'] });
+      const offers = await this.orderOffersRepository.find({ 
+        where: { driver: { id: driverId }, order: { id: orderId } }, 
+        relations: ['driver', 'currency', 'createdBy', 'rejectedBy', 
+          'acceptedBy', 'canceledBy', 'order', 'order.client', 
+          'clientReplyOrderOffer', 'clientReplyOrderOffer.createdBy', 'clientReplyOrderOffer.rejectedBy', 'clientReplyOrderOffer.acceptedBy'] });
 
       if(!offers.length) {
         throw new NoContentException();

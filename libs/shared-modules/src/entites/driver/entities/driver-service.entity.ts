@@ -9,13 +9,28 @@ export class DriverService {
   name: string;
 
   @Column({ nullable: false })
-  amount: string;
+  description: string;
+
+  @Column({ nullable: false })
+  tirAmount: string;
+
+  @Column({ nullable: false })
+  uzsAmount: string;
+
+  @Column({ nullable: false })
+  kztAmount: string;
 
   @Column({ nullable: false })
   code: string;
 
+  @Column({ nullable: false })
+  type: string;
+
   @Column({ nullable: false, name: 'without_subscription' })
   withoutSubscription: boolean;
+
+  @Column({ nullable: false, name: 'is_legal_entity' })
+  isLegalEntity: boolean;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  

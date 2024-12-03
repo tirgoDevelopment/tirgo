@@ -10,13 +10,19 @@ export class DriverServicesService {
         private readonly httpService: HttpService,
         @InjectRepository(DriverService) private readonly driverServicesRepository: Repository<DriverService>) {}
 
-    async createDriverService(createDriverServiceDto: DriverServiceDto): Promise<BpmResponse> {
+    async createDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
 
         try {
             const driverService: DriverService = new DriverService();
-            driverService.name = createDriverServiceDto.name;
-            driverService.amount = createDriverServiceDto.amount;
-            driverService.code = createDriverServiceDto.code;
+            driverService.name = dto.name;
+            driverService.description = dto.description;
+            driverService.type = dto.type;
+            driverService.tirAmount = dto.tirAmount;
+            driverService.uzsAmount = dto.uzsAmount;
+            driverService.kztAmount = dto.kztAmount;
+            driverService.code = dto.code;
+            driverService.withoutSubscription = dto.withoutSubscription;
+            driverService.isLegalEntity = dto.isLegalEntity;
 
             await this.driverServicesRepository.save(driverService);
 
@@ -27,13 +33,20 @@ export class DriverServicesService {
         }
     }
 
-    async updateDriverService(updateDriverServiceDto: DriverServiceDto): Promise<BpmResponse> {
+    async updateDriverService(dto: DriverServiceDto): Promise<BpmResponse> {
 
         try {
-            const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: updateDriverServiceDto.id } });
-            driverService.name = updateDriverServiceDto.name;
-            driverService.amount = updateDriverServiceDto.amount;
-            driverService.code = updateDriverServiceDto.code;
+            const driverService: DriverService = await this.driverServicesRepository.findOneOrFail({ where: { id: dto.id } });
+            driverService.name = dto.name;
+            driverService.description = dto.description;
+            driverService.type = dto.type;
+            driverService.tirAmount = dto.tirAmount;
+            driverService.uzsAmount = dto.uzsAmount;
+            driverService.kztAmount = dto.kztAmount;
+            driverService.code = dto.code;
+            driverService.withoutSubscription = dto.withoutSubscription;
+            driverService.isLegalEntity = dto.isLegalEntity;
+
 
             await this.driverServicesRepository.save(driverService);
 
@@ -69,14 +82,22 @@ export class DriverServicesService {
         }
     }
 
-    async getAllDriverServices(): Promise<BpmResponse> {
+    async getAllDriverServices(isSubscription: boolean, isLegalEntity: boolean): Promise<BpmResponse> {
         try {
-            const driverSevices = await this.driverServicesRepository.find({ where: { deleted: false }, order: { createdAt: 'DESC' } });
+            let filter = { deleted: false };
+            if(isSubscription == true || isSubscription == false) {
+                filter['withoutSubscription'] = isSubscription;
+            }
+            if(isLegalEntity == true || isLegalEntity == false) {
+                filter['isLegalEntity'] = isLegalEntity;
+            }
+            const driverSevices = await this.driverServicesRepository.find({ where: filter, order: { createdAt: 'DESC' } });
             if (!driverSevices.length) {
                 throw new NoContentException();
             }
             return new BpmResponse(true, driverSevices, null);
         } catch (err: any) {
+            console.log(err)
             if (err.name == 'EntityNotFoundError') {
                 // Client not found
                 throw new NoContentException();
