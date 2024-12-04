@@ -151,6 +151,7 @@ export enum ResponseStauses {
   DriverBlocked = 'driverBlocked',
   AlreadyOffered = 'alreadyOfferedToThisOrder',
   AlreadyReplied = 'alreadyRepliedToThisOffer',
+  RepliedToIdIsRequired = 'repliedToIdIsRequired',
   OfferLimit = 'offerLimitExceeded',
   MerchantAlreadyVerified = 'merchantAlreadyVerified',
   InternalServerError = 'internalError',
@@ -173,7 +174,9 @@ export enum ResponseStauses {
   OrderIsNotAccepted = 'orderIsNotAccepted',
   OrderIsNotActivated = 'orderIsNotActivated',
   OrderIsNotCompleted = 'orderIsNotCompleted',
-  ServiceNotFound = 'serviceNotFound'
+  ServiceNotFound = 'serviceNotFound',
+  ServiceRequestNotFound = 'serviceRequestNotFound',
+  ServiceRequestStatusNotFound = 'serviceRequestStatusNotFound'
 }
 
 export enum CargoStatusCodes {
@@ -215,6 +218,11 @@ export enum SendOtpTypes {
   Telegram = 'telegram',
   Whatsapp = 'whatsapp',
   Sms = 'sms'
+}
+
+export enum SseEventNames {
+  NewMessage = 'newMessage',
+  NewServiceRequest = 'newServiceRequest'
 }
 
 export enum UserStates {

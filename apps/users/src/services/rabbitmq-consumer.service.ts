@@ -51,7 +51,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleOrderOfferToClientMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'driverOffer', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'driverOffer', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received driverOffer message: ${JSON.stringify(data)}`);
@@ -64,7 +64,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleAcceptOfferToClientMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId?.toString(), { type: 'driverAcceptOffer', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId?.toString(), { event: 'driverAcceptOffer', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received driverAcceptOffer message: ${JSON.stringify(data)}`);
@@ -77,7 +77,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleOrderOfferToDriverMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'clientOffer', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'clientOffer', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received clientOffer message: ${JSON.stringify(data)}`);
@@ -90,7 +90,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleAcceptOfferToDriverMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'clientAcceptOffer', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'clientAcceptOffer', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received clientAcceptOffer message: ${JSON.stringify(data)}`);
@@ -103,7 +103,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleAppendOrderToDriverMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'appendOrderToDriver', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'appendOrderToDriver', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received appendOrderToDriver message: ${JSON.stringify(data)}`);
@@ -116,7 +116,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleAppendOrderToClientMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'appendOrderToDriverClient', orderId: body.orderId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'appendOrderToDriverClient', orderId: body.orderId })
       try {
         const data = body;
         console.log(`Received appendOrderToDriverClient message: ${JSON.stringify(data)}`);
@@ -131,7 +131,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleVerifiedTransactionMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'transactionVerified', transactionId: body.transactionId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'transactionVerified', transactionId: body.transactionId })
       try {
         const data = body;
         console.log(`Received TransactionVerified message: ${JSON.stringify(data)}`);
@@ -144,7 +144,7 @@ export class RabbitMQConsumerService implements OnModuleInit {
   private async handleRejectedTransactionMessage(msg: amqp.ConsumeMessage | null) {
     if (msg) {
       const body = JSON.parse(msg.content.toString());
-      this.sseService.sendNotificationToUser(body.userId.toString(), { type: 'transactionRejected', transactionId: body.transactionId })
+      this.sseService.sendNotificationToUser(body.userId.toString(), { event: 'transactionRejected', transactionId: body.transactionId })
       try {
         const data = body;
         console.log(`Received TransactionRejected message: ${JSON.stringify(data)}`);

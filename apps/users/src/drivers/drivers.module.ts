@@ -18,6 +18,7 @@ import { ServicesRequestsController } from "./contollers/services-requests.contr
 import { ServicesRequestsService } from "./services/services-requests.service";
 import { SseModule } from "../sse/sse.module";
 import { DriversServicesRequestsRepository } from "./repositories/services-requests.repository";
+import { DriversServicesRequestsMessagesRepository } from "./repositories/services-requests-messages.repository";
 
 
 @Module({
@@ -39,7 +40,8 @@ import { DriversServicesRequestsRepository } from "./repositories/services-reque
     CustomJwtService,
     JwtService,
     ServicesRequestsService,
-    DriversServicesRequestsRepository
+    DriversServicesRequestsRepository,
+    DriversServicesRequestsMessagesRepository
   ],
   exports: [
     DriversRepository,

@@ -1,13 +1,18 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, EntityNotFoundError, In, Repository } from 'typeorm';
+import { EntityNotFoundError, In, Repository } from 'typeorm';
 import {
   UserTypes, DriversServices, DriversServicesRequests, NoContentException,
+  DriversServicesRequestsMessagesDto,
+  DriversServicesRequestsMessages,
+  DriversServicesRequestsMessagesQueryDto,
+  SseEventNames,
   ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver, DriversServicesRequestsDto, DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User
 } from '../..';
 import * as dateFns from 'date-fns';
 import { SseGateway } from '../../sse/sse.service';
 import { DriversServicesRequestsRepository } from '../repositories/services-requests.repository';
+import { DriversServicesRequestsMessagesRepository } from '../repositories/services-requests-messages.repository';
 
 @Injectable()
 export class ServicesRequestsService {
@@ -15,6 +20,7 @@ export class ServicesRequestsService {
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     @InjectRepository(DriversServices) private readonly driversServicesRepository: Repository<DriversServices>,
     @InjectRepository(DriversServicesRequestsStatuses) private readonly servicesRequestsStatusesRepository: Repository<DriversServicesRequestsStatuses>,
+    private driversServicesRequestsMessagesRepository: DriversServicesRequestsMessagesRepository,
     private sseService: SseGateway,
     private driversServicesRequestsRepository: DriversServicesRequestsRepository
   ) { }
@@ -49,7 +55,7 @@ export class ServicesRequestsService {
       driverServiceRequest.createdBy = user;
 
       await this.driversServicesRequestsRepository.save(driverServiceRequest);
-
+      await this.sseService.sendNotificationToAllUsers({ data: '', event: SseEventNames.NewServiceRequest });
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err.name, err.message)
@@ -137,6 +143,93 @@ export class ServicesRequestsService {
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError);
 
+      }
+    }
+  }
+
+  async sendMessage(dto: DriversServicesRequestsMessagesDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const serviceRequestMessage: DriversServicesRequestsMessages = new DriversServicesRequestsMessages();
+      serviceRequestMessage.message = dto.message;
+      serviceRequestMessage.messageType = dto.messageType;
+      serviceRequestMessage.senderUserType = user.userType;
+      serviceRequestMessage.sentBy = user;
+      serviceRequestMessage.createdBy = user;
+      serviceRequestMessage.driverServiceRequest = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +driverServiceRequestId } });
+
+      if (dto.isReplied) {
+        if (!dto.repliedToId) {
+          throw new BadRequestException(ResponseStauses.RepliedToIdIsRequired);
+        }
+        serviceRequestMessage.isReplied = dto.isReplied;
+        serviceRequestMessage.repliedToId = dto.repliedToId;
+      }
+      await this.driversServicesRequestsMessagesRepository.save(serviceRequestMessage);
+      await this.sseService.sendNotificationToAllUsers({ data: dto.message, event: SseEventNames.NewMessage });
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes("DriversServicesRequestsRepository")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+  async getAllMessages(query: DriversServicesRequestsMessagesQueryDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      if(user.userType == UserTypes.Driver) {
+        const exists = await this.driversServicesRequestsRepository.exists({ where: { id: driverServiceRequestId, driver: { id: user.driver?.id } } });
+        if(!exists) {
+          throw new BadRequestException(ResponseStauses.AccessDenied);
+        }
+      }
+
+      // set request id to get messags only related to servicesRequest 
+      query['driverServiceRequestId'] = driverServiceRequestId;
+      
+      const size = +query.pageSize || 10; // Number of items per page
+      const index = +query.pageIndex || 1;
+
+      const sort: any = {};
+      if (query.sortBy && query.sortType) {
+        sort[query.sortBy] = query.sortType;
+      } else {
+        sort['id'] = 'DESC'
+      }
+
+
+      const data = await this.driversServicesRequestsMessagesRepository.findAll(query, sort, index, size)
+      if (!data.data.length) {
+        throw new NoContentException();
+      }
+
+      const totalPagesCount = Math.ceil(data.count / size);
+      return new BpmResponse(true, { content: data.data, totalPagesCount, pageIndex: index, pageSize: size }, null);
+    } catch (err: any) {
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
       }
     }
   }

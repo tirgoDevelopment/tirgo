@@ -11,14 +11,14 @@ export class DriversServicesRequestsMessages {
   messageType: string;
 
   @Column({ nullable: false })
-  message: string; 
+  message: string;
 
   @Column({ nullable: false, name: 'sender_user_type' })
   senderUserType: string;
-  
+
   @ManyToOne(() => User, (user) => user.sentServicesRequestsMessages, { nullable: false })
   @JoinColumn({ name: 'sent_by_id' })
-  sentBy: string;
+  sentBy: User;
 
   @ManyToOne(() => DriversServicesRequests, serviceRequest => serviceRequest.messages, { nullable: false })
   driverServiceRequest: DriversServicesRequests;
