@@ -36,17 +36,6 @@ export class DriversServicesRequestsMessagesDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @IsEnum(UserTypes)
-  senderUserType: UserTypes;
-
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @IsNumber()
-  driverServiceRequestId: number;
-
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsBoolean()
   isReplied: boolean;
 
@@ -66,15 +55,6 @@ export class DriversServicesRequestsMessagesQueryDto {
 
   @ApiProperty({ required: false })
   sortType: string;
-
-  @ApiProperty({ required: false })
-  serviceId: number;
-
-  @ApiProperty({ required: false })
-  driverId: number;
-
-  @ApiProperty({ required: false })
-  statusCode: number;
 
   @ApiProperty({ required: false })
   createdAtFrom: string;

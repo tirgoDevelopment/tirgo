@@ -31,11 +31,12 @@ export { ClientDto, UpdateClientDto, GetClientsDto, UpdateClientPhoneDto, Update
 export { ClientDocuments } from "./entites/clients/clients-documents.entity";
 export { Driver } from "./entites/driver/entities/driver.entity";
 export { DriversServicesRequestsStatuses } from "./entites/references/entities/drivers-services-requests-statuses.entity"
+export { DriversServicesRequestsStatusesChangesHistory } from "./entites/driver/entities/drivers-services-requests-statuses-history.entity"
 export { DriversServicesRequests } from "./entites/driver/entities/drivers-services-requests.entity"
 export { DriversServicesRequestsMessages } from "./entites/driver/entities/drivers-services-requests-messages.entity"
 export { DriversServicesRequestsDetails } from "./entites/driver/entities/drivers-services-requests-details.entity"
 export { DriversServicesRequestsStatusesDto } from "./entites/references/dtos/drviers-services-requests-statuses.dto"
-export { DriversServicesRequestsDto, DriversServicesRequestsQueryDto } from "./entites/driver/dtos/drivers-services-requests.dto"
+export { DriversServicesRequestsDto, DriversServicesRequestsOperationDto, DriversServicesRequestsQueryDto } from "./entites/driver/dtos/drivers-services-requests.dto"
 export { DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesQueryDto } from "./entites/driver/dtos/drivers-services-requests-messages.dto"
 export { DriversServices } from "./entites/driver/entities/drivers-services.entity";
 export { DriverPhoneNumber } from "./entites/driver/entities/driver-phone-number.entity";
@@ -151,6 +152,7 @@ export enum ResponseStauses {
   DriverBlocked = 'driverBlocked',
   AlreadyOffered = 'alreadyOfferedToThisOrder',
   AlreadyReplied = 'alreadyRepliedToThisOffer',
+  RepliedToIdIsRequired = 'repliedToIdIsRequired',
   OfferLimit = 'offerLimitExceeded',
   MerchantAlreadyVerified = 'merchantAlreadyVerified',
   InternalServerError = 'internalError',
@@ -173,7 +175,11 @@ export enum ResponseStauses {
   OrderIsNotAccepted = 'orderIsNotAccepted',
   OrderIsNotActivated = 'orderIsNotActivated',
   OrderIsNotCompleted = 'orderIsNotCompleted',
-  ServiceNotFound = 'serviceNotFound'
+  ServiceNotFound = 'serviceNotFound',
+  ServiceRequestNotFound = 'serviceRequestNotFound',
+  ServiceRequestStatusNotFound = 'serviceRequestStatusNotFound',
+  RequestStatusIsNotWaiting = 'requestStatusIsNotWaiting',
+  RequestCantBeCanceleted = 'requestCantBeCanceleted'
 }
 
 export enum CargoStatusCodes {
@@ -188,9 +194,12 @@ export enum CargoStatusCodes {
 
 export enum ServicesRequestsStatusesCodes {
   Waiting = 0,
-  Working = 1,
-  Priced = 2,
-  Completed = 3
+  Priced = 1,
+  Working = 2,
+  Active = 3,
+  Completed = 4,
+  Canceled = 5,
+  Deleted = 6
 }
 
 export enum UserTypes {
@@ -214,6 +223,15 @@ export enum SendOtpTypes {
   Telegram = 'telegram',
   Whatsapp = 'whatsapp',
   Sms = 'sms'
+}
+
+export enum SseEventNames {
+  NewMessage = 'newMessage',
+  NewServiceRequest = 'newServiceRequest',
+  ServiceRequestCanceled = 'serviceRequestCanceled',
+  ServiceRequestPriced = 'serviceRequestPriced',
+  ServiceRequestToWorking = 'serviceRequestToWorking',
+  ServiceRequestDeleted = 'serviceRequestDeleted'
 }
 
 export enum UserStates {

@@ -5,7 +5,8 @@ import {
   DriverPhoneNumber, DriverTransport, DriverOrderOffers, SundryService,
   DriversServices, DriversServicesRequestsStatuses,
   DriversServicesRequestsMessages,
-  Transaction, TransportKind, TransportType, User
+  Transaction, TransportKind, TransportType, User,
+  DriversServicesRequestsStatusesChangesHistory
 } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriversController } from "./contollers/driver.controller";
@@ -17,12 +18,14 @@ import { JwtService } from "@nestjs/jwt";
 import { ServicesRequestsController } from "./contollers/services-requests.controller";
 import { ServicesRequestsService } from "./services/services-requests.service";
 import { SseModule } from "../sse/sse.module";
+import { DriversServicesRequestsRepository } from "./repositories/services-requests.repository";
+import { DriversServicesRequestsMessagesRepository } from "./repositories/services-requests-messages.repository";
 
 
 @Module({
   imports: [
     SseModule,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages]),
+    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
   ],
   controllers: [
     DriversController,
@@ -37,11 +40,13 @@ import { SseModule } from "../sse/sse.module";
     DriversRepository,
     CustomJwtService,
     JwtService,
-    ServicesRequestsService
+    ServicesRequestsService,
+    DriversServicesRequestsRepository,
+    DriversServicesRequestsMessagesRepository
   ],
   exports: [
     DriversRepository,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages]),
+    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
   ]
 })
 export class DriversModule {

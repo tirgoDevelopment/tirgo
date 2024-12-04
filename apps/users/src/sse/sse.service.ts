@@ -4,8 +4,8 @@ import { interval } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 interface SseEvent {
-    data: string;
-    type: string;
+    data: any;
+    event: string;
 }
 
 @WebSocketGateway()
@@ -18,14 +18,22 @@ export class SseGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleSseConnection(req: any, res: any): void {
     const userId = req.user.id.toString(); // Assuming user id is available in req.user.id
 
-    // Set up SSE connection
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
+   // Set headers for SSE
+   res.setHeader('Content-Type', 'text/event-stream');
+   res.setHeader('Cache-Control', 'no-cache');
+   res.setHeader('Connection', 'keep-alive');
+   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*'); // Set the requesting origin
+   res.setHeader('Access-Control-Allow-Credentials', 'true');
+   res.flushHeaders();
 
     this.connections.set(userId, res); // Store the connection
     console.log('User ' + userId + ' connected')
+
+     // Cleanup on connection close
+     req.on('close', () => {
+      this.connections.delete(userId);
+      console.log(`User ${userId} disconnected`);
+    });
   }
 
   sendNotificationToUser(userId: string, notification: any): void {
@@ -41,6 +49,7 @@ export class SseGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   sendNotificationToAllUsers(notification: SseEvent): void {
+    console.log(notification)
     this.connections.forEach((connection) => {
       connection.write(`data: ${JSON.stringify(notification)}\n\n`);
     });

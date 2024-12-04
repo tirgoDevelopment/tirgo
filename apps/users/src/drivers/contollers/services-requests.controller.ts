@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DriversServicesRequestsDto, DriversServicesRequestsQueryDto } from '../..';
+import { DriversServicesRequestsDto,DriversServicesRequestsOperationDto,  DriversServicesRequestsQueryDto, DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesQueryDto } from '../..';
 import { ServicesRequestsService } from '../services/services-requests.service';
 
 @ApiTags('Drivers services requests')
@@ -21,6 +21,28 @@ export class ServicesRequestsController {
     return this.servicesRequestsService.create(dto, req['user']);
   }
 
+  @ApiOperation({ summary: 'Cancel service request' })
+  @Patch(':id/cancel')
+  @UsePipes(ValidationPipe)
+  async cancel(
+    @Body() dto: DriversServicesRequestsOperationDto,
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.cancelServiceRequest(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Delete service request' })
+  @Delete(':id/delete')
+  @UsePipes(ValidationPipe)
+  async delete(
+    @Body() dto: DriversServicesRequestsOperationDto,
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.deleteServiceRequest(dto, id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Get all driver service requests' })
   @Get()
   async getAll(
@@ -38,6 +60,28 @@ export class ServicesRequestsController {
     @Req() req: Request
   ) {
     return this.servicesRequestsService.getAllByDriverId(query, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Send message to service request' })
+  @Post(':id/messages')
+  @UsePipes(ValidationPipe)
+  async createMessage(
+    @Body() dto: DriversServicesRequestsMessagesDto,
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.sendMessage(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Get service request messages' })
+  @Get(':id/messages')
+  @UsePipes(ValidationPipe)
+  async getMessages(
+    @Query() query: DriversServicesRequestsMessagesQueryDto,
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.getAllMessages(query, id, req['user']);
   }
 
 }

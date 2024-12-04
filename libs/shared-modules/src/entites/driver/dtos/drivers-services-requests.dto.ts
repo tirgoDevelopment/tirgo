@@ -19,6 +19,15 @@ export class DriversServicesRequestsDto {
   id?: number;
 }
 
+export class DriversServicesRequestsOperationDto {
+
+  @ApiProperty({ required: false })
+  cancelReason?: string;
+
+  @ApiProperty({ required: false })
+  deleteReason?: string;
+}
+
 
 export class DriversServicesRequestsQueryDto {
   @ApiProperty({ required: false })

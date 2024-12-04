@@ -18,7 +18,6 @@ import { RabbitMQSenderService } from './services/rabbitmq-sender.service';
 import { RabbitMQConsumerService } from './services/rabbitmq-consumer.service';
 import { SseModule } from './sse/sse.module';
 import { CustomSwaggerModule, TelegramBotService } from '@app/shared-modules';
-import { ChatGateway } from './chat/chat.gateway';
 import { TelegramBotController } from './bot/telegram-bot.controller';
 
 @Module({
@@ -54,7 +53,6 @@ import { TelegramBotController } from './bot/telegram-bot.controller';
     SmsService,
     RabbitMQSenderService,
     RabbitMQConsumerService,
-    ChatGateway,
     TelegramBotService
   ],
 })
