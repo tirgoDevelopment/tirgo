@@ -15,10 +15,12 @@ import { DriversRepository } from "./repositories/drivers.repository";
 import { JwtService } from "@nestjs/jwt";
 import { ServicesRequestsController } from "./contollers/services-requests.controller";
 import { ServicesRequestsService } from "./services/services-requests.service";
+import { SseModule } from "../sse/sse.module";
 
 
 @Module({
   imports: [
+    SseModule,
     TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses]),
   ],
   controllers: [

@@ -6,6 +6,7 @@ import {
   ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver, DriversServicesRequestsDto, DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User
 } from '../..';
 import * as dateFns from 'date-fns';
+import { SseGateway } from '../../sse/sse.service';
 
 @Injectable()
 export class ServicesRequestsService {
@@ -13,7 +14,8 @@ export class ServicesRequestsService {
     @InjectRepository(DriversServicesRequests) private readonly driversServicesRequestsRepository: Repository<DriversServicesRequests>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     @InjectRepository(DriversServices) private readonly driversServicesRepository: Repository<DriversServices>,
-    @InjectRepository(DriversServicesRequestsStatuses) private readonly servicesRequestsStatusesRepository: Repository<DriversServicesRequestsStatuses>
+    @InjectRepository(DriversServicesRequestsStatuses) private readonly servicesRequestsStatusesRepository: Repository<DriversServicesRequestsStatuses>,
+    private sseService: SseGateway
   ) { }
 
   async create(dto: DriversServicesRequestsDto, user: User): Promise<BpmResponse> {
@@ -106,7 +108,7 @@ export class ServicesRequestsService {
         where: filter,
         skip: (index - 1) * size,
         take: size,
-        relations: ['driver', 'services', 'status']
+        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status']
       });
 
       if (!data.length) {
@@ -162,7 +164,7 @@ export class ServicesRequestsService {
         where: filter,
         skip: (index - 1) * size,
         take: size,
-        relations: ['driver', 'services', 'status']
+        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status']
       });
 
       if (!data.length) {
