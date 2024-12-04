@@ -7,9 +7,12 @@ import {
   DriversServicesRequestsMessages,
   DriversServicesRequestsMessagesQueryDto,
   SseEventNames,
-  ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver, DriversServicesRequestsDto, DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User
+  DriversServicesRequestsOperationDto,
+  ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver,
+  DriversServicesRequestsDto, 
+  DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User,
+  DriversServicesRequestsStatusesChangesHistory
 } from '../..';
-import * as dateFns from 'date-fns';
 import { SseGateway } from '../../sse/sse.service';
 import { DriversServicesRequestsRepository } from '../repositories/services-requests.repository';
 import { DriversServicesRequestsMessagesRepository } from '../repositories/services-requests-messages.repository';
@@ -20,6 +23,7 @@ export class ServicesRequestsService {
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     @InjectRepository(DriversServices) private readonly driversServicesRepository: Repository<DriversServices>,
     @InjectRepository(DriversServicesRequestsStatuses) private readonly servicesRequestsStatusesRepository: Repository<DriversServicesRequestsStatuses>,
+    @InjectRepository(DriversServicesRequestsStatusesChangesHistory) private readonly statusesHistoryRepository: Repository<DriversServicesRequestsStatusesChangesHistory>,
     private driversServicesRequestsMessagesRepository: DriversServicesRequestsMessagesRepository,
     private sseService: SseGateway,
     private driversServicesRequestsRepository: DriversServicesRequestsRepository
@@ -65,7 +69,7 @@ export class ServicesRequestsService {
         if (err.message.includes("Driver")) {
           throw new BadRequestException(ResponseStauses.DriverNotFound);
         } else if (err.message.includes("DriversServicesRequestsStatuses")) {
-          throw new BadRequestException(ResponseStauses.ServiceNotFound);
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
         } else {
           throw new BadRequestException(ResponseStauses.NotFound);
         }
@@ -76,6 +80,96 @@ export class ServicesRequestsService {
     }
   }
 
+  async cancelServiceRequest(dto: DriversServicesRequestsOperationDto, id: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
+
+      if (request.status?.code == ServicesRequestsStatusesCodes.Working || request.status?.code == ServicesRequestsStatusesCodes.Completed) {
+        throw new BadRequestException(ResponseStauses.RequestCantBeCanceleted);
+      }
+
+      const status = await this.servicesRequestsStatusesRepository.findOneOrFail({ where: { code: ServicesRequestsStatusesCodes.Canceled } });
+      request.status = status; 
+      request.isCanceled = true;
+      request.canceledAt = new Date();
+      request.canceledBy = user;
+      request.cancelReason = dto.cancelReason || '';
+
+      await this.driversServicesRequestsRepository.save(request);
+
+      await this.statusesHistoryRepository.save({ driverServiceRequest: request, status, createdBy: user });
+
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestCanceled });
+
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes(`"DriversServicesRequests"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+
+      }
+    }
+  }
+
+  async deleteServiceRequest(dto: DriversServicesRequestsOperationDto, id: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id }, relations: ['status'] })
+
+      if (request.status?.code != ServicesRequestsStatusesCodes.Waiting) {
+        throw new BadRequestException(ResponseStauses.RequestStatusIsNotWaiting);
+      }
+
+      const status = await this.servicesRequestsStatusesRepository.findOneOrFail({ where: { code: ServicesRequestsStatusesCodes.Deleted } });
+      request.status = status;
+      request.isDeleted = true;
+      request.deletedBy = user;
+      request.deletedAt = new Date();
+      request.deleteReason = dto.deleteReason || '';
+
+      await this.driversServicesRequestsRepository.save(request);
+
+      await this.statusesHistoryRepository.save({ driverServiceRequest: request, status, createdBy: user });
+
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestDeleted });
+
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
+    } catch (err: any) {
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes("DriversServicesRequests")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+
+      }
+    }
+  }
   async getAll(query: DriversServicesRequestsQueryDto, user: User): Promise<BpmResponse> {
     try {
 
@@ -196,16 +290,16 @@ export class ServicesRequestsService {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
-      if(user.userType == UserTypes.Driver) {
+      if (user.userType == UserTypes.Driver) {
         const exists = await this.driversServicesRequestsRepository.exists({ where: { id: driverServiceRequestId, driver: { id: user.driver?.id } } });
-        if(!exists) {
+        if (!exists) {
           throw new BadRequestException(ResponseStauses.AccessDenied);
         }
       }
 
       // set request id to get messags only related to servicesRequest 
       query['driverServiceRequestId'] = driverServiceRequestId;
-      
+
       const size = +query.pageSize || 10; // Number of items per page
       const index = +query.pageIndex || 1;
 

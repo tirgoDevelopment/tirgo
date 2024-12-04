@@ -21,6 +21,7 @@ import { ClientRepliesOrderOffer } from 'apps/orders/src';
 import { DriversServicesRequestsDetails } from '../driver/entities/drivers-services-requests-details.entity';
 import { DriversServicesRequests } from '../driver/entities/drivers-services-requests.entity';
 import { DriversServicesRequestsMessages } from '../driver/entities/drivers-services-requests-messages.entity';
+import { DriversServicesRequestsStatusesChangesHistory } from '../driver/entities/drivers-services-requests-statuses-history.entity';
 
 @Entity()
 export class User {
@@ -100,6 +101,9 @@ export class User {
 
     @OneToMany(() => DriversServicesRequestsMessages, (driverRequest) => driverRequest.createdBy)
     createdServicesRequestsMessages: DriversServicesRequestsMessages[];
+    
+    @OneToMany(() => DriversServicesRequestsStatusesChangesHistory, (driverRequestStatusHistory) => driverRequestStatusHistory.createdBy)
+    createdDriverRequestStatusHistory: DriversServicesRequestsStatusesChangesHistory[];
 
     @OneToMany(() => Client, (client) => client.createdBy)
     createdClients: Client[];
@@ -196,6 +200,9 @@ export class User {
 
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.canceledBy)
     canceledDriverOrderOffers: DriverOrderOffers[];
+
+    @OneToMany(() => DriversServicesRequests, (driversServicesRequests) => driversServicesRequests.canceledBy)
+    canceledDriversServicesRequests: DriversServicesRequests[];
 
     // relations belongs to updated by user
     @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.updatedBy)

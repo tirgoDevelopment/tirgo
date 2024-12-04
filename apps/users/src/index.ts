@@ -36,6 +36,8 @@ export {
   DriversServicesRequestsMessagesDto,
   DriversServicesRequestsMessagesQueryDto,
   DriversServicesRequestsStatusesDto,
+  DriversServicesRequestsStatusesChangesHistory,
+  DriversServicesRequestsOperationDto,
   DriversServicesRequestsDto,
   DriversServicesRequestsQueryDto,
   DriversServices

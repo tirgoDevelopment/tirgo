@@ -11,6 +11,10 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
 
     async findAll(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('sr')
+            .leftJoinAndSelect("sr.statusesHistory", "statusesHistory")
+            .leftJoin("statusesHistory.createdBy", "historyCreatedBy")
+            .addSelect(['historyCreatedBy.id', 'historyCreatedBy.userType', 'historyCreatedBy.lastLogin'])
+            .leftJoinAndSelect("statusesHistory.status", "historyStatus")
             .leftJoinAndSelect("sr.driver", "driver")
             .leftJoinAndSelect("driver.driverTransports", "driverTransports")
             .leftJoinAndSelect("driverTransports.transportType", "transportType")
@@ -20,6 +24,10 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
             .leftJoinAndSelect("sr.status", "status")
             .leftJoin("sr.createdBy", "createdBy")
             .addSelect(['createdBy.id', 'createdBy.userType', 'createdBy.lastLogin'])
+            .leftJoin("sr.canceledBy", "canceledBy")
+            .addSelect(['canceledBy.id', 'canceledBy.userType', 'canceledBy.lastLogin'])
+            .leftJoin("sr.deletedBy", "deletedBy")
+            .addSelect(['deletedBy.id', 'deletedBy.userType', 'deletedBy.lastLogin'])
             .where('sr.isDeleted = false')
     
         // Apply filters conditionally
@@ -36,7 +44,6 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
         } else if (filter.createdAtTo) {
             queryBuilder.andWhere('sr.createdAt <= :createdAtTo', { createdAtTo: filter.createdAtTo });
         }
-        console.log(filter.statusCode)
         switch (+filter.statusCode) {
             case ServicesRequestsStatusesCodes.Active:
                 queryBuilder.andWhere('status.code IN (:...statusCodes)', { statusCodes: [ServicesRequestsStatusesCodes.Working, ServicesRequestsStatusesCodes.Waiting, ServicesRequestsStatusesCodes.Priced] });

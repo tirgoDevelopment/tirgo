@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { DriversServicesRequestsStatusesChangesHistory } from '../../driver/entities/drivers-services-requests-statuses-history.entity';
 import { DriversServicesRequests } from '../../driver/entities/drivers-services-requests.entity';
 
 @Entity()
@@ -26,4 +27,7 @@ export class DriversServicesRequestsStatuses {
 
   @OneToMany(() => DriversServicesRequests, serviceRequest => serviceRequest.status)
   servicesRequests: DriversServicesRequests[];
+
+  @OneToMany(() => DriversServicesRequestsStatusesChangesHistory, serviceRequest => serviceRequest.status)
+  servicesRequestsStatusesHistory: DriversServicesRequestsStatusesChangesHistory[];
 }

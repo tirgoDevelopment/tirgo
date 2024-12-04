@@ -4,7 +4,7 @@ import { interval } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 interface SseEvent {
-    data: string;
+    data: any;
     event: string;
 }
 
