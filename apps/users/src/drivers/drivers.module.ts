@@ -4,6 +4,7 @@ import {
   Client, CustomJwtService, Driver, DriverMerchant,
   DriverPhoneNumber, DriverTransport, DriverOrderOffers, SundryService,
   DriversServices, DriversServicesRequestsStatuses,
+  DriversServicesRequestsMessages,
   Transaction, TransportKind, TransportType, User
 } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -21,7 +22,7 @@ import { SseModule } from "../sse/sse.module";
 @Module({
   imports: [
     SseModule,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses]),
+    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages]),
   ],
   controllers: [
     DriversController,
@@ -40,7 +41,7 @@ import { SseModule } from "../sse/sse.module";
   ],
   exports: [
     DriversRepository,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses]),
+    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages]),
   ]
 })
 export class DriversModule {

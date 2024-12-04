@@ -20,7 +20,7 @@ export class DriversServicesRequestsDetails {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.servicesRequestsDetails, { nullable: true })
+  @ManyToOne(() => User, (user) => user.createdServicesRequestsDetails, { nullable: true })
   @JoinColumn({ name: 'created_by_id' })
   createdBy: User;
 }
