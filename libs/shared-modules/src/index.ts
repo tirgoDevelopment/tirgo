@@ -190,7 +190,8 @@ export enum ServicesRequestsStatusesCodes {
   Waiting = 0,
   Working = 1,
   Priced = 2,
-  Completed = 3
+  Active = 3,
+  Completed = 4
 }
 
 export enum UserTypes {

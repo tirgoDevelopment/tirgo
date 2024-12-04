@@ -17,6 +17,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ServicesRequestsController } from "./contollers/services-requests.controller";
 import { ServicesRequestsService } from "./services/services-requests.service";
 import { SseModule } from "../sse/sse.module";
+import { DriversServicesRequestsRepository } from "./repositories/services-requests.repository";
 
 
 @Module({
@@ -37,7 +38,8 @@ import { SseModule } from "../sse/sse.module";
     DriversRepository,
     CustomJwtService,
     JwtService,
-    ServicesRequestsService
+    ServicesRequestsService,
+    DriversServicesRequestsRepository
   ],
   exports: [
     DriversRepository,

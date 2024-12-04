@@ -1,21 +1,22 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, EntityNotFoundError, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, EntityNotFoundError, In, Repository } from 'typeorm';
 import {
   UserTypes, DriversServices, DriversServicesRequests, NoContentException,
   ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver, DriversServicesRequestsDto, DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User
 } from '../..';
 import * as dateFns from 'date-fns';
 import { SseGateway } from '../../sse/sse.service';
+import { DriversServicesRequestsRepository } from '../repositories/services-requests.repository';
 
 @Injectable()
 export class ServicesRequestsService {
   constructor(
-    @InjectRepository(DriversServicesRequests) private readonly driversServicesRequestsRepository: Repository<DriversServicesRequests>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
     @InjectRepository(DriversServices) private readonly driversServicesRepository: Repository<DriversServices>,
     @InjectRepository(DriversServicesRequestsStatuses) private readonly servicesRequestsStatusesRepository: Repository<DriversServicesRequestsStatuses>,
-    private sseService: SseGateway
+    private sseService: SseGateway,
+    private driversServicesRequestsRepository: DriversServicesRequestsRepository
   ) { }
 
   async create(dto: DriversServicesRequestsDto, user: User): Promise<BpmResponse> {
@@ -86,38 +87,14 @@ export class ServicesRequestsService {
         sort['id'] = 'DESC'
       }
 
-      const filter: any = { isDeleted: false };
-      if (query.statusCode) {
-        filter.status = { code: query.statusCode };
-      }
-      if (query.driverId) {
-        filter.driver = { id: query.driverId };
-      }
-      if (query.createdAtFrom && query.createdAtTo) {
-        filter.createdAt = Between(
-          dateFns.parseISO(query.createdAtFrom),
-          dateFns.parseISO(query.createdAtTo)
-        );
-      } else if (query.createdAtFrom) {
-        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(query.createdAtFrom));
-      } else if (query.createdAtTo) {
-        filter.createdAt = LessThanOrEqual(dateFns.parseISO(query.createdAtTo));
-      }
-
-      const data = await this.driversServicesRequestsRepository.find({
-        where: filter,
-        skip: (index - 1) * size,
-        take: size,
-        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status', 'createdBy']
-      });
-
-      if (!data.length) {
+      const data = await this.driversServicesRequestsRepository.findAll(query, sort, index, size)
+      if (!data.data.length) {
         throw new NoContentException();
       }
-
-      return new BpmResponse(true, data);
+      const totalPagesCount = Math.ceil(data.count / size);
+      return new BpmResponse(true, { content: data.data, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
-      console.log(err.name, err.message)
+      console.log(err)
       if (err instanceof HttpException) {
         throw err
       } else {
@@ -144,34 +121,15 @@ export class ServicesRequestsService {
         sort['id'] = 'DESC'
       }
 
-      const filter: any = { isDeleted: false };
-      if (query.statusCode) {
-        filter.status = { code: query.statusCode };
-      }
+      query.driverId = driverId;
 
-      if (query.createdAtFrom && query.createdAtTo) {
-        filter.createdAt = Between(
-          dateFns.parseISO(query.createdAtFrom),
-          dateFns.parseISO(query.createdAtTo)
-        );
-      } else if (query.createdAtFrom) {
-        filter.createdAt = MoreThanOrEqual(dateFns.parseISO(query.createdAtFrom));
-      } else if (query.createdAtTo) {
-        filter.createdAt = LessThanOrEqual(dateFns.parseISO(query.createdAtTo));
-      }
+      const data = await this.driversServicesRequestsRepository.findAll(query, sort, index, size)
 
-      const data = await this.driversServicesRequestsRepository.find({
-        where: filter,
-        skip: (index - 1) * size,
-        take: size,
-        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status', 'createdBy']
-      });
-
-      if (!data.length) {
+      if (!data.data.length) {
         throw new NoContentException();
       }
-
-      return new BpmResponse(true, data);
+      const totalPagesCount = Math.ceil(data.count / size);
+      return new BpmResponse(true, { content: data.data, totalPagesCount, pageIndex: index, pageSize: size }, null);
     } catch (err: any) {
       console.log(err.name, err.message)
       if (err instanceof HttpException) {
