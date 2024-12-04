@@ -108,7 +108,7 @@ export class ServicesRequestsService {
         where: filter,
         skip: (index - 1) * size,
         take: size,
-        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status']
+        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status', 'createdBy']
       });
 
       if (!data.length) {
@@ -164,7 +164,7 @@ export class ServicesRequestsService {
         where: filter,
         skip: (index - 1) * size,
         take: size,
-        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status']
+        relations: ['driver', 'driver.driverTransports', 'driver.driverTransports.transportType', 'driver.driverTransports.transportKind', 'driver.driverTransports.cargoLoadMethods', 'services', 'status', 'createdBy']
       });
 
       if (!data.length) {

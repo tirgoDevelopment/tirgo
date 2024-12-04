@@ -32,9 +32,11 @@ export { ClientDocuments } from "./entites/clients/clients-documents.entity";
 export { Driver } from "./entites/driver/entities/driver.entity";
 export { DriversServicesRequestsStatuses } from "./entites/references/entities/drivers-services-requests-statuses.entity"
 export { DriversServicesRequests } from "./entites/driver/entities/drivers-services-requests.entity"
+export { DriversServicesRequestsMessages } from "./entites/driver/entities/drivers-services-requests-messages.entity"
 export { DriversServicesRequestsDetails } from "./entites/driver/entities/drivers-services-requests-details.entity"
 export { DriversServicesRequestsStatusesDto } from "./entites/references/dtos/drviers-services-requests-statuses.dto"
 export { DriversServicesRequestsDto, DriversServicesRequestsQueryDto } from "./entites/driver/dtos/drivers-services-requests.dto"
+export { DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesQueryDto } from "./entites/driver/dtos/drivers-services-requests-messages.dto"
 export { DriversServices } from "./entites/driver/entities/drivers-services.entity";
 export { DriverPhoneNumber } from "./entites/driver/entities/driver-phone-number.entity";
 export { DriverDocuments } from "./entites/driver/entities/driver-documents.entity";
@@ -200,6 +202,12 @@ export enum UserTypes {
   DriverMerchantUser = 'driver_merchant_user',
   Staff = 'staff',
   Agent = 'agent'
+}
+
+export enum DriverServiceRequestMessageTypes {
+  Text = 'text',
+  Image = 'image',
+  Document = 'document'
 }
 
 export enum SendOtpTypes {

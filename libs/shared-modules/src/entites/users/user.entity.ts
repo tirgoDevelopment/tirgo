@@ -20,6 +20,7 @@ import { ClientPhoneNumber } from '../clients/client-phonenumber.entity';
 import { ClientRepliesOrderOffer } from 'apps/orders/src';
 import { DriversServicesRequestsDetails } from '../driver/entities/drivers-services-requests-details.entity';
 import { DriversServicesRequests } from '../driver/entities/drivers-services-requests.entity';
+import { DriversServicesRequestsMessages } from '../driver/entities/drivers-services-requests-messages.entity';
 
 @Entity()
 export class User {
@@ -92,10 +93,13 @@ export class User {
     createdDriverTransports: DriverTransport[];
 
     @OneToMany(() => DriversServicesRequestsDetails, (driverRequestDetail) => driverRequestDetail.createdBy)
-    servicesRequestsDetails: DriversServicesRequestsDetails[];
+    createdServicesRequestsDetails: DriversServicesRequestsDetails[];
 
     @OneToMany(() => DriversServicesRequests, (driverRequest) => driverRequest.createdBy)
-    servicesRequests: DriversServicesRequests[];
+    createdServicesRequests: DriversServicesRequests[];
+
+    @OneToMany(() => DriversServicesRequestsMessages, (driverRequest) => driverRequest.createdBy)
+    createdServicesRequestsMessages: DriversServicesRequestsMessages[];
 
     @OneToMany(() => Client, (client) => client.createdBy)
     createdClients: Client[];
@@ -165,6 +169,12 @@ export class User {
     @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.deletedBy)
     deletedDriverTransports: DriverTransport[];
 
+    @OneToMany(() => DriversServicesRequests, (driversServicesRequests) => driversServicesRequests.deletedBy)
+    deletedDriversServicesRequests: DriversServicesRequests[];
+
+    @OneToMany(() => DriversServicesRequestsMessages, (driversServicesRequestsMessages) => driversServicesRequestsMessages.deletedBy)
+    deletedDriversServicesRequestsMessages: DriversServicesRequestsMessages[];
+
     @OneToMany(() => Client, (client) => client.deletedBy)
     deletedClients: Client[];
 
@@ -217,5 +227,13 @@ export class User {
     // relations belongs to finished by user
     @OneToMany(() => Order, (order) => order.finishedBy)
     finishedOrders: Order[];
+
+    // relations belongs to read by user
+    @OneToMany(() => DriversServicesRequestsMessages, (driversServicesRequestsMessages) => driversServicesRequestsMessages.readBy)
+    readDriversServicesRequestsMessages: DriversServicesRequestsMessages[];
+
+    // relations belongs to sent by user
+    @OneToMany(() => DriversServicesRequestsMessages, (driverRequest) => driverRequest.sentBy)
+    sentServicesRequestsMessages: DriversServicesRequestsMessages[];
 }
 

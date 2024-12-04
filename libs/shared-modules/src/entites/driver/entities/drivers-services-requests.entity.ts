@@ -3,6 +3,7 @@ import { DriversServicesRequestsStatuses } from '../../references/entities/drive
 import { User } from '../../users/user.entity';
 import { Driver } from './driver.entity';
 import { DriversServicesRequestsDetails } from './drivers-services-requests-details.entity';
+import { DriversServicesRequestsMessages } from './drivers-services-requests-messages.entity';
 import { DriversServices } from './drivers-services.entity';
 
 @Entity()
@@ -13,13 +14,16 @@ export class DriversServicesRequests {
   @ManyToOne(() => Driver, driver => driver.orders, { nullable: false })
   driver: Driver;
 
+  @OneToMany(() => DriversServicesRequestsMessages, message => message.driverServiceRequest)
+  messages: DriversServicesRequestsMessages[];
+
   @ManyToMany(() => DriversServices, { nullable: false })
   @JoinTable()
   services: DriversServices[];
-  
+
   @OneToMany(() => DriversServicesRequestsDetails, (details) => details.request, { nullable: true })
   amountDetails: Driver[];
-  
+
   @ManyToOne(() => DriversServicesRequestsStatuses, (status) => status.servicesRequests, { nullable: false })
   @JoinColumn({ name: 'status_id' })
   status: DriversServicesRequestsStatuses;
@@ -27,7 +31,7 @@ export class DriversServicesRequests {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.servicesRequests, { nullable: true })
+  @ManyToOne(() => User, (user) => user.createdServicesRequests, { nullable: true })
   @JoinColumn({ name: 'created_by_id' })
   createdBy: User;
 
@@ -36,4 +40,11 @@ export class DriversServicesRequests {
 
   @Column({ default: false, name: 'is_deleted' })
   isDeleted: boolean;
+
+  @Column({ type: 'timestamp', name: 'deleted_at', nullable: true })
+  deletedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.deletedDriversServicesRequests, { nullable: true })
+  @JoinColumn({ name: 'deleted_by_id' })
+  deletedBy: User;
 }
