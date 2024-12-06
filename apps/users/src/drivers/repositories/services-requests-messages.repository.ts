@@ -18,7 +18,10 @@ export class DriversServicesRequestsMessagesRepository extends Repository<Driver
             .addSelect(['deletedBy.id', 'deletedBy.userType', 'deletedBy.lastLogin'])
             .leftJoin("m.readBy", "readBy")
             .addSelect(['readBy.id', 'readBy.userType', 'readBy.lastLogin'])
+            .leftJoin("m.repliedTo", "repliedTo")
+            .addSelect(['repliedTo.id', 'repliedTo.messageType', 'repliedTo.message'])
             .where('m.isDeleted = false')
+            .andWhere('m.service_request_id = :driverServiceRequestId', { driverServiceRequestId: filter.driverServiceRequestId })
     
         // Apply filters conditionally
         if (filter.createdAtFrom && filter.createdAtTo) {
@@ -42,7 +45,7 @@ export class DriversServicesRequestsMessagesRepository extends Repository<Driver
                 queryBuilder.addOrderBy(`m.${key}`, order[key].toUpperCase());
             });
         } else {
-            queryBuilder.addOrderBy('m.id', 'DESC');
+            queryBuilder.addOrderBy('m.id', 'ASC');
         }
     
         // Apply pagination

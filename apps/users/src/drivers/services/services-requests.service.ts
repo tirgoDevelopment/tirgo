@@ -261,7 +261,7 @@ export class ServicesRequestsService {
           throw new BadRequestException(ResponseStauses.RepliedToIdIsRequired);
         }
         serviceRequestMessage.isReplied = dto.isReplied;
-        serviceRequestMessage.repliedToId = dto.repliedToId;
+        serviceRequestMessage.repliedTo = await this.driversServicesRequestsMessagesRepository.findOneOrFail({ where: { id: dto.repliedToId, driverServiceRequest: { id: +driverServiceRequestId } } });
       }
       await this.driversServicesRequestsMessagesRepository.save(serviceRequestMessage);
       await this.sseService.sendNotificationToAllUsers({ data: dto.message, event: SseEventNames.NewMessage });
