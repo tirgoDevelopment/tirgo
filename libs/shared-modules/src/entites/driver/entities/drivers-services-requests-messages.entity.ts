@@ -21,13 +21,18 @@ export class DriversServicesRequestsMessages {
   sentBy: User;
 
   @ManyToOne(() => DriversServicesRequests, serviceRequest => serviceRequest.messages, { nullable: false })
+  @JoinColumn({ name: 'service_request_id' })
   driverServiceRequest: DriversServicesRequests;
 
   @Column({ default: false, name: 'is_replied' })
   isReplied: boolean;
 
-  @Column({ name: 'replied_to_id', nullable: true })
-  repliedToId: number;
+  @ManyToOne(() => DriversServicesRequestsMessages, (message) => message.replies, { nullable: true })
+  @JoinColumn({ name: 'replied_to_id' })
+  repliedTo: DriversServicesRequestsMessages;
+
+  @OneToMany(() => DriversServicesRequestsMessages, (message) => message.repliedTo)
+  replies: DriversServicesRequestsMessages[];
 
   @Column({ default: false, name: 'is_read' })
   isRead: boolean;
