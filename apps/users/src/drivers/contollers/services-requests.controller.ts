@@ -1,6 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DriversServicesRequestsDto,DriversServicesRequestsOperationDto,  DriversServicesRequestsQueryDto, DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesQueryDto } from '../..';
+import {
+  DriversServicesRequestsDto,
+  DriversServicesRequestsOperationDto,
+  DriversServicesRequestsPricesDto,
+  DriversServicesRequestsQueryDto,
+  DriversServicesRequestsMessagesDto,
+  DriversServicesRequestsMessagesQueryDto
+} from '../..';
 import { ServicesRequestsService } from '../services/services-requests.service';
 
 @ApiTags('Drivers services requests')
@@ -30,6 +37,17 @@ export class ServicesRequestsController {
     @Param('id') id: number
   ) {
     return this.servicesRequestsService.cancelServiceRequest(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Pricing service request' })
+  @Patch(':id/price')
+  @UsePipes(ValidationPipe)
+  async price(
+    @Body() dto: DriversServicesRequestsPricesDto,
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.priceServiceRequest(dto, id, req['user']);
   }
 
   @ApiOperation({ summary: 'Delete service request' })

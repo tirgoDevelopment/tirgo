@@ -11,6 +11,8 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
 
     async findAll(filter: any, order: any, index: number, size: number) {
         const queryBuilder = this.createQueryBuilder('sr')
+            .leftJoinAndSelect("sr.amountDetails", "amountDetails")
+            .leftJoinAndSelect("amountDetails.driverService", "driverService")
             .leftJoinAndSelect("sr.statusesHistory", "statusesHistory")
             .leftJoin("statusesHistory.createdBy", "historyCreatedBy")
             .addSelect(['historyCreatedBy.id', 'historyCreatedBy.userType', 'historyCreatedBy.lastLogin'])
