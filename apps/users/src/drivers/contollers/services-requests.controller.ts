@@ -50,6 +50,36 @@ export class ServicesRequestsController {
     return this.servicesRequestsService.priceServiceRequest(dto, id, req['user']);
   }
 
+  @ApiOperation({ summary: 'Driver confirms price of service request' })
+  @Patch(':id/confirm-price')
+  @UsePipes(ValidationPipe)
+  async confirm(
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.confirmServiceRequest(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff starts working on service request' })
+  @Patch(':id/working')
+  @UsePipes(ValidationPipe)
+  async working(
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.workingServiceRequest(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Staff completes working on service request' })
+  @Patch(':id/complete')
+  @UsePipes(ValidationPipe)
+  async complete(
+    @Req() req: Request,
+    @Param('id') id: number
+  ) {
+    return this.servicesRequestsService.completeServiceRequest(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Delete service request' })
   @Delete(':id/delete')
   @UsePipes(ValidationPipe)

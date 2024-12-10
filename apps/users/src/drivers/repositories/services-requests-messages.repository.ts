@@ -45,6 +45,7 @@ export class DriversServicesRequestsMessagesRepository extends Repository<Driver
                 queryBuilder.addOrderBy(`m.${key}`, order[key].toUpperCase());
             });
         } else {
+            console.log('ASC')
             queryBuilder.addOrderBy('m.id', 'ASC');
         }
     

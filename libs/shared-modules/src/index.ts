@@ -180,6 +180,8 @@ export enum ResponseStauses {
   ServiceRequestNotFound = 'serviceRequestNotFound',
   ServiceRequestStatusNotFound = 'serviceRequestStatusNotFound',
   RequestStatusIsNotWaiting = 'requestStatusIsNotWaiting',
+  RequestStatusIsNotPriced = 'requestStatusIsNotPriced',
+  RequestStatusIsNotConfirmed = 'requestStatusIsNotConfirmed',
   RequestCantBeCanceleted = 'requestCantBeCanceleted'
 }
 
@@ -196,11 +198,12 @@ export enum CargoStatusCodes {
 export enum ServicesRequestsStatusesCodes {
   Waiting = 0,
   Priced = 1,
-  Working = 2,
-  Active = 3,
-  Completed = 4,
-  Canceled = 5,
-  Deleted = 6
+  Confirmed = 2,
+  Working = 3,
+  Active = 4,
+  Completed = 5,
+  Canceled = 6,
+  Deleted = 7
 }
 
 export enum UserTypes {
@@ -231,7 +234,9 @@ export enum SseEventNames {
   NewServiceRequest = 'newServiceRequest',
   ServiceRequestCanceled = 'serviceRequestCanceled',
   ServiceRequestPriced = 'serviceRequestPriced',
+  ServiceRequtConfirmed = 'serviceRequestConfirm',
   ServiceRequestToWorking = 'serviceRequestToWorking',
+  ServiceRequestToCompleted = 'serviceRequestToCompleted',
   ServiceRequestDeleted = 'serviceRequestDeleted'
 }
 
