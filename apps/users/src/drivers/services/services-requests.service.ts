@@ -156,14 +156,185 @@ export class ServicesRequestsService {
 
       // save pricing services request amount details
       await Promise.all(
-        dto.details.map( async (el: any) => {
+        dto.details.map(async (el: any) => {
           const driverService = await this.driversServicesRepository.findOneOrFail({ where: { id: el.serviceId } })
-         return queryRunner.manager.save(DriversServicesRequestsDetails, { request, driverService, amount: el.amount, createdBy: user });
+          return queryRunner.manager.save(DriversServicesRequestsDetails, { request, driverService, amount: el.amount, createdBy: user });
         })
       )
 
       // send text to driver notifing about price
       await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestPriced });
+
+      // commit transaction
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes(`"DriversServicesRequests"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes(`"DriversServices"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async confirmServiceRequest(id: number, user: User): Promise<BpmResponse> {
+    const queryRunner = await this.driversServicesRequestsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+
+      // check if only staff and driver can confrim price of services request
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
+
+      // check if request status is priced else return specific error
+      if (request.status?.code != ServicesRequestsStatusesCodes.Priced) {
+        throw new BadRequestException(ResponseStauses.RequestStatusIsNotPriced);
+      }
+
+      // set confirmed status to services request
+      const status = await this.servicesRequestsStatusesRepository.findOneOrFail({ where: { code: ServicesRequestsStatusesCodes.Confirmed } });
+      request.status = status;
+
+      // save service request as priced
+      await queryRunner.manager.save(DriversServicesRequests, request);
+
+      // save status change history
+      await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
+
+      // send text to driver notifing about confrim
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestPriced });
+
+      // commit transaction
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes(`"DriversServicesRequests"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes(`"DriversServices"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async workingServiceRequest(id: number, user: User): Promise<BpmResponse> {
+    const queryRunner = await this.driversServicesRequestsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+
+      // check if only staff and driver can change to working status of services request
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
+
+      // check if request status is confirmed else return specific error
+      if (request.status?.code != ServicesRequestsStatusesCodes.Priced) {
+        throw new BadRequestException(ResponseStauses.RequestStatusIsNotConfirmed);
+      }
+
+      // set working status to services request
+      const status = await this.servicesRequestsStatusesRepository.findOneOrFail({ where: { code: ServicesRequestsStatusesCodes.Working } });
+      request.status = status;
+
+      // save service request as working
+      await queryRunner.manager.save(DriversServicesRequests, request);
+
+      // save status change history
+      await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
+
+      // send text to driver notifing about working
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestToWorking });
+
+      // commit transaction
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes(`"DriversServicesRequests"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes(`"DriversServices"`)) {
+          throw new BadRequestException(ResponseStauses.ServiceNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async completeServiceRequest(id: number, user: User): Promise<BpmResponse> {
+    const queryRunner = await this.driversServicesRequestsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+
+      // check if only staff and driver can change to working status of services request
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
+
+      // check if request status is working else return specific error
+      if (request.status?.code != ServicesRequestsStatusesCodes.Working) {
+        throw new BadRequestException(ResponseStauses.RequestStatusIsNotWaiting);
+      }
+
+      // set completed status to services request
+      const status = await this.servicesRequestsStatusesRepository.findOneOrFail({ where: { code: ServicesRequestsStatusesCodes.Completed } });
+      request.status = status;
+
+      // save service request as completed
+      await queryRunner.manager.save(DriversServicesRequests, request);
+
+      // save status change history
+      await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
+
+      // send text to driver notifing about complete
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestToCompleted });
 
       // commit transaction
       await queryRunner.commitTransaction();
@@ -306,7 +477,6 @@ export class ServicesRequestsService {
       }
     }
   }
-
   async sendMessage(dto: DriversServicesRequestsMessagesDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
     try {
 
@@ -373,7 +543,7 @@ export class ServicesRequestsService {
       if (query.sortBy && query.sortType) {
         sort[query.sortBy] = query.sortType;
       } else {
-        sort['id'] = 'DESC'
+        sort['id'] = 'ASC'
       }
 
 
