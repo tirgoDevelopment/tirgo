@@ -151,6 +151,18 @@ export class DriversController {
     return this.driversService.activateDriver(id, req['user']);
   }
 
+  @ApiOperation({ summary: 'Driver accept tms assign request' })
+  @Patch('/tms-assign-requests/:id/accept')
+  async driverAccepetTmsAssignRequets(@Param('id') id: number, @Req() req: Request) {
+    return this.driversService.driverAcceptTmsAssignRequest(id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Driver reject tms assign request driver' })
+  @Patch('tms-assign-requests/:id/reject')
+  async driverRejectTmsAssignRequets(@Param('id') id: number, @Req() req: Request) {
+    return this.driversService.driverRejectTmsAssignRequest(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Admin assign driver to agent' })
   @Post(':driverId/agents/:agentId')
   async assignToAgent(@Param('driverId') driverId: number, @Param('agentId') agentId: number, @Req() req: Request) {

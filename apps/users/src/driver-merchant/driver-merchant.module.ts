@@ -1,15 +1,17 @@
 import { Module } from "@nestjs/common";
 import { DriverMerchantController } from "./controllers/driver-merchant.controller";
-import { AwsService, Config, Driver, DriverBankAccount, DriverMerchant, DriverMerchantUser, MailService, Role, SmsService, SundryService, Transaction, User } from "..";
+import { AwsService, Config, Driver, DriverBankAccount, DriverMerchant, DriverMerchantUser, MailService, Role, SmsService, SundryService, TmsReqestToDriver, Transaction, User } from "..";
 import { DriverMerchantsService } from "./services/driver-merchant.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriverMerchantUserController } from "./controllers/client-merchant-user.controller";
 import { DriverMerchantUsersService } from "./services/driver-merchant-user.service";
+import { SseModule } from "../sse/sse.module";
 
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ DriverMerchant, DriverMerchantUser, User, DriverBankAccount, Role, Driver, Transaction, Config ]),
+      SseModule,
+        TypeOrmModule.forFeature([ DriverMerchant, TmsReqestToDriver, DriverMerchantUser, User, DriverBankAccount, Role, Driver, Transaction, Config ]),
       ],
       controllers: [
         DriverMerchantController,
@@ -25,7 +27,7 @@ import { DriverMerchantUsersService } from "./services/driver-merchant-user.serv
         MailService
       ],
       exports: [
-        TypeOrmModule.forFeature([ DriverMerchant, DriverMerchantUser, User, DriverBankAccount, Role, Driver, Transaction ]),
+        TypeOrmModule.forFeature([ DriverMerchant, TmsReqestToDriver, DriverMerchantUser, User, DriverBankAccount, Role, Driver, Transaction ]),
         DriverMerchantsService
       ]
 })

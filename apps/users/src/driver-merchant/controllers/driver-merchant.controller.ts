@@ -102,6 +102,13 @@ export class DriverMerchantController {
     return this.driverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
   }
 
+  @ApiOperation({ summary: 'Request driver' })
+  @Post('request-driver')
+  @UsePipes(ValidationPipe)
+  async requestDriver(@Req() req: Request, @Param('tmsId') tmsId: number, @Param('driverId') driverId: number) {
+    return this.driverMerchantsService.requestDriverToMerchant(tmsId, driverId, req['user']);
+  }
+
   //get methods  
   @ApiOperation({ summary: 'Get all merchants' })
   @Get('all-driver-merchants')

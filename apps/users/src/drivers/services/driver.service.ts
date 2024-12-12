@@ -1,9 +1,15 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency, CustomJwtService, Driver, DriverDocuments, DriverDto, DriverMerchant, DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, NoContentException, NotFoundException, DriverOrderOffers, ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, UserDocumentTypes, UserStates, UserTypes } from '../..';
+import { Agent, AppendDriversToTmsDto, AwsService, BadRequestException, BpmResponse, CargoStatusCodes, Currency,
+   CustomJwtService, Driver, DriverDocuments, DriverDto, DriverMerchant, 
+   DriverMerchantUser, DriverPhoneNumber, DriverTransport, InternalErrorException, 
+   NoContentException, NotFoundException, DriverOrderOffers,
+    ResponseStauses, SundryService, Transaction, TransactionTypes, UpdateDriverDto, User, 
+    UserDocumentTypes, UserStates, UserTypes, TmsReqestToDriver, SseEventNames } from '../..';
 import { DriversRepository } from '../repositories/drivers.repository';
 import { GetDriversDto, UpdateDriverBirthDayDto, UpdateDriverPhoneDto, AwsS3BucketKeyNames } from '../../';
+import { SseGateway } from '../../sse/sse.service';
 
 @Injectable()
 export class DriversService {
@@ -14,10 +20,12 @@ export class DriversService {
     @InjectRepository(Agent) private readonly agentsRepository: Repository<Agent>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
     @InjectRepository(DriverPhoneNumber) private readonly driverPhoneNumbersRepository: Repository<DriverPhoneNumber>,
+    @InjectRepository(TmsReqestToDriver) private readonly tmsReqestToDriverRepository: Repository<TmsReqestToDriver>,
     private readonly driverRepository: DriversRepository,
     private sundriesService: SundryService,
     private customJwtService: CustomJwtService,
-    private awsService: AwsService
+    private awsService: AwsService,
+    private sseService: SseGateway
   ) { }
 
   async registerDriver(createDriverDto: DriverDto, user: User, files: { profile?: any[] }): Promise<BpmResponse> {
@@ -742,6 +750,84 @@ export class DriversService {
       await this.driverRepository.save(driver);
 
         return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        // Driver not found
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async driverAcceptTmsAssignRequest(requestId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+
+      const assignRequest = await this.tmsReqestToDriverRepository.findOneOrFail({ where: { id: requestId }, relations: ['driver', 'driverMerchant', 'createdBy'] });
+
+      if (assignRequest.isAccepted) {
+        // Driver is already accpeted
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      }
+
+      if (assignRequest.isRejected) {
+        // Driver is already rejected
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
+      }
+
+      assignRequest.isAccepted = true;
+      assignRequest.acceptedAt = new Date();
+
+      await this.tmsReqestToDriverRepository.save(assignRequest);
+
+      this.sseService.sendNotificationToUser(assignRequest.createdBy?.id.toString(), { event: SseEventNames.DriverAcceptedTmsAssignRequest, driverId: user.driver?.id })
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        // Driver not found
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async driverRejectTmsAssignRequest(requestId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+
+      const assignRequest = await this.tmsReqestToDriverRepository.findOneOrFail({ where: { id: requestId }, relations: ['driver', 'driverMerchant', 'createdBy'] });
+
+      if (assignRequest.isAccepted) {
+        // Driver is already accpeted
+        throw new BadRequestException(ResponseStauses.AlreadyAccepted);
+      }
+
+      if (assignRequest.isRejected) {
+        // Driver is already rejected
+        throw new BadRequestException(ResponseStauses.AlreadyRejected);
+      }
+
+      assignRequest.isRejected = true;
+      assignRequest.rejectedAt = new Date();
+
+      await this.tmsReqestToDriverRepository.save(assignRequest);
+
+      this.sseService.sendNotificationToUser(assignRequest.createdBy?.id.toString(), { event: SseEventNames.DriverRejectedTmsAssignRequest, driverId: user.driver?.id })
+      return new BpmResponse(true, null, null);
     } catch (err: any) {
       if (err.name == 'EntityNotFoundError') {
         // Driver not found

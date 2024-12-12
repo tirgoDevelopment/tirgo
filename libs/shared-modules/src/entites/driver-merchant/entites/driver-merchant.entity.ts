@@ -5,6 +5,7 @@ import { DriverMerchantUser } from './driver-merchant-user.entity';
 import { User } from '../../users/user.entity';
 import { Driver } from '../../driver/entities/driver.entity';
 import { Transaction } from '../../transactions/transaction.entity';
+import { TmsReqestToDriver } from '../../driver/entities/driver-tms-request.entity';
 
 @Entity()
 export class DriverMerchant {
@@ -92,6 +93,9 @@ export class DriverMerchant {
   @OneToMany(() => DriverBankAccount, (bankAccount) => bankAccount.driverMerchant)
   bankAccounts?: DriverBankAccount[];
   
+  @OneToMany(() => TmsReqestToDriver, (driver) => driver.driverMerchant, { nullable: true })
+  requestedDrivers: TmsReqestToDriver[];
+
   // @OneToMany(() => Order, (order) => order.clientMerchant)
   // orders?: Order[];
 

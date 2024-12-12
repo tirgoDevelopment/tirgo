@@ -238,7 +238,10 @@ export enum SseEventNames {
   ServiceRequtConfirmed = 'serviceRequestConfirm',
   ServiceRequestToWorking = 'serviceRequestToWorking',
   ServiceRequestToCompleted = 'serviceRequestToCompleted',
-  ServiceRequestDeleted = 'serviceRequestDeleted'
+  ServiceRequestDeleted = 'serviceRequestDeleted',
+  TmsSentAssignRequestToDriver = 'tmsSentAssignRequestToDriver',
+  DriverAcceptedTmsAssignRequest = 'driverAcceptedTmsAssignRequest',
+  DriverRejectedTmsAssignRequest = 'driverRejectedTmsAssignRequest',
 }
 
 export enum UserStates {

@@ -1,9 +1,10 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual,  } from 'typeorm';
-import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, Transaction, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver, NoContentException, TransactionTypes } from '../..';
+import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, Transaction, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver, NoContentException, TransactionTypes, TmsReqestToDriver, SseEventNames } from '../..';
 import { AppendDriverMerchantDto, DriverBalanceManagementDto, DriverMerchantDto, DriverPaidWayKzDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
 import * as dateFns from 'date-fns'
+import { SseGateway } from '../../sse/sse.service';
 
 @Injectable()
 export class DriverMerchantsService {
@@ -15,10 +16,12 @@ export class DriverMerchantsService {
     @InjectRepository(Role) private readonly rolesRepository: Repository<Role>,
     @InjectRepository(DriverBankAccount) private readonly bankAccountRepository: Repository<DriverBankAccount>,
     @InjectRepository(Driver) private readonly driversRepository: Repository<Driver>,
+    @InjectRepository(TmsReqestToDriver) private readonly tmsReqestToDriverRepository: Repository<TmsReqestToDriver>,
     @InjectRepository(Transaction) private readonly transactionsRepository: Repository<Transaction>,
     private sundriesService: SundryService,
     private awsService: AwsService,
-    private dataSource: DataSource
+    private dataSource: DataSource,
+    private sseService: SseGateway,
   ) { }
 
   async createDriverMerchant(createDriverMerchantDto: CreateDriverMerchantDto) {
@@ -433,6 +436,37 @@ export class DriverMerchantsService {
       driver.driverMerchant = merchant;
       await this.driversRepository.save(driver);
       return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+  
+  async requestDriverToMerchant(tmsId: number, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+      const driver: Driver = await this.driversRepository.findOneOrFail(
+        { where: { id: driverId, isDeleted: false }, relations: ['driverMerchant'] }
+      );
+
+      if (driver.driverMerchant) {
+        throw new BadRequestException(ResponseStauses.AlreadyAssigned);
+      }
+      const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: tmsId } });
+      
+      const tmsRequest = new TmsReqestToDriver();
+      tmsRequest.driver = driver;
+      tmsRequest.driverMerchant = merchant;
+      tmsRequest.createdBy = user;
+
+      await this.tmsReqestToDriverRepository.save(tmsRequest);
+      this.sseService.sendNotificationToUser(driverId.toString(), { event: SseEventNames.TmsSentAssignRequestToDriver, tmsId })
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err)
       if (err.name == 'EntityNotFoundError') {

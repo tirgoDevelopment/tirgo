@@ -6,7 +6,8 @@ import {
   DriversServices, DriversServicesRequestsStatuses,
   DriversServicesRequestsMessages,
   Transaction, TransportKind, TransportType, User,
-  DriversServicesRequestsStatusesChangesHistory
+  DriversServicesRequestsStatusesChangesHistory,
+  TmsReqestToDriver
 } from "..";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DriversController } from "./contollers/driver.controller";
@@ -25,7 +26,7 @@ import { DriversServicesRequestsMessagesRepository } from "./repositories/servic
 @Module({
   imports: [
     SseModule,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
+    TypeOrmModule.forFeature([Driver, TmsReqestToDriver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
   ],
   controllers: [
     DriversController,
@@ -46,7 +47,7 @@ import { DriversServicesRequestsMessagesRepository } from "./repositories/servic
   ],
   exports: [
     DriversRepository,
-    TypeOrmModule.forFeature([Driver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
+    TypeOrmModule.forFeature([Driver, TmsReqestToDriver, DriverPhoneNumber, DriverMerchant, User, Client, DriverTransport, TransportKind, TransportType, CargoType, CargoLoadMethod, Agent, Transaction, DriverOrderOffers, DriversServices, DriversServicesRequests, DriversServicesRequestsStatuses, DriversServicesRequestsMessages, DriversServicesRequestsStatusesChangesHistory]),
   ]
 })
 export class DriversModule {

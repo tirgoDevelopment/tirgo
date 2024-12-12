@@ -43,7 +43,8 @@ export {
   DriversServicesRequestsOperationDto,
   DriversServicesRequestsDto,
   DriversServicesRequestsQueryDto,
-  DriversServices
+  DriversServices,
+  TmsReqestToDriver
 } from "@app/shared-modules";
 export { BpmResponse, UserTypes, SseEventNames, UserStates, AwsS3BucketKeyNames, SendOtpTypes, UserDocumentTypes, ResponseStauses, CargoStatusCodes, ServicesRequestsStatusesCodes, BadRequestException, InternalErrorException, NoContentException, NotFoundException, TransactionTypes } from "@app/shared-modules";
 export { AwsService, SundryService, CustomJwtService, TelegramBotService, SmsService, MailService, AuthModule, DatabaseModule } from '@app/shared-modules';

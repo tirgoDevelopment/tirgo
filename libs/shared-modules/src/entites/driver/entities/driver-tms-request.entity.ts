@@ -16,14 +16,20 @@ export class TmsReqestToDriver {
 
   @ManyToOne(() => Driver, (driver) => driver.tmsRequests, { nullable: true }) 
   @JoinColumn({ name: 'driver_id' })
-  driver: User;
+  driver: Driver;
 
-  @ManyToMany(() => DriverMerchant)
-  @JoinTable()
-  driverMerchants: DriverMerchant[];
+  @ManyToOne(() => DriverMerchant, (driverMerchant) => driverMerchant.requestedDrivers, { nullable: true })
+  @JoinColumn({ name: 'merchant_id' })
+  driverMerchant: DriverMerchant;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
+
+  @Column({ type: 'timestamp', name: 'accepted_at', nullable: true })
+  acceptedAt: Date;  
+
+  @Column({ type: 'timestamp', name: 'rejected_at', nullable: true })
+  rejectedAt: Date;  
 
   @ManyToOne(() => User, (user) => user.createdTmsRequestsToDrivers, { nullable: true }) 
   @JoinColumn({ name: 'created_by_id' })
