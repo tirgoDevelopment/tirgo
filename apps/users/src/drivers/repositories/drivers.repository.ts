@@ -35,9 +35,6 @@ export class DriversRepository extends Repository<Driver> {
         if (filter.phoneNumber) {
             queryBuilder.andWhere('phoneNumber.phoneNumber LIKE :phoneNumber', { phoneNumber: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
         }
-        if (filter.merchantId) {
-            queryBuilder.andWhere('d.driverMerchant.id = :id', { id: filter.merchantId });
-        }
         if (filter.phoneCode) {
             queryBuilder.andWhere('phoneNumber.code LIKE :phoneCode', { phoneCode: `%${filter.phoneCode.trim().replace(/\+/g, '')}%` });
         }
@@ -171,6 +168,20 @@ export class DriversRepository extends Repository<Driver> {
                 merchantId: filter.merchantId
             });
     
+             // Apply filters conditionally
+        if (filter.driverId) {
+            queryBuilder.andWhere('d.id = :id', { id: +filter.driverId });
+        }
+        if (filter.phoneNumber) {
+            queryBuilder.andWhere('driverTransports.transportNumber LIKE :transportNumber', { transportNumber: `%${filter.transportNumber.trim().replace(/\+/g, '')}%` });
+        }
+        if (filter.isOwnOrder) {
+            queryBuilder.andWhere('d.is_own_order = :isOwnOrder', { isOwnOrder: filter.isOwnOrder });
+        }
+        if (filter.isOwnBalance) {
+            queryBuilder.andWhere('d.is_own_balance = :isOwnBalance', { isOwnBalance: filter.isOwnBalance });
+        }
+
         // Apply state filter
         switch (filter.state) {
             case UserStates.Active:

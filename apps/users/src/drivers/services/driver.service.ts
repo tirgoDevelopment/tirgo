@@ -583,10 +583,6 @@ export class DriversService {
       state: query.state
      };
     
-     if(user.userType == UserTypes.DriverMerchantUser) {
-      filter.merchantId = user.driverMerchant.id
-     }
-
       const drivers = await this.driverRepository.findAllDrivers(filter, sort, index, size)
       if (!drivers.data.length) {
         throw new NoContentException();
@@ -625,10 +621,13 @@ export class DriversService {
         merchantId,
         deleted: false,
         driverId: query.driverId, 
+        isOwnOrder: query.isOwnOrder, 
+        isOwnBalance: query.isOwnBalance, 
         firstName: query.firstName, 
         phoneNumber: query.phoneNumber, 
         transportKindId: query.transportKindId,
         transportTypeId: query.transportTypeId, 
+        transportNumber: query.transportNumber,
         isSubscribed: query.isSubscribed, 
         status: query.status, 
         isVerified: query.isVerified,

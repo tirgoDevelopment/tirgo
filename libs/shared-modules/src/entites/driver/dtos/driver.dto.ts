@@ -185,6 +185,15 @@ export class GetDriversDto {
   isSubscribed?: boolean;
 
   @IsOptional()
+  transportNumber?: string;
+
+  @IsOptional()
+  isOwnOrder?: string;
+
+  @IsOptional()
+  isOwnBalance?: string;
+
+  @IsOptional()
   @IsString()
   status?: string;
 
