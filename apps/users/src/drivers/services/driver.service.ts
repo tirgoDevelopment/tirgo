@@ -131,6 +131,10 @@ export class DriversService {
       driver.birthdayDate = createDriverDto.birthdayDate;
       driver.citizenship = createDriverDto.citizenship;
       driver.createdBy = user;
+      driver.isOwnBalance = createDriverDto.isOwnBalance
+      driver.isOwnService = createDriverDto.isOwnService
+      driver.isOwnOrder = createDriverDto.isOwnOrder
+      driver.isKzPaidWay = createDriverDto.isKzPaidWay
       
       if(files) {
         const uploads: any = [];
@@ -254,6 +258,10 @@ export class DriversService {
       driver.email = updateDriverDto.email || driver.email;
       driver.birthdayDate = updateDriverDto.birthdayDate || driver.birthdayDate;
       driver.citizenship = updateDriverDto.citizenship || driver.citizenship;
+      driver.isOwnBalance = updateDriverDto.isOwnBalance || driver.isOwnBalance
+      driver.isOwnService = updateDriverDto.isOwnService || driver.isOwnService
+      driver.isOwnOrder = updateDriverDto.isOwnOrder || driver.isOwnOrder
+      driver.isKzPaidWay = updateDriverDto.isKzPaidWay || driver.isKzPaidWay
 
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phone => {
         const driverPhoneNumber = new DriverPhoneNumber();
@@ -548,7 +556,7 @@ export class DriversService {
     }
 }
 
-  async getAllDrivers(query: GetDriversDto): Promise<BpmResponse> {
+  async getAllDrivers(query: GetDriversDto, user: any): Promise<BpmResponse> {
     try {
       const size = +query.pageSize || 10; // Number of items per page
       const index = +query.pageIndex || 0;
@@ -575,6 +583,10 @@ export class DriversService {
       state: query.state
      };
     
+     if(user.userType == UserTypes.DriverMerchantUser) {
+      filter.merchantId = user.driverMerchant.id
+     }
+
       const drivers = await this.driverRepository.findAllDrivers(filter, sort, index, size)
       if (!drivers.data.length) {
         throw new NoContentException();

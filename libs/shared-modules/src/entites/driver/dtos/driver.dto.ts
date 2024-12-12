@@ -16,6 +16,26 @@ export class DriverDto {
   @IsNotEmpty()
   phoneNumbers: any;
 
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isOwnBalance?: boolean;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isOwnService?: boolean;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isOwnOrder?: boolean;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isKzPaidWay?: boolean;
+
   @ApiProperty({ required: false })
   birthdayDate?: Date;
  
@@ -88,6 +108,18 @@ export class UpdateDriverDto {
 
   @ApiProperty({ required: false })
   agentId: number;
+
+  @ApiProperty({ required: true })
+  isOwnBalance?: boolean;
+
+  @ApiProperty({ required: true })
+  isOwnService?: boolean;
+
+  @ApiProperty({ required: true })
+  isOwnOrder?: boolean;
+
+  @ApiProperty({ required: true })
+  isKzPaidWay?: boolean;
 
 }
 

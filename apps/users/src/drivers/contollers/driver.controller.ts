@@ -117,8 +117,8 @@ export class DriversController {
 
   @ApiOperation({ summary: 'Get all drivers' })
   @Get() 
-  async getDrivers(@Query() query: GetDriversDto) {
-    return this.driversService.getAllDrivers(query);
+  async getDrivers(@Query() query: GetDriversDto, @Req() req: Request) {
+    return this.driversService.getAllDrivers(query, req['user']);
   }
 
   @ApiOperation({ summary: 'Get all merchant drivers' })

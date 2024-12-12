@@ -35,6 +35,9 @@ export class DriversRepository extends Repository<Driver> {
         if (filter.phoneNumber) {
             queryBuilder.andWhere('phoneNumber.phoneNumber LIKE :phoneNumber', { phoneNumber: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
         }
+        if (filter.merchantId) {
+            queryBuilder.andWhere('d.driverMerchant.id = :id', { id: filter.merchantId });
+        }
         if (filter.phoneCode) {
             queryBuilder.andWhere('phoneNumber.code LIKE :phoneCode', { phoneCode: `%${filter.phoneCode.trim().replace(/\+/g, '')}%` });
         }

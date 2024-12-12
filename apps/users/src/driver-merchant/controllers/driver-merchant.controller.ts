@@ -102,35 +102,6 @@ export class DriverMerchantController {
     return this.driverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
   }
 
-  @ApiOperation({ summary: 'Change driver balance management' })
-  @Post('drivers/:id/balance-management')
-  @UsePipes(ValidationPipe)
-
-  async changeBalanceManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
-    return this.driverMerchantsService.changeDriverBalanceManagement(dto, id, req['user']);
-  }
-
-  @ApiOperation({ summary: 'Change driver service management' })
-  @Post('drivers/:id/service-management')
-  @UsePipes(ValidationPipe)
-  async changeServiceManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
-    return this.driverMerchantsService.changeDriverServiceManagement(dto, id, req['user']);
-  }
-
-  @ApiOperation({ summary: 'Change driver order management' })
-  @Post('drivers/:id/order-management')
-  @UsePipes(ValidationPipe)
-  async changeOrderManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
-    return this.driverMerchantsService.changeDriverOrderManagement(dto, id, req['user']);
-  }
-
-  @ApiOperation({ summary: 'Change id driver uses kz piad way' })
-  @Post('drivers/:id/kz-paid-way')
-  @UsePipes(ValidationPipe)
-  async kzPaidWay(@Body() dto: DriverPaidWayKzDto, @Param('id') id: number, @Req() req: Request) {
-    return this.driverMerchantsService.changeIsKzPaidWay(dto, id, req['user']);
-  }
-
   //get methods  
   @ApiOperation({ summary: 'Get all merchants' })
   @Get('all-driver-merchants')
