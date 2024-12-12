@@ -105,7 +105,7 @@ export class ServicesRequestsService {
 
       await this.statusesHistoryRepository.save({ driverServiceRequest: request, status, createdBy: user });
 
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestCanceled });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestCanceled });
 
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCanceled]);
     } catch (err: any) {
@@ -163,7 +163,7 @@ export class ServicesRequestsService {
       )
 
       // send text to driver notifing about price
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestPriced });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestPriced });
 
       // commit transaction
       await queryRunner.commitTransaction();
@@ -220,7 +220,7 @@ export class ServicesRequestsService {
       await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
 
       // send text to driver notifing about confrim
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestPriced });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestPriced });
 
       // commit transaction
       await queryRunner.commitTransaction();
@@ -277,7 +277,7 @@ export class ServicesRequestsService {
       await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
 
       // send text to driver notifing about working
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestToWorking });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestToWorking });
 
       // commit transaction
       await queryRunner.commitTransaction();
@@ -334,7 +334,7 @@ export class ServicesRequestsService {
       await queryRunner.manager.save(DriversServicesRequestsStatusesChangesHistory, { driverServiceRequest: request, status, createdBy: user });
 
       // send text to driver notifing about complete
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestToCompleted });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestToCompleted });
 
       // commit transaction
       await queryRunner.commitTransaction();
@@ -386,7 +386,7 @@ export class ServicesRequestsService {
 
       await this.statusesHistoryRepository.save({ driverServiceRequest: request, status, createdBy: user });
 
-      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id }, event: SseEventNames.ServiceRequestDeleted });
+      await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestDeleted });
 
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyDeleted]);
     } catch (err: any) {
@@ -407,6 +407,7 @@ export class ServicesRequestsService {
       }
     }
   }
+
   async getAll(query: DriversServicesRequestsQueryDto, user: User): Promise<BpmResponse> {
     try {
 
@@ -477,6 +478,7 @@ export class ServicesRequestsService {
       }
     }
   }
+
   async sendMessage(dto: DriversServicesRequestsMessagesDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
     try {
 
@@ -500,7 +502,7 @@ export class ServicesRequestsService {
         serviceRequestMessage.repliedTo = await this.driversServicesRequestsMessagesRepository.findOneOrFail({ where: { id: dto.repliedToId, driverServiceRequest: { id: +driverServiceRequestId } } });
       }
       await this.driversServicesRequestsMessagesRepository.save(serviceRequestMessage);
-      await this.sseService.sendNotificationToAllUsers({ data: dto.message, event: SseEventNames.NewMessage });
+      await this.sseService.sendNotificationToAllUsers({ data: { messages: dto.message, messageType: dto.messageType, requestId: driverServiceRequestId, userId: user.id, userType: user.userType }, event: SseEventNames.NewMessage });
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err.name, err.message)
@@ -519,6 +521,7 @@ export class ServicesRequestsService {
       }
     }
   }
+  
   async getAllMessages(query: DriversServicesRequestsMessagesQueryDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
     try {
 
