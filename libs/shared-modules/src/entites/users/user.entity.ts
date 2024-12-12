@@ -23,6 +23,7 @@ import { DriversServicesRequests } from '../driver/entities/drivers-services-req
 import { DriversServicesRequestsMessages } from '../driver/entities/drivers-services-requests-messages.entity';
 import { DriversServicesRequestsStatusesChangesHistory } from '../driver/entities/drivers-services-requests-statuses-history.entity';
 import { ServicesRequestsDocuments } from '../driver/entities/services-requests-documents.entity';
+import { TmsReqestToDriver } from '../driver/entities/driver-tms-request.entity';
 
 @Entity()
 export class User {
@@ -87,6 +88,9 @@ export class User {
 
     @OneToMany(() => Driver, (driver) => driver.createdBy)
     createdDrivers: Driver[];
+
+    @OneToMany(() => TmsReqestToDriver, (tmsReqestToDriver) => tmsReqestToDriver.createdBy)
+    createdTmsRequestsToDrivers: TmsReqestToDriver[];
 
     @OneToMany(() => DriverPhoneNumber, (driverPhoneNumber) => driverPhoneNumber.createdBy)
     createdDriverPhoneNumbers: DriverPhoneNumber[];

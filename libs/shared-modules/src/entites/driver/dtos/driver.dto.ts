@@ -18,22 +18,18 @@ export class DriverDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsBoolean()
   isOwnBalance?: boolean;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsBoolean()
   isOwnService?: boolean;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsBoolean()
   isOwnOrder?: boolean;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsBoolean()
   isKzPaidWay?: boolean;
 
   @ApiProperty({ required: false })

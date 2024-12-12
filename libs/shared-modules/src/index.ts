@@ -1,6 +1,7 @@
 
 export { multerConfig } from "./configs/aws-bucket";
 
+export { TmsReqestToDriver } from "./entites/driver/entities/driver-tms-request.entity";
 export { RoleDto } from "./entites/role/dtos/role.dto";
 export { BadRequestException } from "./exceptions/bad-request.exception";
 export { InternalErrorException } from "./exceptions/internal.exception";

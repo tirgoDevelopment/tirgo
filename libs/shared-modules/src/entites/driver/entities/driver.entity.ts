@@ -10,6 +10,7 @@ import { Transaction } from '../../transactions/transaction.entity';
 import { DriverMerchant } from '../../driver-merchant/entites/driver-merchant.entity';
 import { DriverDocuments } from './driver-documents.entity';
 import { DriversServicesRequests } from './drivers-services-requests.entity';
+import { TmsReqestToDriver } from './driver-tms-request.entity';
 
 @Entity()
 export class Driver {
@@ -54,6 +55,9 @@ export class Driver {
   @OneToOne(() => DriverDocuments, (document) => document.driverId, { cascade: true, onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'driver_license_file_id' })
   driverLicenseFile?: DriverDocuments;
+
+  @OneToMany(() => TmsReqestToDriver, (driver) => driver.driver, { nullable: true })
+  tmsRequests: TmsReqestToDriver[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;  
