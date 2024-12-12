@@ -764,8 +764,12 @@ export class DriversService {
   }
 
   async driverAcceptTmsAssignRequest(requestId: number, user: User): Promise<BpmResponse> {
+
+    const queryRunner = await this.driverRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
     try {
 
+      await queryRunner.startTransaction();
       if(user.userType != UserTypes.Driver) {
         throw new BadRequestException(ResponseStauses.AccessDenied)
       }
@@ -781,15 +785,25 @@ export class DriversService {
         // Driver is already rejected
         throw new BadRequestException(ResponseStauses.AlreadyRejected);
       }
-
+      
       assignRequest.isAccepted = true;
       assignRequest.acceptedAt = new Date();
+      
+      await queryRunner.manager.save(TmsReqestToDriver ,assignRequest);
+      
+      const driver = await this.driverRepository.findOneOrFail({ where: { id: assignRequest.driver?.id, isDeleted: false } });
+      const merchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: assignRequest.driverMerchant?.id } });
+      
+      driver.driverMerchant = merchant;
 
-      await this.tmsReqestToDriverRepository.save(assignRequest);
+      await queryRunner.manager.save(Driver, driver);
 
       this.sseService.sendNotificationToUser(assignRequest.createdBy?.id.toString(), { event: SseEventNames.DriverAcceptedTmsAssignRequest, driverId: user.driver?.id })
+
+      await queryRunner.commitTransaction();
       return new BpmResponse(true, null, null);
     } catch (err: any) {
+      await queryRunner.rollbackTransaction();
       if (err.name == 'EntityNotFoundError') {
         // Driver not found
         throw new NoContentException();
@@ -799,6 +813,8 @@ export class DriversService {
         // Other error (handle accordingly)
         throw new InternalErrorException(ResponseStauses.InternalServerError);
       }
+    } finally {
+      await queryRunner.release();
     }
   }
 
