@@ -395,7 +395,7 @@ export class DriversService {
       const profileDoc = new DriverDocuments();
       profileDoc.driverId = driver.id;
       profileDoc.name = profile.originalname.split(' ').join('').trim();
-      profileDoc.bucket = 'drivers';
+      profileDoc.bucket = AwsS3BucketKeyNames.DriversProfiles;
       profileDoc.mimeType = profile.mimetype;
       profileDoc.size = profile.size;
       profileDoc.docType = UserDocumentTypes.Profile;

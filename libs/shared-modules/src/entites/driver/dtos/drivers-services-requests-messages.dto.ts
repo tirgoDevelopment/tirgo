@@ -43,6 +43,20 @@ export class DriversServicesRequestsMessagesDto {
   repliedToId: number;
 }
 
+export class DriversServicesRequestsMessagesFilesDto {
+
+  @ApiProperty({ required: false })
+  id?: number;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isReplied: boolean;
+
+  @ApiProperty({ required: false })
+  repliedToId: number;
+}
+
 export class DriversServicesRequestsMessagesQueryDto {
   @ApiProperty({ required: false })
   pageSize: number;

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFiles, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   DriversServicesRequestsDto,
@@ -6,9 +6,11 @@ import {
   DriversServicesRequestsPricesDto,
   DriversServicesRequestsQueryDto,
   DriversServicesRequestsMessagesDto,
-  DriversServicesRequestsMessagesQueryDto
+  DriversServicesRequestsMessagesQueryDto,
+  DriversServicesRequestsMessagesFilesDto
 } from '../..';
 import { ServicesRequestsService } from '../services/services-requests.service';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Drivers services requests')
 @Controller('services-requests')
@@ -119,6 +121,21 @@ export class ServicesRequestsController {
     @Param('id') id: number
   ) {
     return this.servicesRequestsService.sendMessage(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Send file message to service request' })
+  @Patch(':id/messages/files')
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'file', maxCount: 1 }
+  ]))
+  async createMessageFile(
+    @UploadedFiles() files: { file?: any[] },
+    @Body() dto: DriversServicesRequestsMessagesFilesDto,
+    @Param('id') id: number,
+    @Req() req: Request
+  ) {
+    return this.servicesRequestsService.sendFileMessage(dto, id, files, req['user']);
   }
 
   @ApiOperation({ summary: 'Get service request messages' })

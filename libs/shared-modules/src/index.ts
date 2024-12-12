@@ -38,7 +38,8 @@ export { DriversServicesRequestsMessages } from "./entites/driver/entities/drive
 export { DriversServicesRequestsDetails } from "./entites/driver/entities/drivers-services-requests-details.entity"
 export { DriversServicesRequestsStatusesDto } from "./entites/references/dtos/drviers-services-requests-statuses.dto"
 export { DriversServicesRequestsDto, DriversServicesRequestsOperationDto, DriversServicesRequestsQueryDto } from "./entites/driver/dtos/drivers-services-requests.dto"
-export { DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesQueryDto } from "./entites/driver/dtos/drivers-services-requests-messages.dto"
+export { DriversServicesRequestsMessagesDto, DriversServicesRequestsMessagesFilesDto, DriversServicesRequestsMessagesQueryDto } from "./entites/driver/dtos/drivers-services-requests-messages.dto"
+export { ServicesRequestsDocuments } from "./entites/driver/entities/services-requests-documents.entity";
 export { DriversServices } from "./entites/driver/entities/drivers-services.entity";
 export { DriverPhoneNumber } from "./entites/driver/entities/driver-phone-number.entity";
 export { DriverDocuments } from "./entites/driver/entities/driver-documents.entity";
@@ -219,8 +220,7 @@ export enum UserTypes {
 
 export enum DriverServiceRequestMessageTypes {
   Text = 'text',
-  Image = 'image',
-  Document = 'document'
+  File = 'file'
 }
 
 export enum SendOtpTypes {
@@ -266,6 +266,7 @@ export enum AwsS3BucketKeyNames {
   DriversProfiles = 'drivers/profiles',
   DriversPassports = 'drivers/passports',
   DriversLicenses = 'drivers/driver-licenses',
+  DriversServicesRequests = 'drivers/services-requests',
   Clients = 'clients',
   Tmses = 'tmses',
   ClientsProfiles = 'clients/profiles',

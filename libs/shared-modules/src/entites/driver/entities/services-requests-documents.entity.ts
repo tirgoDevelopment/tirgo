@@ -1,8 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from '../../users/user.entity';
+import { DriversServicesRequestsMessages } from "./drivers-services-requests-messages.entity";
 
 @Entity()
-export class DriverDocuments {
+export class ServicesRequestsDocuments {
     @PrimaryGeneratedColumn('increment')
     id?: number;
 
@@ -24,8 +25,9 @@ export class DriverDocuments {
     @Column({ nullable: true, name: 'file_hash' })
     fileHash: string;
 
-    @Column({ nullable: false, name: 'driver_id' })
-    driverId: number;
+    @OneToOne(() => DriversServicesRequestsMessages, (message) => message.file, { nullable: false })
+    @JoinColumn({ name: 'message_id' })
+    message: DriversServicesRequestsMessages;
 
     @Column({ nullable: true })
     description: string;
@@ -33,7 +35,7 @@ export class DriverDocuments {
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
     createdAt: Date;
     
-    @ManyToOne(() => User, (user) => user.createdDriverDocuments, { nullable: true })
+    @ManyToOne(() => User, (user) => user.createdServicesRequestsDocuments, { nullable: true })
     @JoinColumn({ name: 'created_by_id' })
     createdBy: User;
     
@@ -43,14 +45,14 @@ export class DriverDocuments {
     @Column({ nullable: true, type: 'timestamp', name: 'deleted_at' })
     deletedAt: Date;
     
-    @ManyToOne(() => User, (user) => user.deletedDriverDocuments, { nullable: true })
+    @ManyToOne(() => User, (user) => user.deletedServicesRequestsDocuments, { nullable: true })
     @JoinColumn({ name: 'deleted_by_id' })
     deletedBy: User;
 
     @Column({ nullable: true, type: 'timestamp', name: 'update_at' })
     updateAt: Date;
     
-    @ManyToOne(() => User, (user) => user.updatedDriverDocuments, { nullable: true })
+    @ManyToOne(() => User, (user) => user.updatedServicesRequestsDocuments, { nullable: true })
     @JoinColumn({ name: 'updated_by_id' })
     updatedBy: User;
 }

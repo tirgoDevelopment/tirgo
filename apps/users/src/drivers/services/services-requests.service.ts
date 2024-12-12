@@ -13,11 +13,16 @@ import {
   ServicesRequestsStatusesCodes, DriversServicesRequestsStatuses, Driver,
   DriversServicesRequestsDto,
   DriversServicesRequestsQueryDto, BpmResponse, InternalErrorException, ResponseStauses, User,
-  DriversServicesRequestsStatusesChangesHistory
+  DriversServicesRequestsStatusesChangesHistory,
+  DriversServicesRequestsMessagesFilesDto,
+  AwsService,
+  AwsS3BucketKeyNames,
+  ServicesRequestsDocuments
 } from '../..';
 import { SseGateway } from '../../sse/sse.service';
 import { DriversServicesRequestsRepository } from '../repositories/services-requests.repository';
 import { DriversServicesRequestsMessagesRepository } from '../repositories/services-requests-messages.repository';
+import { DriverServiceRequestMessageTypes } from '@app/shared-modules';
 
 @Injectable()
 export class ServicesRequestsService {
@@ -28,7 +33,8 @@ export class ServicesRequestsService {
     @InjectRepository(DriversServicesRequestsStatusesChangesHistory) private readonly statusesHistoryRepository: Repository<DriversServicesRequestsStatusesChangesHistory>,
     private driversServicesRequestsMessagesRepository: DriversServicesRequestsMessagesRepository,
     private sseService: SseGateway,
-    private driversServicesRequestsRepository: DriversServicesRequestsRepository
+    private driversServicesRequestsRepository: DriversServicesRequestsRepository,
+    private awsService: AwsService
   ) { }
 
   async create(dto: DriversServicesRequestsDto, user: User): Promise<BpmResponse> {
@@ -501,8 +507,14 @@ export class ServicesRequestsService {
         serviceRequestMessage.isReplied = dto.isReplied;
         serviceRequestMessage.repliedTo = await this.driversServicesRequestsMessagesRepository.findOneOrFail({ where: { id: dto.repliedToId, driverServiceRequest: { id: +driverServiceRequestId } } });
       }
-      await this.driversServicesRequestsMessagesRepository.save(serviceRequestMessage);
-      await this.sseService.sendNotificationToAllUsers({ data: { messages: dto.message, messageType: dto.messageType, requestId: driverServiceRequestId, userId: user.id, userType: user.userType }, event: SseEventNames.NewMessage });
+      const message = await this.driversServicesRequestsMessagesRepository.save(serviceRequestMessage);
+      const eventdata = { 
+        message,
+        requestId: driverServiceRequestId, 
+        userId: user.id, 
+        userType: user.userType
+       }
+      await this.sseService.sendNotificationToAllUsers({ data: eventdata, event: SseEventNames.NewMessage });
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
     } catch (err: any) {
       console.log(err.name, err.message)
@@ -519,6 +531,86 @@ export class ServicesRequestsService {
       } else {
         throw new InternalErrorException(ResponseStauses.InternalServerError);
       }
+    }
+  }
+
+  async sendFileMessage(dto: DriversServicesRequestsMessagesFilesDto, driverServiceRequestId: number, files: any, user: User): Promise<BpmResponse> {
+    const queryRunner = await this.driversServicesRequestsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    try {
+      await queryRunner.startTransaction();
+      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      if(!files.file || !files.file[0]) {
+        throw new BadRequestException(ResponseStauses.FileIsRequired)
+      }
+
+      const serviceRequestMessage: DriversServicesRequestsMessages = new DriversServicesRequestsMessages();
+
+      serviceRequestMessage.message = files.file[0]?.originalname.split(' ').join('').trim();
+      serviceRequestMessage.messageType = DriverServiceRequestMessageTypes.File;
+      serviceRequestMessage.senderUserType = user.userType;
+      serviceRequestMessage.sentBy = user;
+      serviceRequestMessage.createdBy = user;
+      serviceRequestMessage.driverServiceRequest = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +driverServiceRequestId } });
+
+      if (dto.isReplied) {
+        if (!dto.repliedToId) {
+          throw new BadRequestException(ResponseStauses.RepliedToIdIsRequired);
+        }
+        serviceRequestMessage.isReplied = dto.isReplied;
+        serviceRequestMessage.repliedTo = await this.driversServicesRequestsMessagesRepository.findOneOrFail({ where: { id: dto.repliedToId, driverServiceRequest: { id: +driverServiceRequestId } } });
+      }
+      const message = await queryRunner.manager.save(DriversServicesRequestsMessages, serviceRequestMessage);
+
+      const file = files.file[0];
+      const fileDoc = new ServicesRequestsDocuments();
+      fileDoc.message = message;
+      fileDoc.name = file.originalname.split(' ').join('').trim();
+      fileDoc.bucket = AwsS3BucketKeyNames.DriversServicesRequests;
+      fileDoc.mimeType = file.mimetype;
+      fileDoc.size = file.size;
+      fileDoc.docType = file.mimeType;
+      fileDoc.fileHash = file.filename.split(' ').join('').trim();
+      fileDoc.description = file.description;
+
+      if(files.file) {
+        const res = await this.awsService.uploadFile(AwsS3BucketKeyNames.DriversServicesRequests, files.file);
+        if(!res) {
+          throw new InternalErrorException(ResponseStauses.AwsStoreFileFailed);
+        }
+      }
+
+      await queryRunner.manager.save(ServicesRequestsDocuments, fileDoc);
+      const eventdata = { 
+        message,
+        requestId: driverServiceRequestId, 
+        userId: user.id, 
+        userType: user.userType
+       }
+      await this.sseService.sendNotificationToAllUsers({ data: eventdata, event: SseEventNames.NewMessage });
+      await queryRunner.commitTransaction();
+      return new BpmResponse(true, null, [ResponseStauses.SuccessfullyCreated]);
+    } catch (err: any) {
+      await queryRunner.rollbackTransaction();
+      console.log(err.name, err.message)
+      if (err instanceof HttpException) {
+        throw err
+      } else if (err instanceof EntityNotFoundError) {
+        if (err.message.includes("DriversServicesRequestsRepository")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestNotFound);
+        } else if (err.message.includes("DriversServicesRequestsStatuses")) {
+          throw new BadRequestException(ResponseStauses.ServiceRequestStatusNotFound);
+        } else {
+          throw new BadRequestException(ResponseStauses.NotFound);
+        }
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    } finally {
+      await queryRunner.release();
     }
   }
   

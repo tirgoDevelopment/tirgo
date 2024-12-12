@@ -6,6 +6,7 @@ import { DriversServicesRequestsDetails } from './drivers-services-requests-deta
 import { DriversServicesRequestsMessages } from './drivers-services-requests-messages.entity';
 import { DriversServicesRequestsStatusesChangesHistory } from './drivers-services-requests-statuses-history.entity';
 import { DriversServices } from './drivers-services.entity';
+import { ServicesRequestsDocuments } from './services-requests-documents.entity';
 
 @Entity()
 export class DriversServicesRequests {

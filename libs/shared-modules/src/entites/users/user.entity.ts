@@ -22,6 +22,7 @@ import { DriversServicesRequestsDetails } from '../driver/entities/drivers-servi
 import { DriversServicesRequests } from '../driver/entities/drivers-services-requests.entity';
 import { DriversServicesRequestsMessages } from '../driver/entities/drivers-services-requests-messages.entity';
 import { DriversServicesRequestsStatusesChangesHistory } from '../driver/entities/drivers-services-requests-statuses-history.entity';
+import { ServicesRequestsDocuments } from '../driver/entities/services-requests-documents.entity';
 
 @Entity()
 export class User {
@@ -114,6 +115,12 @@ export class User {
     @ManyToOne(() => Agent, role => role.createdBy)
     createdAgents: Agent;
 
+    @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.createdBy)
+    createdDriverDocuments: DriverDocuments[];
+
+    @OneToMany(() => ServicesRequestsDocuments, (requestDocuments) => requestDocuments.createdBy)
+    createdServicesRequestsDocuments: ServicesRequestsDocuments[];
+
 
     // relations belongs to rejected by user
     @OneToMany(() => DriverMerchant, (driverMerchant) => driverMerchant.rejectedBy)
@@ -170,6 +177,9 @@ export class User {
     @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.deletedBy)
     deletedDriverDocuments: DriverDocuments[];
 
+    @OneToMany(() => ServicesRequestsDocuments, (requestDocuments) => requestDocuments.deletedBy)
+    deletedServicesRequestsDocuments: ServicesRequestsDocuments[];
+
     @OneToMany(() => DriverTransport, (driverTransports) => driverTransports.deletedBy)
     deletedDriverTransports: DriverTransport[];
 
@@ -207,6 +217,9 @@ export class User {
     // relations belongs to updated by user
     @OneToMany(() => DriverDocuments, (driverDocuments) => driverDocuments.updatedBy)
     updatedDriverDocuments: DriverDocuments[];
+
+    @OneToMany(() => ServicesRequestsDocuments, (requestDocuments) => requestDocuments.updatedBy)
+    updatedServicesRequestsDocuments: ServicesRequestsDocuments[];
 
     // relations belongs to accepted by user
     @OneToMany(() => DriverOrderOffers, (orderOffer) => orderOffer.acceptedBy)

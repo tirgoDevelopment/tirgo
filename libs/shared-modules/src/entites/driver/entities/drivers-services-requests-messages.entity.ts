@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { DriversServicesRequests } from './drivers-services-requests.entity';
+import { ServicesRequestsDocuments } from './services-requests-documents.entity';
 
 @Entity()
 export class DriversServicesRequestsMessages {
@@ -19,6 +20,9 @@ export class DriversServicesRequestsMessages {
   @ManyToOne(() => User, (user) => user.sentServicesRequestsMessages, { nullable: false })
   @JoinColumn({ name: 'sent_by_id' })
   sentBy: User;
+
+  @OneToOne(() => ServicesRequestsDocuments, (file) => file.message, { nullable: true, cascade: true, onDelete: 'CASCADE' })
+  file: ServicesRequestsDocuments;
 
   @ManyToOne(() => DriversServicesRequests, serviceRequest => serviceRequest.messages, { nullable: false })
   @JoinColumn({ name: 'service_request_id' })

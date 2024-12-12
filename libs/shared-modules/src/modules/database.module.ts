@@ -45,6 +45,7 @@ import { DriversServicesRequests } from '../entites/driver/entities/drivers-serv
 import { DriversServicesRequestsDetails } from '../entites/driver/entities/drivers-services-requests-details.entity';
 import { DriversServicesRequestsMessages } from '../entites/driver/entities/drivers-services-requests-messages.entity';
 import { DriversServicesRequestsStatusesChangesHistory } from '../entites/driver/entities/drivers-services-requests-statuses-history.entity';
+import { ServicesRequestsDocuments } from '../entites/driver/entities/services-requests-documents.entity';
 
 const entities = [
     TransportType,
@@ -91,7 +92,8 @@ const entities = [
     DriversServicesRequests,
     DriversServicesRequestsDetails,
     DriversServicesRequestsMessages,
-    DriversServicesRequestsStatusesChangesHistory
+    DriversServicesRequestsStatusesChangesHistory,
+    ServicesRequestsDocuments
 ];
 
 @Module({

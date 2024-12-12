@@ -160,7 +160,7 @@ export class DriversRepository extends Repository<Driver> {
             .addSelect('user.lastLogin')
             .addSelect('user.id')
             .addSelect('user.userType')
-            .leftJoin(User, 'u', 'u.id = d.created_by')
+            .leftJoin(User, 'u', 'u.id = d.created_by_id')
             .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
             .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
             .where('u.user_type = :userType AND dm.id = :merchantId AND d.is_deleted = true', {
