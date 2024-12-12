@@ -2,7 +2,7 @@ import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual,  } from 'typeorm';
 import { AwsService, BpmResponse, DriverMerchant, InternalErrorException, ResponseStauses, Transaction, SundryService, User, CreateDriverMerchantDto, NotFoundException, UserTypes, CreateInStepDriverMerchantDto, CompleteDriverMerchantDto, DriverBankAccount, CreateDriverMerchantUserDto, DriverMerchantUser, Role, BadRequestException, Driver, NoContentException, TransactionTypes } from '../..';
-import { AppendDriverMerchantDto, DriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
+import { AppendDriverMerchantDto, DriverBalanceManagementDto, DriverMerchantDto, DriverPaidWayKzDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
 import * as dateFns from 'date-fns'
 
 @Injectable()
@@ -431,6 +431,106 @@ export class DriverMerchantsService {
       }
       const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: user.driverMerchantUser?.driverMerchant?.id } });
       driver.driverMerchant = merchant;
+      await this.driversRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async changeDriverBalanceManagement(dto: DriverBalanceManagementDto, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType !== UserTypes.DriverMerchant) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, isDeleted: false, driverMerchant: { id: user.driverMerchant?.id } } });
+
+      driver.isOwnBalance = dto.isByDriver;
+
+      await this.driversRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async changeDriverServiceManagement(dto: DriverBalanceManagementDto, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType !== UserTypes.DriverMerchant) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, isDeleted: false, driverMerchant: { id: user.driverMerchant?.id } } });
+
+      driver.isOwnService = dto.isByDriver;
+      
+      await this.driversRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async changeDriverOrderManagement(dto: DriverBalanceManagementDto, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType !== UserTypes.DriverMerchant) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, isDeleted: false, driverMerchant: { id: user.driverMerchant?.id } } });
+
+      driver.isOwnOrder = dto.isByDriver;
+      
+      await this.driversRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
+  async changeIsKzPaidWay(dto: DriverPaidWayKzDto, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+
+      if(user.userType !== UserTypes.DriverMerchant) {
+        throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, isDeleted: false, driverMerchant: { id: user.driverMerchant?.id } } });
+
+      driver.isKzPaidWay = dto.isKzPaidWay;
+      
       await this.driversRepository.save(driver);
       return new BpmResponse(true, null, null);
     } catch (err: any) {

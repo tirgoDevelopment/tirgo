@@ -31,6 +31,18 @@ export class Driver {
   @Column({ nullable: true })
   email?: string;
 
+  @Column({ nullable: true, name: 'is_own_balance', default: true })
+  isOwnBalance?: boolean;
+
+  @Column({ nullable: true, name: 'is_own_service', default: true })
+  isOwnService?: boolean;
+
+  @Column({ nullable: true, name: 'is_own_order', default: true })
+  isOwnOrder?: boolean;
+
+  @Column({ nullable: true, name: 'is_kz_paid_way', default: false })
+  isKzPaidWay?: boolean;
+
   @OneToOne(() => DriverDocuments, (document) => document.driverId, { cascade: true, onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'profile_file_id' })
   profileFile?: DriverDocuments;

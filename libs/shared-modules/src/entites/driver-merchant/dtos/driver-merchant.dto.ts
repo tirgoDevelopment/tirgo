@@ -1,5 +1,5 @@
 
-import { IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateDriverMerchantDto {
@@ -228,4 +228,22 @@ export interface iBankAccount {
 export class AppendDriverMerchantDto {
   @ApiProperty({ required: true })
   phoneNumber: number;
+}
+
+export class DriverBalanceManagementDto {
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isByDriver: boolean;
+
+}
+
+export class DriverPaidWayKzDto {
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  isKzPaidWay: boolean;
+
 }

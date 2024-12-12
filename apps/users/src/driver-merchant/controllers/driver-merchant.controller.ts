@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch, Delete, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseInterceptors, UploadedFiles, UsePipes, ValidationPipe, Req, Query, Patch, Delete, Put, Param } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { DriverMerchantsService } from '../services/driver-merchant.service';
 import { CompleteDriverMerchantDto, CreateDriverMerchantDto, CreateDriverMerchantUserDto, CreateInStepDriverMerchantDto } from '../..';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { AppendDriverMerchantDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
+import { AppendDriverMerchantDto, DriverBalanceManagementDto, DriverPaidWayKzDto } from '@app/shared-modules/entites/driver-merchant/dtos/driver-merchant.dto';
  
 @ApiTags('Driver merchant')
 @Controller('driver-merchants')
@@ -100,6 +100,35 @@ export class DriverMerchantController {
   @UsePipes(ValidationPipe)
   async appendDriver(@Body() appendDriverMerchantDto: AppendDriverMerchantDto, @Req() req: Request) {
     return this.driverMerchantsService.appendDriverToMerchant(appendDriverMerchantDto, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Change driver balance management' })
+  @Post('drivers/:id/balance-management')
+  @UsePipes(ValidationPipe)
+
+  async changeBalanceManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
+    return this.driverMerchantsService.changeDriverBalanceManagement(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Change driver service management' })
+  @Post('drivers/:id/service-management')
+  @UsePipes(ValidationPipe)
+  async changeServiceManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
+    return this.driverMerchantsService.changeDriverServiceManagement(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Change driver order management' })
+  @Post('drivers/:id/order-management')
+  @UsePipes(ValidationPipe)
+  async changeOrderManagement(@Body() dto: DriverBalanceManagementDto, @Param('id') id: number, @Req() req: Request) {
+    return this.driverMerchantsService.changeDriverOrderManagement(dto, id, req['user']);
+  }
+
+  @ApiOperation({ summary: 'Change id driver uses kz piad way' })
+  @Post('drivers/:id/kz-paid-way')
+  @UsePipes(ValidationPipe)
+  async kzPaidWay(@Body() dto: DriverPaidWayKzDto, @Param('id') id: number, @Req() req: Request) {
+    return this.driverMerchantsService.changeIsKzPaidWay(dto, id, req['user']);
   }
 
   //get methods  
