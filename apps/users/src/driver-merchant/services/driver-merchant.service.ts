@@ -447,6 +447,30 @@ export class DriverMerchantsService {
       }
     }
   }
+
+  async unAssignDriverFromMerchant(driverId: number, user: any): Promise<BpmResponse> {
+    try {
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, driverMerchant: { id: user.merchantId } } });
+      if (driver && driver.driverMerchant && driver.driverMerchant.id == user.merchantId) {
+        driver.driverMerchant = null;
+        await this.driversRepository.save(driver);
+      } else if(driver && !driver.driverMerchant) {
+        throw new BadRequestException(ResponseStauses.NotAssigned);
+      } else {
+        throw new BadRequestException(ResponseStauses.UserNotFound);
+      }
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
   
   async requestDriverToMerchant(tmsId: number, driverId: number, user: User): Promise<BpmResponse> {
     try {

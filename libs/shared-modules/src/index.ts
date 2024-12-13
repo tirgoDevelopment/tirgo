@@ -185,7 +185,8 @@ export enum ResponseStauses {
   RequestStatusIsNotWaiting = 'requestStatusIsNotWaiting',
   RequestStatusIsNotPriced = 'requestStatusIsNotPriced',
   RequestStatusIsNotConfirmed = 'requestStatusIsNotConfirmed',
-  RequestCantBeCanceleted = 'requestCantBeCanceleted'
+  RequestCantBeCanceleted = 'requestCantBeCanceleted',
+  NotAssigned = 'NotAssigned'
 }
 
 export enum CargoStatusCodes {
