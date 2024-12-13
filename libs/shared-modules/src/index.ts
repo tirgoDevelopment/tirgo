@@ -148,6 +148,7 @@ export enum ResponseStauses {
   AlreadyRejected = 'alreadyRejecteed',
   AlreadyAccepted = 'alreadyAccepted',
   AlreadyCanceled = 'alreadyCanceled',
+  AlreadyRequested = 'alreadyRequested',
   OrderIsClosed = 'orderIsClosed',
   OrderIsNotWaiting = 'orderIsNotWaiting',
   DriverHasOrder = 'driverHasOrder',

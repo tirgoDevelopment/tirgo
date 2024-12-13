@@ -457,6 +457,12 @@ export class DriverMerchantsService {
       if (driver.driverMerchant) {
         throw new BadRequestException(ResponseStauses.AlreadyAssigned);
       }
+
+      const exists: boolean = await this.tmsReqestToDriverRepository.exists({ where: { isAccepted: false, isRejected: false, driver: { id: driverId }, driverMerchant: { id: tmsId } } });
+      if (exists) {
+        throw new BadRequestException(ResponseStauses.AlreadyRequested);
+      }
+
       const merchant: DriverMerchant = await this.driverMerchantsRepository.findOneOrFail({ where: { id: tmsId } });
       
       const tmsRequest = new TmsReqestToDriver();
