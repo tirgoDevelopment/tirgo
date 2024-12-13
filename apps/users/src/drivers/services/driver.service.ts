@@ -912,6 +912,27 @@ export class DriversService {
     }
   }
 
+  async unassignDriverFromMerchant(tmsId: number, driverId: number, user: User): Promise<BpmResponse> {
+    try {
+      if(user.userType !== UserTypes.Staff) {
+          throw new BadRequestException(ResponseStauses.AccessDenied);
+      }
+      const driver: Driver = await this.driverRepository.findOneOrFail({ where: { id: driverId, driverMerchant: { id: tmsId } }, relations: ['driverMerchant'] });
+      driver.driverMerchant = null;
+      await this.driverRepository.save(driver);
+      return new BpmResponse(true, null, null);
+    } catch (err: any) {
+      console.log(err)
+      if (err.name == 'EntityNotFoundError') {
+        throw new NotFoundException(ResponseStauses.UserNotFound);
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
   async assignDriverToAgent(driverId: number, agentId: number, user: any): Promise<BpmResponse> {
     try {
 

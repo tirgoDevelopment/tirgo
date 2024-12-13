@@ -182,4 +182,11 @@ export class DriversController {
     return this.driversService.appendDriverToMerchant(appendDriverMerchantDto, tmsId, req['user']);
   }
 
+  @ApiOperation({ summary: 'Unassign driver from TMS' })
+  @Post('tmses/:tmsId/drivers/:driverId/unassign')
+  @UsePipes(ValidationPipe)
+  async unassignDriver(@Param('tmsId') tmsId: number, @Param('driverId') driverId: number, @Req() req: Request) {
+    return this.driversService.unassignDriverFromMerchant(tmsId, driverId, req['user']);
+  }
+
 }
