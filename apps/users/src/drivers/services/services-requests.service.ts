@@ -424,7 +424,7 @@ export class ServicesRequestsService {
       }
 
       if (user.userType == UserTypes.DriverMerchantUser) {
-        query.merchantId = user.merchantId;
+        query.merchantId = user.driverMerchantUser?.driverMerchant?.id;;
       }
 
       const data = await this.driversServicesRequestsRepository.findAll(query, sort, index, size)
