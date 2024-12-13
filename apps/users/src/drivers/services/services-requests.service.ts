@@ -484,10 +484,6 @@ export class ServicesRequestsService {
   async sendMessage(dto: DriversServicesRequestsMessagesDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
     try {
 
-      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-
       const serviceRequestMessage: DriversServicesRequestsMessages = new DriversServicesRequestsMessages();
       serviceRequestMessage.message = dto.message;
       serviceRequestMessage.messageType = dto.messageType;
@@ -535,9 +531,6 @@ export class ServicesRequestsService {
     await queryRunner.connect();
     try {
       await queryRunner.startTransaction();
-      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
 
       if(!files.file || !files.file[0]) {
         throw new BadRequestException(ResponseStauses.FileIsRequired)
@@ -613,12 +606,20 @@ export class ServicesRequestsService {
   async getAllMessages(query: DriversServicesRequestsMessagesQueryDto, driverServiceRequestId: number, user: User): Promise<BpmResponse> {
     try {
 
-      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver) {
+      if (user.userType != UserTypes.Staff && user.userType != UserTypes.Driver && user.userType != UserTypes.DriverMerchantUser) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
       if (user.userType == UserTypes.Driver) {
         const exists = await this.driversServicesRequestsRepository.exists({ where: { id: driverServiceRequestId, driver: { id: user.driver?.id } } });
+        if (!exists) {
+          throw new BadRequestException(ResponseStauses.AccessDenied);
+        }
+      }
+
+      if (user.userType == UserTypes.DriverMerchantUser) {
+        const merchantId = user.driverMerchantUser?.driverMerchant?.id;
+        const exists = await this.driversServicesRequestsRepository.exists({ where: { id: driverServiceRequestId, driver: { driverMerchant: { id: merchantId } } } });
         if (!exists) {
           throw new BadRequestException(ResponseStauses.AccessDenied);
         }
