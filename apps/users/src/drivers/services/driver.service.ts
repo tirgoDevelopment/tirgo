@@ -393,21 +393,21 @@ export class DriversService {
 
   async updateDrierProfile(files: any, driverId: number): Promise<BpmResponse> {
     try {
-
+      console.log(files)
       if(!files.profile || !files.profile[0]) {
         throw new BadRequestException(ResponseStauses.FileIsRequired)
       }
       const driver = await this.driverRepository.findOneOrFail({where: { id: driverId }});
-
       const profile = files.profile[0];
+      console.log('profile', profile)
       const profileDoc = new DriverDocuments();
       profileDoc.driverId = driver.id;
-      profileDoc.name = profile.originalname.split(' ').join('').trim();
+      profileDoc.name = profile.originalname?.split(' ').join('').trim();
       profileDoc.bucket = AwsS3BucketKeyNames.DriversProfiles;
       profileDoc.mimeType = profile.mimetype;
       profileDoc.size = profile.size;
       profileDoc.docType = UserDocumentTypes.Profile;
-      profileDoc.fileHash = profile.filename.split(' ').join('').trim();
+      profileDoc.fileHash = profile.filename?.split(' ').join('').trim();
       profileDoc.description = profile.description;
       driver.profileFile = profileDoc;
         

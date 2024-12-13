@@ -50,7 +50,7 @@ export class DriversController {
     { name: 'profile', maxCount: 1 }
   ]))
   async updateDriverProfile(
-    @UploadedFiles() files: { passport?: any[] },
+    @UploadedFiles() files: { profile?: any[] },
     @Param('id') id: number,
     @Req() req: Request
   ) {
