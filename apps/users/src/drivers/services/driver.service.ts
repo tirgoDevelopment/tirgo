@@ -763,6 +763,32 @@ export class DriversService {
     }
   }
 
+  async getTmsAssignRequests(user: User): Promise<BpmResponse> {
+    try {
+      if(user.userType != UserTypes.Driver) {
+        throw new BadRequestException(ResponseStauses.AccessDenied)
+      }
+
+      const assignRequests = await this.tmsReqestToDriverRepository.find({ where: { driver: { id: user.driver?.id } }, relations: ['driverMerchant', 'createdBy'] });
+
+      if(!assignRequests.length) {
+        throw new BadRequestException();
+      }
+
+      return new BpmResponse(true, assignRequests, null);
+    } catch (err: any) {
+      if (err.name == 'EntityNotFoundError') {
+        // Driver not found
+        throw new NoContentException();
+      } else if (err instanceof HttpException) {
+        throw err
+      } else {
+        // Other error (handle accordingly)
+        throw new InternalErrorException(ResponseStauses.InternalServerError);
+      }
+    }
+  }
+
   async driverAcceptTmsAssignRequest(requestId: number, user: User): Promise<BpmResponse> {
 
     const queryRunner = await this.driverRepository.manager.connection.createQueryRunner();

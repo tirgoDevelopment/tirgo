@@ -151,6 +151,12 @@ export class DriversController {
     return this.driversService.activateDriver(id, req['user']);
   }
 
+  @ApiOperation({ summary: 'List of tms assign requests' })
+  @Get('/tms-assign-requests/')
+  async driverTmsAssignRequets(@Param('id') id: number, @Req() req: Request) {
+    return this.driversService.driverAcceptTmsAssignRequest(id, req['user']);
+  }
+
   @ApiOperation({ summary: 'Driver accept tms assign request' })
   @Patch('/tms-assign-requests/:id/accept')
   async driverAccepetTmsAssignRequets(@Param('id') id: number, @Req() req: Request) {
