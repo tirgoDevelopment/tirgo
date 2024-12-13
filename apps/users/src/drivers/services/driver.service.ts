@@ -348,13 +348,13 @@ export class DriversService {
       return new BpmResponse(true, null, [ResponseStauses.SuccessfullyUpdated]);
     } catch (err: any) {
       await queryRunner.rollbackTransaction();
-      if(files && files.passport[0]) {
+      if(files && files.passport && files.passport[0]) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversPassports, files.passport[0]?.originalname.split(' ').join('').trim());
       }
-      if(files && files.profile[0]) {
+      if(files && files.profile && files.profile[0]) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversProfiles, files.profile[0]?.originalname.split(' ').join('').trim());
       }
-      if(files && files.driverLicense[0]) {
+      if(files && files.driverLicense && files.driverLicense[0]) {
         this.awsService.deleteFile(AwsS3BucketKeyNames.DriversLicenses, files.driverLicense[0]?.originalname.split(' ').join('').trim());
       }   
       console.log(err)
