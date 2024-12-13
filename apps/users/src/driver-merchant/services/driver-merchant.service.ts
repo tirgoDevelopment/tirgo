@@ -450,7 +450,7 @@ export class DriverMerchantsService {
 
   async unAssignDriverFromMerchant(driverId: number, user: any): Promise<BpmResponse> {
     try {
-      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, driverMerchant: { id: user.merchantId } } });
+      const driver: Driver = await this.driversRepository.findOneOrFail({ where: { id: driverId, driverMerchant: { id: user.merchantId } }, relations: ['driverMerchant'] });
       if (driver && driver.driverMerchant && driver.driverMerchant.id == user.merchantId) {
         driver.driverMerchant = null;
         await this.driversRepository.save(driver);
