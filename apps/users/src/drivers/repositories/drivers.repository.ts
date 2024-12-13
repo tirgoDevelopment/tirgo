@@ -32,6 +32,9 @@ export class DriversRepository extends Repository<Driver> {
         if (filter.driverId) {
             queryBuilder.andWhere('d.id = :id', { id: +filter.driverId });
         }
+        if (filter.merchantId) {
+            queryBuilder.andWhere('driverMerchant.id = :id', { id: +filter.merchantId });
+        }
         if (filter.phoneNumber) {
             queryBuilder.andWhere('phoneNumber.phoneNumber LIKE :phoneNumber', { phoneNumber: `%${filter.phoneNumber.trim().replace(/\+/g, '')}%` });
         }
@@ -147,103 +150,6 @@ export class DriversRepository extends Repository<Driver> {
     
         return { data: drivers, count: driversCount };
     } 
-
-    async findAllMerchantDrivers(filter: any, order: any, index: number, size: number) {
-        const queryBuilder = this.createQueryBuilder('d')
-            .leftJoinAndSelect("d.profileFile", "profileFile")
-            .leftJoinAndSelect('d.driverTransports', 'driverTransports')
-            .leftJoinAndSelect('driverTransports.transportKind', 'transportKind')
-            .leftJoinAndSelect('d.agent', 'agent')
-            .leftJoin("d.phoneNumbers", "phoneNumber")
-            .addSelect(['phoneNumber.id', 'phoneNumber.number', 'phoneNumber.code', 'phoneNumber.isMain'])
-            .leftJoin('d.user', 'user')
-            .addSelect('user.lastLogin')
-            .addSelect('user.id')
-            .addSelect('user.userType')
-            .leftJoin(User, 'u', 'u.id = d.created_by_id')
-            .leftJoin(DriverMerchantUser, 'dmu', 'dmu.user_id = u.id')
-            .leftJoin(DriverMerchant, 'dm', 'dm.id = dmu.driver_merchant_id')
-            .where('u.user_type = :userType AND dm.id = :merchantId AND d.is_deleted = true', {
-                userType: UserTypes.DriverMerchantUser,
-                merchantId: filter.merchantId
-            });
-    
-             // Apply filters conditionally
-        if (filter.driverId) {
-            queryBuilder.andWhere('d.id = :id', { id: +filter.driverId });
-        }
-        if (filter.phoneNumber) {
-            queryBuilder.andWhere('driverTransports.transportNumber LIKE :transportNumber', { transportNumber: `%${filter.transportNumber.trim().replace(/\+/g, '')}%` });
-        }
-        if (filter.isOwnOrder) {
-            queryBuilder.andWhere('d.is_own_order = :isOwnOrder', { isOwnOrder: filter.isOwnOrder });
-        }
-        if (filter.isOwnBalance) {
-            queryBuilder.andWhere('d.is_own_balance = :isOwnBalance', { isOwnBalance: filter.isOwnBalance });
-        }
-
-        // Apply state filter
-        switch (filter.state) {
-            case UserStates.Active:
-                queryBuilder.andWhere('d.is_blocked = false');
-                break;
-            case UserStates.Blocked:
-                queryBuilder.andWhere('d.is_blocked = true');
-                break;
-            case UserStates.Verified:
-                queryBuilder.andWhere('d.is_verified = true');
-                break;
-            case UserStates.Unverified:
-                queryBuilder.andWhere('d.is_verified = false');
-                break;
-            case UserStates.Deleted:
-                queryBuilder.andWhere('d.is_deleted = true');
-                break;
-        }
-    
-        
-        // Add logic to check if driver is busy
-        queryBuilder.addSelect(subQuery => {
-            return subQuery
-                .select('COUNT(oo.id)', 'isBusy')
-                .from('driver_order_offers', 'oo')
-                .innerJoin('oo.order', 'o')
-                .innerJoin('o.cargoStatus', 'cs')
-                .where('oo.is_accepted = TRUE')
-                .andWhere('oo.driver_id = d.id')
-                .andWhere('(o.is_secure_transaction = FALSE AND cs.code = :acceptedCode)')
-                .orWhere('(o.is_secure_transaction = TRUE AND cs.code IN (:...safeCodes))')
-                .setParameters({
-                    acceptedCode: CargoStatusCodes.Accepted,
-                    safeCodes: [CargoStatusCodes.Accepted, CargoStatusCodes.Completed]
-                });
-        }, 'isBusy');
-
-        // Get the count of drivers with filters applied
-        const driversCount = await queryBuilder.getCount();
-    
-        // Apply sorting
-        if (order && typeof order === 'object') {
-            Object.keys(order).forEach(key => {
-                queryBuilder.addOrderBy(`d.${key}`, order[key].toUpperCase());
-            });
-        } else {
-            queryBuilder.addOrderBy('d.id', 'DESC');
-        }
-    
-        // Apply pagination
-        queryBuilder.skip(index * size).take(size);
-    
-        // Get paginated drivers
-        const drivers = await queryBuilder.getMany();
-
-          // Ensure isBusy property is boolean
-          drivers.forEach(driver => {
-            driver['isBusy'] = !!driver['isBusy']; // Convert count to boolean
-        });
-    
-        return { data: drivers, count: driversCount };
-    }
 
     async findAllAgentDrivers(filter: any, order: any, index: number, size: number) {
 

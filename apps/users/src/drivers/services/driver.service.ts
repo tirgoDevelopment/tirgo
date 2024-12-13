@@ -645,8 +645,7 @@ export class DriversService {
         lastLoginTo: query.lastLoginTo,
         state: query.state
       }
-      const drivers = await this.driverRepository.findAllMerchantDrivers(filter, sort, index, size);
- 
+      const drivers = await this.driverRepository.findAllDrivers(filter, sort, index, size);
       const totalPagesCount = Math.ceil(drivers.count / size);
 
       if (!drivers.data.length) {
