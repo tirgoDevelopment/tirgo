@@ -63,7 +63,6 @@ export class DriverDto {
 
 export class UpdateDriverDto {
   @ApiProperty({ required: true })
-  @IsNumber()
   @IsNotEmpty()
   id: number;
 
