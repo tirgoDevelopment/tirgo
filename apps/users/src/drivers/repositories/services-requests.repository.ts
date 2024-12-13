@@ -18,6 +18,7 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
             .addSelect(['historyCreatedBy.id', 'historyCreatedBy.userType', 'historyCreatedBy.lastLogin'])
             .leftJoinAndSelect("statusesHistory.status", "historyStatus")
             .leftJoinAndSelect("sr.driver", "driver")
+            .leftJoinAndSelect("driver.driverMerchant", "driverMerchant")
             .leftJoinAndSelect("driver.driverTransports", "driverTransports")
             .leftJoinAndSelect("driverTransports.transportType", "transportType")
             .leftJoinAndSelect("driverTransports.transportKind", "transportKind")
@@ -35,6 +36,9 @@ export class DriversServicesRequestsRepository extends Repository<DriversService
         // Apply filters conditionally
         if (filter.driverId) {
             queryBuilder.andWhere('driver.id = :id', { id: +filter.driverId });
+        }
+        if(filter.merchantId) {
+            queryBuilder.andWhere('driverMerchant.id = :id', { id: +filter.merchantId });
         }
         if (filter.createdAtFrom && filter.createdAtTo) {
             queryBuilder.andWhere('sr.createdAt BETWEEN :createdAtFrom AND :createdAtTo', {

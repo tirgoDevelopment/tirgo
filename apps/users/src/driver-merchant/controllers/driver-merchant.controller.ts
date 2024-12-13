@@ -103,7 +103,7 @@ export class DriverMerchantController {
   }
 
   @ApiOperation({ summary: 'Request driver' })
-  @Post('request-driver')
+  @Post(':tmsId/request-driver/:driverId')
   @UsePipes(ValidationPipe)
   async requestDriver(@Req() req: Request, @Param('tmsId') tmsId: number, @Param('driverId') driverId: number) {
     return this.driverMerchantsService.requestDriverToMerchant(tmsId, driverId, req['user']);

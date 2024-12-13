@@ -56,4 +56,6 @@ export class DriversServicesRequestsQueryDto {
 
   @ApiProperty({ required: false })
   createdAtTo: string;
+
+  merchantId: number;
 }

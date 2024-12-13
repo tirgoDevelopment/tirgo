@@ -43,7 +43,7 @@ export class ServicesRequestsService {
       let driver;
       if (user.userType == UserTypes.Driver) {
         driver = await this.driversRepository.findOneOrFail({ where: { id: user.driver?.id, isDeleted: false } });
-      } else if (user.userType == UserTypes.Staff) {
+      } else if (user.userType == UserTypes.Staff || user.userType == UserTypes.DriverMerchantUser) {
         if (dto.driverId) {
           driver = await this.driversRepository.findOneOrFail({ where: { id: dto.driverId, isDeleted: false } });
         } else {
@@ -91,9 +91,6 @@ export class ServicesRequestsService {
   async cancelServiceRequest(dto: DriversServicesRequestsOperationDto, id: number, user: User): Promise<BpmResponse> {
     try {
 
-      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
       const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
 
       if (request.status?.code == ServicesRequestsStatusesCodes.Working || request.status?.code == ServicesRequestsStatusesCodes.Completed) {
@@ -203,11 +200,6 @@ export class ServicesRequestsService {
     try {
       await queryRunner.startTransaction();
 
-      // check if only staff and driver can confrim price of services request
-      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
-        throw new BadRequestException(ResponseStauses.AccessDenied);
-      }
-
       const request = await this.driversServicesRequestsRepository.findOneOrFail({ where: { id: +id }, relations: ['status'] })
 
       // check if request status is priced else return specific error
@@ -260,8 +252,8 @@ export class ServicesRequestsService {
     try {
       await queryRunner.startTransaction();
 
-      // check if only staff and driver can change to working status of services request
-      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+      // check if only staffcan change to working status of services request
+      if (user.userType != UserTypes.Staff) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
@@ -318,7 +310,7 @@ export class ServicesRequestsService {
       await queryRunner.startTransaction();
 
       // check if only staff and driver can change to working status of services request
-      if (user.userType != UserTypes.Driver && user.userType != UserTypes.Staff) {
+      if (user.userType != UserTypes.Driver && user.userType != UserTypes.DriverMerchantUser && user.userType != UserTypes.Staff) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
@@ -414,10 +406,10 @@ export class ServicesRequestsService {
     }
   }
 
-  async getAll(query: DriversServicesRequestsQueryDto, user: User): Promise<BpmResponse> {
+  async getAll(query: DriversServicesRequestsQueryDto, user: any): Promise<BpmResponse> {
     try {
 
-      if (user.userType != UserTypes.Staff) {
+      if (user.userType != UserTypes.Staff && user.userType != UserTypes.DriverMerchantUser) {
         throw new BadRequestException(ResponseStauses.AccessDenied);
       }
 
@@ -429,6 +421,10 @@ export class ServicesRequestsService {
         sort[query.sortBy] = query.sortType;
       } else {
         sort['id'] = 'DESC'
+      }
+
+      if (user.userType == UserTypes.DriverMerchantUser) {
+        query.merchantId = user.merchantId;
       }
 
       const data = await this.driversServicesRequestsRepository.findAll(query, sort, index, size)
