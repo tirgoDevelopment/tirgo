@@ -49,8 +49,6 @@ export class DriversServicesRequestsMessagesFilesDto {
   id?: number;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @IsBoolean()
   isReplied: boolean;
 
   @ApiProperty({ required: false })

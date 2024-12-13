@@ -124,7 +124,7 @@ export class ServicesRequestsController {
   }
 
   @ApiOperation({ summary: 'Send file message to service request' })
-  @Patch(':id/messages/files')
+  @Post(':id/messages/files')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'file', maxCount: 1 }
