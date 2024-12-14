@@ -139,10 +139,10 @@ export class DriversService {
       driver.birthdayDate = createDriverDto.birthdayDate;
       driver.citizenship = createDriverDto.citizenship;
       driver.createdBy = user;
-      driver.isOwnBalance = createDriverDto.isOwnBalance
-      driver.isOwnService = createDriverDto.isOwnService
-      driver.isOwnOrder = createDriverDto.isOwnOrder
-      driver.isKzPaidWay = createDriverDto.isKzPaidWay
+      driver.isOwnBalance = createDriverDto.isOwnBalance.toString() == 'true';
+      driver.isOwnService = createDriverDto.isOwnService.toString() == 'true';
+      driver.isOwnOrder = createDriverDto.isOwnOrder.toString() == 'true';
+      driver.isKzPaidWay = createDriverDto.isKzPaidWay.toString() == 'true';
       
       if(files) {
         const uploads: any = [];
@@ -270,6 +270,14 @@ export class DriversService {
       driver.isOwnService = updateDriverDto.isOwnService || driver.isOwnService
       driver.isOwnOrder = updateDriverDto.isOwnOrder || driver.isOwnOrder
       driver.isKzPaidWay = updateDriverDto.isKzPaidWay || driver.isKzPaidWay
+
+
+      if(typeof updateDriverDto.phoneNumbers == 'string') {
+        updateDriverDto.phoneNumbers = JSON.parse(updateDriverDto.phoneNumbers)
+      }
+      if(!(updateDriverDto.phoneNumbers instanceof Array)) {
+        throw new BadRequestException(ResponseStauses.PhoneNumbeersMustBeArray)
+      }
 
       const driverPhoneNumbers = updateDriverDto.phoneNumbers.map(phone => {
         const driverPhoneNumber = new DriverPhoneNumber();
