@@ -165,6 +165,38 @@ export class ServicesRequestsService {
         })
       )
 
+      // create priced message
+      let balance = 0;
+      const message = new DriversServicesRequestsMessages();
+      message.messageType = DriverServiceRequestMessageTypes.Text;
+      message.senderUserType = user.userType;
+      message.createdBy = user;
+      message.sentBy = user;
+      message.driverServiceRequest = request;
+
+      const requestPrice = dto.details.reduce((acc, el) => acc + +el.amount, 0);
+      if(balance >= requestPrice) {
+        message.message = `Ваша заявка была оценена на сумму ${requestPrice} TIR.\n
+        На вашем балансе достаточно средств. Вы можете оплатить заявку, и средства будут списаны автоматически.\n
+        После подтверждения оператор начнёт обработку вашей заявки.`;
+      } else {
+        message.isPayment = true;
+        message.message = `Ваша заявка была оценена на сумму ${requestPrice} TIR.\n
+        На вашем балансе недостаточно средств. Пожалуйста, пополните баланс на {разница} TIR.\n
+        После пополнения вы сможете завершить оплату, и оператор начнёт обработку вашей заявки.`;
+      }
+      
+      await queryRunner.manager.save(DriversServicesRequestsMessages, message);
+
+      // send message notification
+      const eventdata = { 
+        message,
+        requestId: request, 
+        userId: user.id, 
+        userType: user.userType
+       }
+      await this.sseService.sendNotificationToAllUsers({ data: eventdata, event: SseEventNames.NewMessage });
+
       // send text to driver notifing about price
       await this.sseService.sendNotificationToAllUsers({ data: { requestId: request.id, userId: user.id, userType: user.userType }, event: SseEventNames.ServiceRequestPriced });
 

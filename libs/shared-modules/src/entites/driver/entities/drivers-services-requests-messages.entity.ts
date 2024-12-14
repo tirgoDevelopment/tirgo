@@ -48,6 +48,9 @@ export class DriversServicesRequestsMessages {
   @JoinColumn({ name: 'read_by_id' })
   readBy: User;
 
+  @Column({ default: false, name: 'is_payment' })
+  isPayment: boolean;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt: Date;
 
